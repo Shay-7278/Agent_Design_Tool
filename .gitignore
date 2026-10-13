@@ -1,0 +1,8 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Rhino / Grasshopper backups and lock files
+*.3dmbak
+*.ghbak
+*.rhl
