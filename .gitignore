@@ -6,3 +6,7 @@ __pycache__/
 *.3dmbak
 *.ghbak
 *.rhl
+
+# Solver I/O
+physics_job.json
+physics_result.json
