@@ -282,6 +282,9 @@ def gh_main(g):
             os.remove(res_file)
         cmd = format_command(command, job_file, res_file)
         try:
+            # Rhino's Python paths are incompatible with the external interpreter.
+            child_env = dict((key, value) for key, value in os.environ.items()
+                             if key.upper() not in ("PYTHONHOME", "PYTHONPATH"))
             subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as err:
             # exit code 1 = checks failed but a result was written
