@@ -44,18 +44,22 @@ class Wall(object):
         self.pitch = p["brickH"] + p["mortar_t"]
         self.courses = [[] for _ in paths]
         self.steps = [0.0 for _ in paths]
+        self.widened = [False for _ in paths]   # joints allowed past max_head
         for k, n in enumerate(counts):
             self.place_course(k, n)
 
-    def place_course(self, k, n):
+    def place_course(self, k, n, widen=False):
         """Place n bricks evenly along course k (running bond: odd courses
         shifted by offset_distance).  On an open course the spacing is capped
         at brickL + max_head and the bricks are centred, so leftover length
-        stays at the ends.  Replaces the course's bricks."""
+        stays at the ends; with widen=True the bricks span the full course
+        and the head joints may exceed max_head.  Replaces the course's
+        bricks."""
         path = self.paths[k]
         step = path.length / n
         start = 0.0
-        if not path.closed and step > self.L + self.p["max_head"]:
+        self.widened[k] = bool(widen) and step > self.L + self.p["max_head"]
+        if not path.closed and not widen and step > self.L + self.p["max_head"]:
             # open course: keep joints <= max_head, leave the rest at the ends
             step = self.L + self.p["max_head"]
             start = 0.5 * (path.length - n * step)

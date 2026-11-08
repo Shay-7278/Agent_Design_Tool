@@ -97,7 +97,7 @@ def repair_spacing(wall, k):
     nj = n if closed else n - 1
     for q in range(nj):
         g = rect_gap(wall.footprint(bs[q]), wall.footprint(bs[(q + 1) % n]))
-        if g > p["max_head"] + 1e-6:
+        if g > p["max_head"] + 1e-6 and not wall.widened[k]:
             return ("course {}: head joint {:.1f} mm exceeds max_head {:.0f} mm after "
                     "redistribution".format(k, g, p["max_head"]))
     return None
@@ -108,17 +108,22 @@ def settle_counts(wall, log):
     checks.  Chord bricks on a curve lose head joint on the concave side, so a
     colliding course first has its head joints redistributed within
     [min_head, max_head]; if that cannot work, it drops a brick and is
-    re-spaced.  The settled positions are the fitted reference."""
+    re-spaced over its full length, so its ends stay in line with the courses
+    above and below (its head joints may then exceed max_head; reported).
+    The settled positions are the fitted reference."""
     for k in range(len(wall.courses)):
         n0 = n = len(wall.courses[k])
         while wall.course_collides(k) and repair_spacing(wall, k) and n > 1:
             n -= 1
-            wall.place_course(k, n)
+            wall.place_course(k, n, widen=True)
         for b in wall.courses[k]:
             b.s0, b.u0, b.status = b.s, b.u, "passed"
         if n != n0:
-            log.append("course {}: {} -> {} bricks (curvature: head joints < min_head)".format(
-                k, n0, n))
+            msg = "course {}: {} -> {} bricks (curvature: head joints < min_head)".format(k, n0, n)
+            if wall.widened[k]:
+                msg += "; head joints widened to {:.1f} mm (> max_head {:.0f} mm)".format(
+                    wall.head_joint(k), wall.p["max_head"])
+            log.append(msg)
 
 
 def l0_failures(wall):
