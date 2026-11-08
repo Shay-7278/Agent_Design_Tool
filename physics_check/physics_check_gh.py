@@ -285,7 +285,7 @@ def gh_main(g):
             # Rhino's Python paths are incompatible with the external interpreter.
             child_env = dict((key, value) for key, value in os.environ.items()
                              if key.upper() not in ("PYTHONHOME", "PYTHONPATH"))
-            subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+            subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, env=child_env)
         except subprocess.CalledProcessError as err:
             # exit code 1 = checks failed but a result was written
             if not os.path.exists(res_file):
