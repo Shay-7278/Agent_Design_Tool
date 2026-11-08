@@ -4,9 +4,10 @@ Paste this file into one GhPython component.  It does the Rhino part of the
 workflow in ``physics_check_wf.md`` (steps 1-2: scale the surface in Z to a
 whole number of courses, cut one section per course), writes the sections to
 ``physics_job.json``, runs the check loop (steps 2-7, the ``pc`` package)
-through a subprocess (by default Rhino on Windows -> ``wsl.exe`` -> ``uv run
-physics_check/physics_check.py``; a native Windows ``uv run`` command also
-works, see the ``command`` input), reads ``physics_result.json`` back and
+through a subprocess (by default ``uv run --project <repo>
+<repo>/physics_check/physics_check.py``, with the clone and ``uv`` found
+automatically; see the ``repo`` and ``command`` inputs), reads
+``physics_result.json`` back and
 rebuilds the planes and boxes.  The result file also holds ``frames`` + brick
 sizes in the ``export_frames_json.py`` format, so ``cra_check.py`` can open it
 directly.
@@ -45,13 +46,18 @@ Component inputs (GhPython):
     samples:         Points sampled per section curve, default 200
     job_path:        Folder for physics_job.json / physics_result.json;
                      default next to the saved .3dm
+    repo:            Folder of the cloned repo (the one holding pyproject.toml
+                     and physics_check/).  Not wired = searched upwards from
+                     job_path and from the saved .3dm's folder, so it can be
+                     left empty when the .3dm is saved inside the clone.
     command:         Command template run by the component, with {job} and
                      {result} replaced by the paths of the two files.  If the
                      command starts with wsl / wsl.exe they are WSL paths
-                     (/mnt/c/...); otherwise native Windows paths, e.g.
-                     cd /d C:\\path\\to\\grasshopper && uv run
-                     physics_check\\physics_check.py run "{job}" "{result}"
-                     Not wired = the WSL DEFAULT_COMMAND.
+                     (/mnt/c/...); otherwise native paths.
+                     Not wired = ``default_command``: "<uv>" run --project
+                     "<repo>" "<repo>/physics_check/physics_check.py" run
+                     "{job}" "{result}", where <uv> is found on PATH or in
+                     ~/.local/bin or ~/.cargo/bin.
                      Empty string = run in-process: compas_cra and the ``pc``
                      package (folder physics_check/) must then be importable
                      from Rhino's Python
@@ -91,9 +97,50 @@ PARAM_NAMES = (
 BRICK_H = 57.0     # pc/params.py default brickH [mm]
 MORTAR_T = 10.0    # pc/params.py default mortar_t [mm]
 
-DEFAULT_COMMAND = ('wsl.exe -e bash -lc "cd /home/doran/opencode/project/grasshopper && '
-                   '/home/doran/anaconda3/bin/uv run physics_check/physics_check.py run '
-                   '\'{job}\' \'{result}\'"')
+SOLVER_SCRIPT = os.path.join("physics_check", "physics_check.py")
+
+
+def find_repo(start_dirs):
+    """First folder holding physics_check/physics_check.py, searching each
+    start dir and then its parents.  None if not found."""
+    for d in start_dirs:
+        if not d:
+            continue
+        d = os.path.abspath(d)
+        while True:
+            if os.path.isfile(os.path.join(d, SOLVER_SCRIPT)):
+                return d
+            parent = os.path.dirname(d)
+            if parent == d:
+                break
+            d = parent
+    return None
+
+
+def find_uv(path_env=None, home=None):
+    """Path of the uv executable: PATH first, then the default install folders
+    (~/.local/bin, ~/.cargo/bin).  Rhino may hold a PATH from before uv was
+    installed, hence the fallback.  None if not found."""
+    exe = "uv.exe" if os.name == "nt" else "uv"
+    if path_env is None:
+        path_env = os.environ.get("PATH", "")
+    home = home or os.path.expanduser("~")
+    dirs = [d.strip('"') for d in path_env.split(os.pathsep) if d.strip()]
+    dirs += [os.path.join(home, ".local", "bin"), os.path.join(home, ".cargo", "bin")]
+    for d in dirs:
+        f = os.path.join(d, exe)
+        if os.path.isfile(f):
+            return f
+    return None
+
+
+def default_command(repo, uv):
+    """Command template that runs the solver with the repo's uv environment."""
+    def esc(s):   # keep braces in paths out of str.format
+        return s.replace("{", "{{").replace("}", "}}")
+    script = os.path.join(repo, SOLVER_SCRIPT)
+    return '"{}" run --project "{}" "{}" run "{{job}}" "{{result}}"'.format(
+        esc(uv), esc(repo), esc(script))
 
 
 def course_layout(h, brickH, mortar_t):
@@ -191,21 +238,32 @@ def gh_main(g):
         sections.append({"points": [[q.X, q.Y] for q in pts], "closed": bool(crv.IsClosed)})
 
     job = {"z_base": z_base, "params": params, "sections": sections}
-    folder = g.get("job_path")
+    doc_path = Rhino.RhinoDoc.ActiveDoc.Path
+    doc_dir = os.path.dirname(doc_path) if doc_path else None
+    folder = g.get("job_path") or doc_dir
     if not folder:
-        doc_path = Rhino.RhinoDoc.ActiveDoc.Path
-        if not doc_path:
-            out["Report"] = "No job_path given and the .3dm is not saved yet"
+        out["Report"] = "No job_path given and the .3dm is not saved yet"
+        return out
+
+    command = g.get("command")
+    if command is None:
+        repo = g.get("repo") or find_repo([folder, doc_dir])
+        if not repo or not os.path.isfile(os.path.join(repo, SOLVER_SCRIPT)):
+            out["Report"] = ("Cannot find the cloned repo ({} missing). Wire its folder into "
+                             "the repo input, or save the .3dm inside the clone.".format(SOLVER_SCRIPT))
             return out
-        folder = os.path.dirname(doc_path)
+        uv = find_uv()
+        if not uv:
+            out["Report"] = ("Cannot find uv on PATH or in ~/.local/bin / ~/.cargo/bin. Install uv "
+                             "(https://docs.astral.sh/uv/), restart Rhino, or wire a command input.")
+            return out
+        command = default_command(repo, uv)
+
     job_file = os.path.join(folder, "physics_job.json")
     res_file = os.path.join(folder, "physics_result.json")
     with open(job_file, "w") as fh:
         json.dump(job, fh)
 
-    command = g.get("command")
-    if command is None:
-        command = DEFAULT_COMMAND
     if command == "":
         try:
             result = run_in_process(job)
