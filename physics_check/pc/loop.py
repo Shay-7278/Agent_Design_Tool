@@ -4,7 +4,7 @@ from __future__ import division
 
 from .cra import run_cra
 from .fit import FitError, fit_sections
-from .l0 import l0_repair
+from .l0 import l0_repair, settle_counts
 from .l1 import l1_repair
 from .params import DEFAULTS, MM, resolve_params
 from .wall import Wall
@@ -30,15 +30,19 @@ def run_check(job, use_cra=True):
     result = {"units": "mm", "brickL": p["brickL"], "brickW": p["brickW"],
               "brickH": p["brickH"], "mortar_t": p["mortar_t"], "params": p}
     try:
-        paths, factors = fit_sections(sections, p)
+        paths, counts, _joints = fit_sections(sections, p)
     except FitError as err:
         result.update({"ok": False, "fatal": str(err), "log": log + [str(err)], "frames": [],
                        "bricks": []})
         result["report"] = report(result)
         return result
-    wall = Wall(paths, float(job.get("z_base", 0.0)), p)
-    log.append("fit: {} courses, stretch factors {:.3f}-{:.3f}".format(
-        len(paths), min(factors), max(factors)))
+    wall = Wall(paths, float(job.get("z_base", 0.0)), p, counts)
+    settle_counts(wall, log)
+    counts = [len(row) for row in wall.courses]
+    joints = [wall.head_joint(k) for k in range(len(paths))]
+    log.append("fit: {} courses, {}-{} bricks per course, mean head joints {:.1f}-{:.1f} mm".format(
+        len(paths), min(counts), max(counts), min(joints), max(joints)))
+    log.append("bricks per course (bottom up): " + " ".join(str(n) for n in counts))
 
     fatal = None
     l0_ok = l1_ok = False
@@ -53,6 +57,11 @@ def run_check(job, use_cra=True):
             log.append("iteration {}: L0 {}; CRA skipped".format(it, "pass" if l0_ok else "fail"))
             break
         cra = run_cra(wall)
+        if cra["state"] == "timeout":
+            log.append("iteration {}: L0 {}, CRA timed out after {:.0f} s; L1 not checked".format(
+                it, "pass" if l0_ok else "fail", p["cra_timeout"]))
+            log.append("stop: CRA solve exceeded cra_timeout (raise it, or 0 = no limit)")
+            break
         n_fail = sum(1 for r in cra["interfaces"] if r["fails"])
         n_ten = sum(1 for r in cra["interfaces"] if r["tensioned"])
         log.append("iteration {}: L0 {}, CRA {} ({} interfaces, {} need tension, {} over f_t/SF)".format(
@@ -72,13 +81,20 @@ def run_check(job, use_cra=True):
     else:
         log.append("stop: max_iter = {} reached".format(p["max_iter"]))
 
+    # bricks still failing when the loop stopped are "failed", whatever they
+    # did before (a fatal stop or max_iter can leave them unrepaired)
+    l1_fail = set(r["upper"] for r in cra["interfaces"] if r["fails"])
     bricks = []
     for b in wall.bricks():
+        l0_fail = sorted(wall.check(b))
+        status = b.status
+        if status != "flagged" and (l0_fail or b in l1_fail):
+            status = "failed"
         bricks.append({
-            "course": b.k, "index": b.i, "status": b.status,
+            "course": b.k, "index": b.i, "status": status,
             "frame": wall.frame(b), "fitted_frame": wall.frame(b, fitted=True),
             "deviation": wall.deviation(b), "notes": b.notes,
-            "l0_fail": sorted(wall.check(b)),
+            "l0_fail": l0_fail,
         })
     interfaces = []
     for r in cra["interfaces"]:
@@ -90,7 +106,7 @@ def run_check(job, use_cra=True):
     result.update({
         "ok": bool(l0_ok and l1_ok and not fatal), "fatal": fatal, "iterations": it,
         "l0_pass": l0_ok, "l1_state": cra["state"], "l1_pass": l1_ok,
-        "stretch_factors": factors, "log": log, "bricks": bricks, "interfaces": interfaces,
+        "bricks_per_course": counts, "head_joints": joints, "log": log, "bricks": bricks, "interfaces": interfaces,
         "frames": [b["frame"] for b in bricks],     # export_frames_json / cra_check format
     })
     result["report"] = report(result)
@@ -107,7 +123,7 @@ def report(result):
     if br:
         lines.append("max deviation from fit: {:.1f} mm".format(max(b["deviation"] for b in br)))
     for b in br:
-        if b["status"] == "flagged" or b["l0_fail"]:
+        if b["status"] in ("flagged", "failed"):
             lines.append("  course {} brick {}: {} {} {}".format(
                 b["course"], b["index"], b["status"], ",".join(b["l0_fail"]), "; ".join(b["notes"])))
     bad = [i for i in result.get("interfaces", []) if i["fails"]]

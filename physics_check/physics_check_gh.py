@@ -1,7 +1,7 @@
 """GhPython component: fits a brick wall to a surface, then checks and repairs it.
 
 Paste this file into one GhPython component.  It does the Rhino part of the
-workflow in ``physics_check_wf.md`` (steps 1-2: scale the surface in Z to a
+workflow in ``physics_check_workflow.md`` (steps 1-2: scale the surface in Z to a
 whole number of courses, cut one section per course), writes the sections to
 ``physics_job.json``, runs the check loop (steps 2-7, the ``pc`` package)
 through a subprocess (by default ``uv run --project <repo>
@@ -16,15 +16,17 @@ The module-level functions are pure Python; Rhino is imported only inside
 ``gh_main``, so ``course_layout`` etc. can be imported in plain CPython.
 
 Axes follow the other scripts: frame Y = along the course (brickL), frame X =
-overhang / wall thickness (brickW), Z up.  The wall run is world Y (the
-direction the fit stretches).  Lengths in mm; f_t in Pa; density in kg/m3.
+overhang / wall thickness (brickW), Z up; each brick's axes follow its
+course.  Lengths in mm; f_t in Pa; density in kg/m3.
 
 Component inputs (GhPython):
     surface:         Wall surface (Surface or Brep) [mm]
     brickL, brickW, brickH:  Brick dimensions [mm], default 190 / 90 / 57
     mortar_t:        Bed joint thickness [mm], default 10
-    N:               Bricks per course, default 10
-    head_joint:      Nominal head joint for the fit [mm], default 15
+    head_joint:      Nominal head joint [mm], default 15.  The number of
+                     bricks in each course follows from the surface: the count
+                     whose head joint is closest to head_joint within
+                     [min_head, max_head]
     min_head:        Minimum head joint [mm], default 10
     max_head:        Maximum head joint [mm], default 25
     offset_distance: Running-bond offset of odd courses along the course [mm],
@@ -43,6 +45,9 @@ Component inputs (GhPython):
     min_contact:     Min bed overlap with the bricks below, as a fraction of
                      the bed area brickL*brickW, default 0.25
     max_iter:        Outer-loop iterations, default 10
+    cra_timeout:     Time limit per CRA solve [s], default 300; 0 = no limit.
+                     When it is hit the loop stops and reports L1 as not
+                     checked
     samples:         Points sampled per section curve, default 200
     job_path:        Folder for physics_job.json / physics_result.json;
                      default next to the saved .3dm
@@ -68,7 +73,8 @@ Component inputs (GhPython):
 Component outputs:
     Frames:          Brick centre planes after the checks
     Bricks:          Brick boxes (brickL x brickW x brickH)
-    Status:          Per brick: passed / moved / flagged
+    Status:          Per brick: passed / moved / flagged / failed (still
+                     failing L0 or L1 when the loop stopped)
     Deviation:       Per brick: plan distance from its fitted position [mm]
     InterfacePts:    Centroid of each CRA interface
     InterfaceRatio:  Per interface: sigma_t / (f_t / SF) (> 1 fails)
@@ -89,10 +95,10 @@ import os
 # Inputs forwarded to the solver.  Keep in sync with pc/params.py DEFAULTS
 # (the solver logs any name it does not know).
 PARAM_NAMES = (
-    "brickL", "brickW", "brickH", "mortar_t", "N", "head_joint", "min_head", "max_head",
+    "brickL", "brickW", "brickH", "mortar_t", "head_joint", "min_head", "max_head",
     "offset_distance", "face_offset", "density", "mu", "f_t", "SF", "max_overhang",
     "thickness_cap", "min_contact", "max_iter", "l0_max_iter", "move_step", "max_move",
-    "min_step", "slide_step", "nmax", "tmax", "amin",
+    "min_step", "slide_step", "nmax", "tmax", "amin", "cra_timeout",
 )
 BRICK_H = 57.0     # pc/params.py default brickH [mm]
 MORTAR_T = 10.0    # pc/params.py default mortar_t [mm]

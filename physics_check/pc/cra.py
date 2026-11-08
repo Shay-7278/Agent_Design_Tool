@@ -1,6 +1,6 @@
 """Steps 5-6: compas_cra penalty solve and the per-interface tensile stress.
 
-compas / compas_cra are imported inside ``run_cra`` only, so
+compas / compas_cra are imported inside ``_solve`` only, so
 ``polygon_section`` and ``interface_stress`` run without them.
 """
 
@@ -72,10 +72,13 @@ def interface_stress(points, origin, xaxis, yaxis, forces):
             "tensioned": tensioned}
 
 
-def run_cra(wall):
-    """Step 5: penalty CRA solve, course 0 fixed.
+def _solve(frames, dims, supports, p):
+    """Build the compas_cra assembly and run the penalty solve.
 
-    Returns dict(state = 'solved' | 'geometry' | 'failed', interfaces, ...).
+    Plain data in and out (lists, dicts), so it can run in a child process.
+    frames: [[origin, xaxis, yaxis]] per node, in m; dims: (W, L, H) in m.
+    Returns dict(state = 'solved' | 'geometry' | 'failed', n_interfaces,
+    floating [node], edges [(u, v, [interface dict])], error).
     """
     import contextlib
     import io
@@ -87,18 +90,10 @@ def run_cra(wall):
     from compas_cra.datastructures import CRA_Assembly
     from compas_cra.equilibrium import cra_penalty_solve
 
-    p = wall.p
-    W, L, Hb = wall.W * MM, wall.L * MM, (wall.H + p["mortar_t"]) * MM
+    W, L, H = dims
     assembly = CRA_Assembly()
-    node_brick = {}
-    supports = []
-    for node, b in enumerate(wall.bricks()):
-        o, x, y = wall.frame(b)
-        frame = Frame([c * MM for c in o], x, y)
-        assembly.add_block(Block.from_shape(Box(W, L, Hb, frame=frame)), node=node)
-        node_brick[node] = b
-        if b.k == 0:
-            supports.append(node)
+    for node, (o, x, y) in enumerate(frames):
+        assembly.add_block(Block.from_shape(Box(W, L, H, frame=Frame(o, x, y))), node=node)
     assembly.set_boundary_conditions(supports)
     assembly_interfaces_numpy(assembly, nmax=p["nmax"], tmax=p["tmax"], amin=p["amin"])
 
@@ -113,29 +108,113 @@ def run_cra(wall):
             if m not in seen:
                 seen.add(m)
                 stack.append(m)
-    floating = [node_brick[n] for n in node_brick if n not in seen]
+    floating = [n for n in range(len(frames)) if n not in seen]
     if floating:
-        return {"state": "geometry", "floating": floating, "n_interfaces": n_itf, "interfaces": []}
+        return {"state": "geometry", "floating": floating, "n_interfaces": n_itf}
 
     try:
         with contextlib.redirect_stdout(io.StringIO()):
             cra_penalty_solve(assembly, mu=p["mu"], density=p["density"], verbose=False, timer=False)
     except ValueError as err:
-        return {"state": "failed", "error": str(err), "n_interfaces": n_itf, "interfaces": []}
+        return {"state": "failed", "error": str(err), "n_interfaces": n_itf}
 
-    allow = p["f_t"] / p["SF"]
-    rows = []
+    edges = []
     for u, v in graph.edges():
-        bu, bv = node_brick[u], node_brick[v]
-        upper, lower = (bu, bv) if bu.k > bv.k else (bv, bu)
+        itfs = []
         for itf in graph.edge_attribute((u, v), "interfaces"):
             if not itf.forces:
                 continue
             fr = itf.frame
-            st = interface_stress([list(q) for q in itf.points], list(fr.point),
-                                  list(fr.xaxis), list(fr.yaxis), itf.forces)
+            itfs.append({"points": [list(q) for q in itf.points], "origin": list(fr.point),
+                         "xaxis": list(fr.xaxis), "yaxis": list(fr.yaxis),
+                         "forces": [dict(f) for f in itf.forces]})
+        edges.append((u, v, itfs))
+    return {"state": "solved", "n_interfaces": n_itf, "edges": edges}
+
+
+def _solve_child(conn, args):
+    """Child-process entry: run _solve and send the result back."""
+    try:
+        conn.send(("ok", _solve(*args)))
+    except Exception as err:  # noqa: BLE001 - report anything to the parent
+        conn.send(("error", "{}: {}".format(type(err).__name__, err)))
+    finally:
+        conn.close()
+
+
+def _solve_with_timeout(args, timeout):
+    """Run _solve in a spawned child process; kill it after timeout seconds.
+
+    Returns the _solve dict, or dict(state='timeout') if the limit is hit.
+    A thread or signal cannot stop the solver (it runs in compiled code, and
+    Windows has no SIGALRM), so the solve runs in its own process.
+    """
+    import multiprocessing as mp
+
+    ctx = mp.get_context("spawn")
+    recv, send = ctx.Pipe(duplex=False)
+    proc = ctx.Process(target=_solve_child, args=(send, args), daemon=True)
+    proc.start()
+    send.close()
+    try:
+        if not recv.poll(timeout):
+            return {"state": "timeout", "n_interfaces": 0}
+        try:
+            kind, payload = recv.recv()
+        except EOFError:
+            return {"state": "failed", "error": "CRA process exited with code {}".format(
+                proc.exitcode), "n_interfaces": 0}
+    finally:
+        recv.close()
+        if proc.is_alive():
+            proc.terminate()
+        proc.join(5)
+    if kind == "error":
+        raise RuntimeError("CRA solve failed in the child process: " + payload)
+    return payload
+
+
+def run_cra(wall):
+    """Step 5: penalty CRA solve, course 0 fixed.
+
+    The solve is limited to p["cra_timeout"] seconds (0 = no limit, run in
+    this process).  Returns dict(state = 'solved' | 'geometry' | 'failed' |
+    'timeout', interfaces, ...).
+    """
+    p = wall.p
+    nodes = list(wall.bricks())
+    frames = []
+    for b in nodes:
+        o, x, y = wall.frame(b)
+        frames.append([[c * MM for c in o], x, y])
+    dims = (wall.W * MM, wall.L * MM, (wall.H + p["mortar_t"]) * MM)
+    supports = [n for n, b in enumerate(nodes) if b.k == 0]
+    keys = ("nmax", "tmax", "amin", "mu", "density")
+    args = (frames, dims, supports, {k: p[k] for k in keys})
+    if p["cra_timeout"] > 0:
+        res = _solve_with_timeout(args, p["cra_timeout"])
+    else:
+        res = _solve(*args)
+
+    out = {"state": res["state"], "n_interfaces": res.get("n_interfaces", 0), "interfaces": []}
+    if res["state"] == "geometry":
+        out["floating"] = [nodes[n] for n in res["floating"]]
+    if res["state"] == "failed":
+        out["error"] = res.get("error")
+    if res["state"] != "solved":
+        return out
+
+    allow = p["f_t"] / p["SF"]
+    rows = []
+    for u, v, itfs in res["edges"]:
+        bu, bv = nodes[u], nodes[v]
+        upper, lower = (bu, bv) if bu.k > bv.k else (bv, bu)
+        for itf in itfs:
+            st = interface_stress(itf["points"], itf["origin"], itf["xaxis"], itf["yaxis"],
+                                  itf["forces"])
             st["upper"], st["lower"] = upper, lower
             st["ratio"] = st["sigma_t"] / allow if allow > 0 else float("inf")
             st["fails"] = st["tensioned"] and st["ratio"] > 1.0
             rows.append(st)
-    return {"state": "solved", "n_interfaces": n_itf, "interfaces": rows}
+    out["interfaces"] = rows
+    return out

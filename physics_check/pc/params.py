@@ -12,7 +12,6 @@ DEFAULTS = {
     "brickW": 90.0,
     "brickH": 57.0,
     "mortar_t": 10.0,
-    "N": 10,
     "head_joint": 15.0,
     "min_head": 10.0,
     "max_head": 25.0,
@@ -34,6 +33,7 @@ DEFAULTS = {
     "nmax": 10,                # CRA neighbours per block
     "tmax": 1e-5,              # CRA interface flatness tolerance [m]
     "amin": 1e-4,              # CRA minimum interface area [m2]
+    "cra_timeout": 300.0,      # time limit per CRA solve [s]; 0 = no limit
 }
 
 
@@ -45,9 +45,9 @@ def resolve_params(given):
             p[k] = v
     for k in ("brickL", "brickW", "brickH", "mortar_t", "head_joint", "min_head",
               "max_head", "face_offset", "density", "mu", "f_t", "SF", "min_contact",
-              "move_step", "min_step", "slide_step", "tmax", "amin"):
+              "move_step", "min_step", "slide_step", "tmax", "amin", "cra_timeout"):
         p[k] = float(p[k])
-    for k in ("N", "max_iter", "l0_max_iter", "nmax"):
+    for k in ("max_iter", "l0_max_iter", "nmax"):
         p[k] = int(p[k])
     if p["offset_distance"] is None:
         p["offset_distance"] = 0.5 * (p["brickL"] + p["head_joint"])
