@@ -53,28 +53,35 @@ def run_check(job, use_cra=True):
         if fatal:
             log.append("stop: " + fatal)
             break
+        if not l0_ok:
+            # L1 only checks a geometrically valid wall: CRA on bricks that
+            # still fail L0 (flagged) rarely converges and runs to the timeout
+            n_bad = sum(1 for b in wall.bricks() if wall.check(b))
+            log.append("iteration {}: L0 fail ({} brick(s) still failing); CRA skipped".format(
+                it, n_bad))
+            log.append("stop: L0 did not pass; L1 runs only on a wall that passes L0")
+            cra = {"state": "skipped", "interfaces": []}   # drop results of an older geometry
+            l1_ok = False
+            break
         if not use_cra:
-            log.append("iteration {}: L0 {}; CRA skipped".format(it, "pass" if l0_ok else "fail"))
+            log.append("iteration {}: L0 pass; CRA skipped".format(it))
             break
         cra = run_cra(wall)
         if cra["state"] == "timeout":
-            log.append("iteration {}: L0 {}, CRA timed out after {:.0f} s; L1 not checked".format(
-                it, "pass" if l0_ok else "fail", p["cra_timeout"]))
+            log.append("iteration {}: L0 pass, CRA timed out after {:.0f} s; L1 not checked".format(
+                it, p["cra_timeout"]))
             log.append("stop: CRA solve exceeded cra_timeout (raise it, or 0 = no limit)")
             break
         n_fail = sum(1 for r in cra["interfaces"] if r["fails"])
         n_ten = sum(1 for r in cra["interfaces"] if r["tensioned"])
-        log.append("iteration {}: L0 {}, CRA {} ({} interfaces, {} need tension, {} over f_t/SF)".format(
-            it, "pass" if l0_ok else "fail", cra["state"], cra.get("n_interfaces", 0), n_ten, n_fail))
+        log.append("iteration {}: L0 pass, CRA {} ({} interfaces, {} need tension, {} over f_t/SF)".format(
+            it, cra["state"], cra.get("n_interfaces", 0), n_ten, n_fail))
         if cra["state"] == "solved" and n_fail == 0:
             l1_ok = True
             log.append("L1 pass: " + ("stable as a dry stack" if n_ten == 0 else
                                       "tension within f_t/SF"))
-            if l0_ok:
-                break
-        moved = l1_repair(wall, cra, log) if not l1_ok else 0
-        if l1_ok:
             break
+        moved = l1_repair(wall, cra, log)
         if moved == 0:
             log.append("stop: no brick could be moved further")
             break

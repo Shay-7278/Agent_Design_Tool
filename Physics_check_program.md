@@ -8,6 +8,9 @@ checks and repairs the wall:
 - **L1 (statics):** a compas_cra penalty solve with course 0 fixed, plus mortar tension
   `sigma_t = M/Z - P/A` against `f_t / SF`.
 
+L1 only runs on a wall that passes L0. If bricks still fail L0 after the repairs, the check stops
+there and reports them.
+
 The surface sets the size of the wall: the number of courses comes from its height, and the
 number of bricks in each course from that course's length. You choose the brick size and the
 head joint range, not the counts.
@@ -223,10 +226,12 @@ What the stop messages mean:
   check `min_contact` and the overhang.
 - **CRA state `failed`**: the solve did not converge, most likely sliding. The loop reduces the
   overhang of those bricks; if it still fails, lower `max_overhang` or raise `mu`.
+- **`L0 fail (... brick(s) still failing); CRA skipped`**: L0 couldn't repair every brick, so L1
+  didn't run. The flagged bricks and their failing checks are listed below the summary; fix those
+  (surface, `max_overhang`, `min_contact`, head joint range) and run again.
 - **`CRA timed out after ... s; L1 not checked`**: one solve took longer than `cra_timeout`, so
-  the loop stopped and the statics were not checked (the result is `FAIL`). Solves that don't
-  converge tend to run long, so first check the report for `contact` or `overhang` failures. If the
-  wall is simply large, raise `cra_timeout` (0 = no limit).
+  the loop stopped and the statics were not checked (the result is `FAIL`). Large walls take
+  longer to solve; raise `cra_timeout` (0 = no limit).
 - **`max_iter reached`** / **`no brick could be moved further`**: the remaining failing bricks
   and interfaces are listed in the report.
 
