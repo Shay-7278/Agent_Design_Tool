@@ -76,7 +76,7 @@ def repair_spacing(wall, k):
         total = sum(slack)
         if total < need:
             return ("course {}: cannot keep every head joint >= min_head ({:.0f} mm) with "
-                    "N = {} bricks; change N".format(k, p["min_head"], p["N"]))
+                    "its {} bricks".format(k, p["min_head"], n))
         for q in range(nj):
             add[q] -= need * slack[q] / total
         e = [bs[q + 1].s - bs[q].s if q < n - 1 else bs[0].s + path.length - bs[q].s
@@ -99,8 +99,26 @@ def repair_spacing(wall, k):
         g = rect_gap(wall.footprint(bs[q]), wall.footprint(bs[(q + 1) % n]))
         if g > p["max_head"] + 1e-6:
             return ("course {}: head joint {:.1f} mm exceeds max_head {:.0f} mm after "
-                    "redistribution; change N".format(k, g, p["max_head"]))
+                    "redistribution".format(k, g, p["max_head"]))
     return None
+
+
+def settle_counts(wall, log):
+    """Part of the fit (step 2): make every course collision-free before the
+    checks.  Chord bricks on a curve lose head joint on the concave side, so a
+    colliding course first has its head joints redistributed within
+    [min_head, max_head]; if that cannot work, it drops a brick and is
+    re-spaced.  The settled positions are the fitted reference."""
+    for k in range(len(wall.courses)):
+        n0 = n = len(wall.courses[k])
+        while wall.course_collides(k) and repair_spacing(wall, k) and n > 1:
+            n -= 1
+            wall.place_course(k, n)
+        for b in wall.courses[k]:
+            b.s0, b.u0, b.status = b.s, b.u, "passed"
+        if n != n0:
+            log.append("course {}: {} -> {} bricks (curvature: head joints < min_head)".format(
+                k, n0, n))
 
 
 def l0_failures(wall):

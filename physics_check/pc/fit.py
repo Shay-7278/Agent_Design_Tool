@@ -1,4 +1,8 @@
-"""Step 2: offset, align and stretch each course section in Y.
+"""Step 2: offset and align each course section, and choose its brick count.
+
+The sections are not stretched: each course keeps the plan of the surface and
+gets as many bricks as fit its centreline length, with the head joint closest
+to head_joint inside [min_head, max_head].
 
 The Z scaling and the section cuts need Rhino and live in
 ``physics_check_gh.py``; this module gets the cut sections as plan polylines.
@@ -13,36 +17,6 @@ from .geom2d import Path2, offset_polyline, poly_signed_area
 
 class FitError(Exception):
     pass
-
-
-def _stretched_length(pts, closed, sf, yc):
-    n = len(pts)
-    total = 0.0
-    last = n if closed else n - 1
-    for i in range(last):
-        a, b = pts[i], pts[(i + 1) % n]
-        total += math.hypot(b[0] - a[0], sf * (b[1] - a[1]))
-    return total
-
-
-def stretch_factor(pts, closed, target, yc):
-    """Bisect the Y stretch factor so the section length equals target."""
-    lmin = _stretched_length(pts, closed, 0.0, yc)
-    if target < lmin - 1e-6:
-        return None, lmin
-    hi = 1.0
-    while _stretched_length(pts, closed, hi, yc) < target:
-        hi *= 2.0
-        if hi > 1e6:
-            return None, lmin
-    lo = 0.0
-    for _ in range(80):
-        mid = 0.5 * (lo + hi)
-        if _stretched_length(pts, closed, mid, yc) < target:
-            lo = mid
-        else:
-            hi = mid
-    return 0.5 * (lo + hi), lmin
 
 
 def _insert_nearest(pts, closed, p):
@@ -82,25 +56,44 @@ def align_sections(sections):
     return out
 
 
+def course_count(length, closed, p):
+    """(bricks, head joint) for a course centreline of this length [mm].
+
+    A course of n bricks spans n * (brickL + joint), half a joint at each end
+    of an open course, so joint = length / n - brickL.  Picks the n whose
+    joint is closest to head_joint within [min_head, max_head]; if no n gives
+    a joint in that range, the largest n with joint >= min_head.  Returns
+    (0, None) if not even one brick fits (three on a closed course).
+    """
+    L, hj = p["brickL"], p["head_joint"]
+    n_max = int(math.floor(length / (L + p["min_head"]) + 1e-9))
+    n_min = int(math.ceil(length / (L + p["max_head"]) - 1e-9))
+    if n_max < (3 if closed else 1):
+        return 0, None
+    n_nom = int(round(length / (L + hj)))
+    n = n_max if n_min > n_max else max(n_min, min(n_max, n_nom))
+    n = max(n, 1)
+    return n, length / n - L
+
+
 def fit_sections(sections, p):
-    """Offset to the centreline, align, and stretch each course in Y.
+    """Offset to the centreline, align, and choose each course's brick count.
 
     sections: [(pts [(x, y)], closed)] per course, bottom up, already cut from
-    the Z-scaled surface.  Returns ([Path2], [stretch factor]).
+    the Z-scaled surface.  Returns ([Path2], [bricks], [head joint]).
     """
     secs = [(offset_polyline(pts, closed, p["face_offset"]), closed) for pts, closed in sections]
     secs = align_sections(secs)
-    ys = [pt[1] for pts, _c in secs for pt in pts]
-    yc = 0.5 * (min(ys) + max(ys))
-    target = p["N"] * (p["brickL"] + p["head_joint"])
-    paths, factors = [], []
+    paths, counts, joints = [], [], []
     for k, (pts, closed) in enumerate(secs):
-        sf, lmin = stretch_factor(pts, closed, target, yc)
-        if sf is None:
+        path = Path2(pts, closed)
+        n, j = course_count(path.length, closed, p)
+        if n == 0:
             raise FitError(
-                "course {}: N*(brickL+head_joint) = {:.1f} mm is below the section's "
-                "minimum length {:.1f} mm (its X travel); no stretch fits".format(k, target, lmin))
-        fitted = [(x, yc + sf * (y - yc)) for x, y in pts]
-        paths.append(Path2(fitted, closed))
-        factors.append(sf)
-    return paths, factors
+                "course {}: centreline is {:.1f} mm, too short for {} brick(s) of "
+                "brickL + min_head = {:.1f} mm".format(
+                    k, path.length, 3 if closed else 1, p["brickL"] + p["min_head"]))
+        paths.append(path)
+        counts.append(n)
+        joints.append(j)
+    return paths, counts, joints

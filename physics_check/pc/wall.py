@@ -36,23 +36,53 @@ class Wall(object):
     over the brick length.
     """
 
-    def __init__(self, paths, z_base, p):
+    def __init__(self, paths, z_base, p, counts):
         self.p = p
         self.paths = paths
         self.z_base = z_base
         self.L, self.W, self.H = p["brickL"], p["brickW"], p["brickH"]
         self.pitch = p["brickH"] + p["mortar_t"]
-        self.courses = []
-        step = p["brickL"] + p["head_joint"]
-        for k, path in enumerate(paths):
-            off = p["offset_distance"] if k % 2 == 1 else 0.0
-            row = []
-            for i in range(p["N"]):
-                s = (i + 0.5) * step + off
-                if path.closed:
-                    s = s % path.length
-                row.append(Brick(k, i, s))
-            self.courses.append(row)
+        self.courses = [[] for _ in paths]
+        self.steps = [0.0 for _ in paths]
+        for k, n in enumerate(counts):
+            self.place_course(k, n)
+
+    def place_course(self, k, n):
+        """Place n bricks evenly along course k (running bond: odd courses
+        shifted by offset_distance).  On an open course the spacing is capped
+        at brickL + max_head and the bricks are centred, so leftover length
+        stays at the ends.  Replaces the course's bricks."""
+        path = self.paths[k]
+        step = path.length / n
+        start = 0.0
+        if not path.closed and step > self.L + self.p["max_head"]:
+            # open course: keep joints <= max_head, leave the rest at the ends
+            step = self.L + self.p["max_head"]
+            start = 0.5 * (path.length - n * step)
+        self.steps[k] = step
+        off = self.p["offset_distance"] if k % 2 == 1 else 0.0
+        row = []
+        for i in range(n):
+            s = start + (i + 0.5) * step + off
+            if path.closed:
+                s = s % path.length
+            row.append(Brick(k, i, s))
+        self.courses[k] = row
+
+    def course_collides(self, k):
+        """True if any two bricks of course k are closer than min_head
+        (checks every pair: on tight curves non-neighbours can collide)."""
+        row = self.courses[k]
+        fps = [self.footprint(b) for b in row]
+        for i in range(len(fps)):
+            for j in range(i + 1, len(fps)):
+                if rect_gap(fps[i], fps[j]) < self.p["min_head"] - 1e-6:
+                    return True
+        return False
+
+    def head_joint(self, k):
+        """Nominal (arc-length) head joint of course k as placed [mm]."""
+        return self.steps[k] - self.L
 
     # -- poses ---------------------------------------------------------------
     def pose(self, b, s=None, u=None):

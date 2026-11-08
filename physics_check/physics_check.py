@@ -3,7 +3,7 @@
     uv run physics_check/physics_check.py run job.json result.json [--no-cra]
 
 Reads the job written by the Grasshopper component (``physics_check_gh.py``),
-runs steps 2-7 of ``physics_check_wf.md`` (the ``pc`` package next to this
+runs steps 2-7 of ``physics_check_workflow.md`` (the ``pc`` package next to this
 file), writes result.json and prints the report.  Exit code 0 when L0 and L1
 both pass, 1 otherwise.  ``--no-cra`` runs L0 only, without compas_cra.
 """

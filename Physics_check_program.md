@@ -8,6 +8,10 @@ checks and repairs the wall:
 - **L1 (statics):** a compas_cra penalty solve with course 0 fixed, plus mortar tension
   `sigma_t = M/Z - P/A` against `f_t / SF`.
 
+The surface sets the size of the wall: the number of courses comes from its height, and the
+number of bricks in each course from that course's length. You choose the brick size and the
+head joint range, not the counts.
+
 The full method is in `physics_check/physics_check_workflow.md`.
 
 ## How the pieces connect
@@ -90,7 +94,7 @@ for k in range(8):
     lean = 8.0 * k  # mm per course in X
     pts = [[lean + 40 * math.sin(2 * math.pi * t / 200.0), 2200.0 * t / 200.0] for t in range(201)]
     secs.append({"points": pts, "closed": False})
-json.dump({"z_base": 0.0, "params": {"N": 8, "density": 1900}, "sections": secs},
+json.dump({"z_base": 0.0, "params": {"density": 1900}, "sections": secs},
           open(sys.argv[1], "w"))
 ```
 
@@ -123,8 +127,7 @@ code is 0 on pass and 1 on fail; a fail still writes `result.json`.
    | `command` | str | auto | Shell command that runs the solver; leave unwired (see below) |
    | `brickL`, `brickW`, `brickH` | float | 190 / 90 / 57 | Brick size [mm]; L along the wall, W = overhang direction |
    | `mortar_t` | float | 10 | Bed joint [mm] |
-   | `N` | int | 10 | Bricks per course |
-   | `head_joint` | float | 15 | Nominal head joint used in the fit [mm] |
+   | `head_joint` | float | 15 | Nominal head joint [mm]; sets how many bricks each course gets |
    | `min_head`, `max_head` | float | 10 / 25 | Head joint range for repairs [mm] |
    | `offset_distance` | float | (brickL+head_joint)/2 | Running-bond offset of odd courses [mm] |
    | `face_offset` | float | 0 | 0 if the surface is the wall centreline, else ±brickW/2 |
@@ -136,6 +139,7 @@ code is 0 on pass and 1 on fail; a fail still writes `result.json`.
    | `thickness_cap` | float | 3·brickW | Max wall thickness [mm] |
    | `min_contact` | float | 0.25 | Min bed overlap as a fraction of brickL·brickW |
    | `max_iter` | int | 10 | Outer-loop iterations |
+   | `cra_timeout` | float | 300 | Time limit per CRA solve [s]; 0 = no limit |
    | `samples` | int | 200 | Points sampled per section curve |
    | `job_path` | str | .3dm folder | Folder for `physics_job.json` / `physics_result.json` |
 
@@ -187,7 +191,8 @@ An empty string runs the solver inside Rhino's Python. That only works if compas
    - scales the surface in Z to a whole number of courses (it stops if fewer than 2 fit),
    - cuts one section per course at mid-height,
    - writes `physics_job.json`, runs the solver and waits for it (this can take from seconds to
-     minutes, depending on brick count and `max_iter`; Grasshopper freezes meanwhile),
+     minutes, depending on brick count and `max_iter`; Grasshopper freezes meanwhile, and each
+     CRA solve is capped at `cra_timeout`),
    - reads `physics_result.json` back.
 4. Connect a **Panel** to `Report`, and preview `Bricks`.
 
@@ -197,10 +202,10 @@ Set `run` back to False before you change inputs, or every change re-runs the so
 
 | Output | What it shows |
 |---|---|
-| `Report` | Fit stretch factors, one line per iteration (L0 pass/fail, CRA state, tensioned and failing interfaces), brick counts by status, max deviation, flagged bricks, failing interfaces, then `RESULT: PASS/FAIL` |
+| `Report` | Bricks per course (and any course that lost a brick on a tight curve), the head joint range, one line per iteration (L0 pass/fail, CRA state, tensioned and failing interfaces), brick counts by status, max deviation, flagged bricks, failing interfaces, then `RESULT: PASS/FAIL` |
 | `Bricks` / `Frames` | Bricks after the checks and repairs |
 | `FittedFrames` | Bricks straight after the fit, before any repair (compare with `Frames`) |
-| `Status` | Per brick: `passed`, `moved` or `flagged` (no position within the limits passed) |
+| `Status` | Per brick: `passed`, `moved`, `flagged` (no position within the limits passed) or `failed` (still failing L0 or L1 when the loop stopped) |
 | `Deviation` | Per brick: plan distance from its fitted position [mm] |
 | `InterfacePts` / `InterfaceRatio` | Each CRA interface centroid and `sigma_t / (f_t/SF)`; above 1 fails |
 
@@ -210,13 +215,18 @@ Useful displays: colour `Bricks` by `Status` (List Item / Custom Preview), or co
 What the stop messages mean:
 
 - **`surface too short`**: fewer than 2 courses fit the surface height.
-- **Fit error for a course**: `N * (brickL + head_joint)` is shorter than the section's travel in
-  X. Reduce the curvature or increase `N`.
-- **Course cannot fit N bricks in [min_head, max_head]**: change `N` or widen the head joint range.
+- **Course too short**: the section can't hold even one brick (three if closed). Check the
+  surface near that height.
+- **Course cannot keep every head joint >= min_head**: the course is too tightly curved for its
+  bricks. Widen `[min_head, max_head]`, use a shorter `brickL`, or reduce the curvature.
 - **CRA state `geometry`**: some bricks float (not connected to course 0). It's a contact problem;
   check `min_contact` and the overhang.
 - **CRA state `failed`**: the solve did not converge, most likely sliding. The loop reduces the
   overhang of those bricks; if it still fails, lower `max_overhang` or raise `mu`.
+- **`CRA timed out after ... s; L1 not checked`**: one solve took longer than `cra_timeout`, so
+  the loop stopped and the statics were not checked (the result is `FAIL`). Solves that don't
+  converge tend to run long, so first check the report for `contact` or `overhang` failures. If the
+  wall is simply large, raise `cra_timeout` (0 = no limit).
 - **`max_iter reached`** / **`no brick could be moved further`**: the remaining failing bricks
   and interfaces are listed in the report.
 

@@ -1,12 +1,12 @@
-"""Brick wall fit + L0/L1 physics check (physics_check_wf.md), pure CPython.
+"""Brick wall fit + L0/L1 physics check (physics_check_workflow.md), pure CPython.
 
 Steps of the workflow and the module that implements each:
     1-2  surface -> courses                Rhino side, ``physics_check_gh.py``
          (scale Z to a whole number of courses, cut one section per course)
-    2    stretch each section in Y so its   ``fit.py``
-         centreline length is exactly N * (brickL + head_joint)
-         place N bricks per course in       ``wall.py``
-         running bond
+    2    offset/align each section; brick   ``fit.py``
+         count per course from its length
+         place the bricks in running bond,  ``wall.py``
+         fewer on tight curves
     3-4  L0 geometry check + repairs        ``wall.Wall.check``, ``l0.py``
     5    L1 compas_cra penalty solve,       ``cra.py``
          course 0 fixed
