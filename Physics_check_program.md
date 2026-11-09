@@ -4,7 +4,7 @@ This explains how to run the brick wall physics check from a fresh clone of the 
 branch. The check takes a wall surface from Rhino, fits a running-bond brick wall to it, then
 checks and repairs the wall:
 
-- **L0 (geometry):** bed contact, head-joint collisions, overhang and thickness limits.
+- **L0 (geometry):** bed contact, head-joint collisions, overhang limit.
 - **L1 (statics):** a compas_cra penalty solve with course 0 fixed, plus mortar tension
   `sigma_t = M/Z - P/A` against `f_t / SF`.
 
@@ -130,17 +130,16 @@ code is 0 on pass and 1 on fail; a fail still writes `result.json`.
    | `command` | str | auto | Shell command that runs the solver; leave unwired (see below) |
    | `brickL`, `brickW`, `brickH` | float | 190 / 90 / 57 | Brick size [mm]; L along the wall, W = overhang direction |
    | `mortar_t` | float | 10 | Bed joint [mm] |
-   | `head_joint` | float | 15 | Nominal head joint [mm]; sets how many bricks each course gets |
-   | `min_head`, `max_head` | float | 10 / 25 | Head joint range for repairs [mm] |
-   | `offset_distance` | float | (brickL+head_joint)/2 | Running-bond offset of odd courses [mm] |
+   | `head_joint` | float | 15 | Nominal head joint g [mm]; sets the brick count. Open courses follow `baseline.gh`: full end bricks on even courses, half bricks on odd courses, one middle count from the shortest course (see `physics_check_workflow.md` step 2) |
+   | `min_head`, `max_head` | float | 10 / 25 | Minimum head joint for the collision check and repairs [mm]; `max_head` applies to closed courses only |
+   | `offset_distance` | float | (brickL+head_joint)/2 | Running-bond offset of odd closed courses [mm] |
    | `face_offset` | float | 0 | 0 if the surface is the wall centreline, else ±brickW/2 |
    | `density` | float | 700 | Brick density [kg/m³]; fired clay is ~1800–2000 |
    | `mu` | float | 0.84 | Friction coefficient |
    | `f_t` | float | 0.2e6 | Mortar flexural tensile strength [Pa] |
    | `SF` | float | 2.0 | Safety factor on f_t |
    | `max_overhang` | float | brickW/2 | Max overhang past the support [mm] |
-   | `thickness_cap` | float | 3·brickW | Max wall thickness [mm] |
-   | `min_contact` | float | 0.25 | Min bed overlap as a fraction of brickL·brickW |
+   | `min_contact` | float | 0.25 | Min total bed overlap as a fraction of the brick's own bed area (half bricks: brickL/2·brickW) |
    | `max_iter` | int | 10 | Outer-loop iterations |
    | `cra_timeout` | float | 300 | Time limit per CRA solve [s]; 0 = no limit |
    | `samples` | int | 200 | Points sampled per section curve |
@@ -218,8 +217,8 @@ Useful displays: colour `Bricks` by `Status` (List Item / Custom Preview), or co
 What the stop messages mean:
 
 - **`surface too short`**: fewer than 2 courses fit the surface height.
-- **Course too short**: the section can't hold even one brick (three if closed). Check the
-  surface near that height.
+- **Course too short**: an open section can't hold its end bricks plus one middle brick, or a
+  closed one can't hold three bricks. Check the surface near that height.
 - **Course cannot keep every head joint >= min_head**: the course is too tightly curved for its
   bricks. Widen `[min_head, max_head]`, use a shorter `brickL`, or reduce the curvature.
 - **CRA state `geometry`**: some bricks float (not connected to course 0). It's a contact problem;

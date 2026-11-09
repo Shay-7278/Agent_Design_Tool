@@ -9,10 +9,11 @@ from .geom2d import overlap, rect_gap
 
 
 class Brick(object):
-    __slots__ = ("k", "i", "s", "u", "s0", "u0", "status", "notes")
+    __slots__ = ("k", "i", "s", "u", "s0", "u0", "length", "status", "notes")
 
-    def __init__(self, k, i, s):
+    def __init__(self, k, i, s, length):
         self.k, self.i = k, i
+        self.length = length    # along the course: brickL, or brickL / 2 for a half brick
         self.s = self.s0 = s
         self.u = self.u0 = 0.0
         self.status = "passed"
@@ -33,7 +34,8 @@ class Wall(object):
 
     Each brick is (s, u): arc position along its course centreline and lateral
     offset along the brick's X axis.  Its orientation follows the course chord
-    over the brick length.
+    over the brick length.  counts[k] is what fit_sections chose for course k:
+    the shared middle-brick count m on an open course, the total on a closed one.
     """
 
     def __init__(self, paths, z_base, p, counts):
@@ -45,33 +47,51 @@ class Wall(object):
         self.courses = [[] for _ in paths]
         self.steps = [0.0 for _ in paths]
         self.widened = [False for _ in paths]   # joints allowed past max_head
+        self.counts = list(counts)
         for k, n in enumerate(counts):
             self.place_course(k, n)
 
     def place_course(self, k, n, widen=False):
-        """Place n bricks evenly along course k (running bond: odd courses
-        shifted by offset_distance).  On an open course the spacing is capped
-        at brickL + max_head and the bricks are centred, so leftover length
-        stays at the ends; with widen=True the bricks span the full course
-        and the head joints may exceed max_head.  Replaces the course's
-        bricks."""
+        """Place course k from its count n and replace its bricks.
+
+        Open course (n = middle-brick count m, layout of baseline.gh, see
+        fit.py): even courses get a full brick flush with each end and m
+        bricks centred in m equal cells of the middle curve; odd courses get a
+        half brick flush with each end and m + 1 bricks on the cell
+        boundaries.  The middle joints stretch with the course length, so
+        they are not capped at max_head (widened).
+
+        Closed course (n = total): n bricks evenly spaced, odd courses
+        shifted by offset_distance; widen=True only marks joints past
+        max_head as allowed.
+        """
         path = self.paths[k]
-        step = path.length / n
-        start = 0.0
-        self.widened[k] = bool(widen) and step > self.L + self.p["max_head"]
-        if not path.closed and not widen and step > self.L + self.p["max_head"]:
-            # open course: keep joints <= max_head, leave the rest at the ends
-            step = self.L + self.p["max_head"]
-            start = 0.5 * (path.length - n * step)
-        self.steps[k] = step
-        off = self.p["offset_distance"] if k % 2 == 1 else 0.0
-        row = []
-        for i in range(n):
-            s = start + (i + 0.5) * step + off
-            if path.closed:
-                s = s % path.length
-            row.append(Brick(k, i, s))
-        self.courses[k] = row
+        L = self.L
+        self.counts[k] = n
+        if path.closed:
+            step = path.length / n
+            self.widened[k] = bool(widen) and step > L + self.p["max_head"]
+            self.steps[k] = step
+            off = self.p["offset_distance"] if k % 2 == 1 else 0.0
+            self.courses[k] = [Brick(k, i, ((i + 0.5) * step + off) % path.length, L)
+                               for i in range(n)]
+            return
+
+        g = self.p["head_joint"]
+        odd = k % 2 == 1
+        trim = L + g if odd else L + 0.5 * g        # = fit.end_trim(k, p)
+        cell = (path.length - 2.0 * trim) / n
+        self.steps[k] = cell
+        self.widened[k] = True
+        if odd:
+            end_len = 0.5 * L
+            middle = [trim + i * cell for i in range(n + 1)]
+        else:
+            end_len = L
+            middle = [trim + (i + 0.5) * cell for i in range(n)]
+        placed = ([(0.5 * end_len, end_len)] + [(s, L) for s in middle]
+                  + [(path.length - 0.5 * end_len, end_len)])
+        self.courses[k] = [Brick(k, i, s, ln) for i, (s, ln) in enumerate(placed)]
 
     def course_collides(self, k):
         """True if any two bricks of course k are closer than min_head
@@ -85,7 +105,8 @@ class Wall(object):
         return False
 
     def head_joint(self, k):
-        """Nominal (arc-length) head joint of course k as placed [mm]."""
+        """Nominal (arc-length) head joint of course k as placed [mm]; on an
+        open course, the joint between its middle bricks."""
         return self.steps[k] - self.L
 
     # -- poses ---------------------------------------------------------------
@@ -95,13 +116,13 @@ class Wall(object):
         u = b.u if u is None else u
         path = self.paths[b.k]
         cx, cy = path.point(s)
-        tx, ty = path.tangent(s, 0.5 * self.L)
+        tx, ty = path.tangent(s, 0.5 * b.length)
         xx, xy = ty, -tx
         return cx + u * xx, cy + u * xy, tx, ty, xx, xy
 
     def footprint(self, b, s=None, u=None):
         cx, cy, tx, ty, xx, xy = self.pose(b, s, u)
-        hl, hw = 0.5 * self.L, 0.5 * self.W
+        hl, hw = 0.5 * b.length, 0.5 * self.W
         return [
             (cx + tx * hl + xx * hw, cy + ty * hl + xy * hw),
             (cx + tx * hl - xx * hw, cy + ty * hl - xy * hw),
@@ -164,13 +185,6 @@ class Wall(object):
         cx, cy, _tx, _ty, xx, xy = self.pose(b, s, u)
         return (cx - sx) * xx + (cy - sy) * xy
 
-    def thickness(self, b, s=None, u=None):
-        """Wall thickness envelope at this brick: brickW + |lateral offset of the
-        brick centre from the course-0 centreline|."""
-        cx, cy = self.pose(b, s, u)[:2]
-        _s, lat = self.paths[0].nearest((cx, cy))
-        return self.W + abs(lat)
-
     def head_gaps(self, b, s=None, u=None):
         """[(other brick, clear gap)] for nearby bricks in the same course."""
         cx, cy = self.pose(b, s, u)[:2]
@@ -188,19 +202,17 @@ class Wall(object):
 
     def check(self, b, s=None, u=None):
         """L0 failures of one brick at (s, u): subset of
-        {'contact', 'overhang', 'thickness', 'collision'}."""
+        {'contact', 'overhang', 'collision'}."""
         p = self.p
         fails = set()
         if b.k > 0:
             sup = self.supports(b, s, u)
             tot = sum(a for _c, a, _cen in sup)
-            if tot < p["min_contact"] * self.L * self.W:
+            if tot < p["min_contact"] * b.length * self.W:
                 fails.add("contact")
             ov = self.overhang(b, s, u, sup)
             if ov is not None and abs(ov) > p["max_overhang"] + 1e-6:
                 fails.add("overhang")
-        if self.thickness(b, s, u) > p["thickness_cap"] + 1e-6:
-            fails.add("thickness")
         for _c, gap in self.head_gaps(b, s, u):
             if gap < p["min_head"] - 1e-6:
                 fails.add("collision")

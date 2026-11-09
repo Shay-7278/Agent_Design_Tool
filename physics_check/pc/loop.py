@@ -98,7 +98,7 @@ def run_check(job, use_cra=True):
         if status != "flagged" and (l0_fail or b in l1_fail):
             status = "failed"
         bricks.append({
-            "course": b.k, "index": b.i, "status": status,
+            "course": b.k, "index": b.i, "status": status, "length": b.length,
             "frame": wall.frame(b), "fitted_frame": wall.frame(b, fitted=True),
             "deviation": wall.deviation(b), "notes": b.notes,
             "l0_fail": l0_fail,

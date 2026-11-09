@@ -22,7 +22,6 @@ DEFAULTS = {
     "f_t": 0.2e6,
     "SF": 2.0,
     "max_overhang": None,      # -> brickW / 2
-    "thickness_cap": None,     # -> 3 * brickW
     "min_contact": 0.25,
     "max_iter": 10,
     "l0_max_iter": 20,         # inner L0 repair passes per outer iteration
@@ -53,10 +52,8 @@ def resolve_params(given):
         p["offset_distance"] = 0.5 * (p["brickL"] + p["head_joint"])
     if p["max_overhang"] is None:
         p["max_overhang"] = 0.5 * p["brickW"]
-    if p["thickness_cap"] is None:
-        p["thickness_cap"] = 3.0 * p["brickW"]
     if p["max_move"] is None:
         p["max_move"] = 0.5 * p["brickL"]
-    for k in ("offset_distance", "max_overhang", "thickness_cap", "max_move"):
+    for k in ("offset_distance", "max_overhang", "max_move"):
         p[k] = float(p[k])
     return p

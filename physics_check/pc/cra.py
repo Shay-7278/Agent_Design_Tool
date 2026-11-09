@@ -76,7 +76,8 @@ def _solve(frames, dims, supports, p):
     """Build the compas_cra assembly and run the penalty solve.
 
     Plain data in and out (lists, dicts), so it can run in a child process.
-    frames: [[origin, xaxis, yaxis]] per node, in m; dims: (W, L, H) in m.
+    frames: [[origin, xaxis, yaxis]] per node, in m; dims: [(W, L, H)] per
+    node, in m (L differs for half bricks).
     Returns dict(state = 'solved' | 'geometry' | 'failed', n_interfaces,
     floating [node], edges [(u, v, [interface dict])], error).
     """
@@ -90,9 +91,8 @@ def _solve(frames, dims, supports, p):
     from compas_cra.datastructures import CRA_Assembly
     from compas_cra.equilibrium import cra_penalty_solve
 
-    W, L, H = dims
     assembly = CRA_Assembly()
-    for node, (o, x, y) in enumerate(frames):
+    for node, ((o, x, y), (W, L, H)) in enumerate(zip(frames, dims)):
         assembly.add_block(Block.from_shape(Box(W, L, H, frame=Frame(o, x, y))), node=node)
     assembly.set_boundary_conditions(supports)
     assembly_interfaces_numpy(assembly, nmax=p["nmax"], tmax=p["tmax"], amin=p["amin"])
@@ -187,7 +187,7 @@ def run_cra(wall):
     for b in nodes:
         o, x, y = wall.frame(b)
         frames.append([[c * MM for c in o], x, y])
-    dims = (wall.W * MM, wall.L * MM, (wall.H + p["mortar_t"]) * MM)
+    dims = [(wall.W * MM, b.length * MM, (wall.H + p["mortar_t"]) * MM) for b in nodes]
     supports = [n for n, b in enumerate(nodes) if b.k == 0]
     keys = ("nmax", "tmax", "amin", "mu", "density")
     args = (frames, dims, supports, {k: p[k] for k in keys})

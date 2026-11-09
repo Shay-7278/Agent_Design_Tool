@@ -112,14 +112,16 @@ def settle_counts(wall, log):
     above and below (its head joints may then exceed max_head; reported).
     The settled positions are the fitted reference."""
     for k in range(len(wall.courses)):
-        n0 = n = len(wall.courses[k])
+        n = wall.counts[k]     # middle-brick count on an open course, total on a closed one
+        b0 = len(wall.courses[k])
         while wall.course_collides(k) and repair_spacing(wall, k) and n > 1:
             n -= 1
             wall.place_course(k, n, widen=True)
         for b in wall.courses[k]:
             b.s0, b.u0, b.status = b.s, b.u, "passed"
-        if n != n0:
-            msg = "course {}: {} -> {} bricks (curvature: head joints < min_head)".format(k, n0, n)
+        if len(wall.courses[k]) != b0:
+            msg = "course {}: {} -> {} bricks (curvature: head joints < min_head)".format(
+                k, b0, len(wall.courses[k]))
             if wall.widened[k]:
                 msg += "; head joints widened to {:.1f} mm (> max_head {:.0f} mm)".format(
                     wall.head_joint(k), wall.p["max_head"])
@@ -150,7 +152,7 @@ def l0_repair(wall, log):
                 f = wall.check(b)
                 if not f:
                     continue
-                dirs = DIRS_LATERAL if f <= {"overhang", "thickness"} else DIRS16
+                dirs = DIRS_LATERAL if f <= {"overhang"} else DIRS16
                 res = smallest_move(wall, b, dirs, lambda s, u, b=b: not wall.check(b, s, u))
                 if res is None:
                     b.flag("L0 {} unfixable within limits".format("/".join(sorted(f))))

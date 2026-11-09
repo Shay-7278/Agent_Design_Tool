@@ -23,14 +23,20 @@ Component inputs (GhPython):
     surface:         Wall surface (Surface or Brep) [mm]
     brickL, brickW, brickH:  Brick dimensions [mm], default 190 / 90 / 57
     mortar_t:        Bed joint thickness [mm], default 10
-    head_joint:      Nominal head joint [mm], default 15.  The number of
-                     bricks in each course follows from the surface: the count
-                     whose head joint is closest to head_joint within
-                     [min_head, max_head]
+    head_joint:      Nominal head joint g [mm], default 15.  Open courses are
+                     laid out as in baseline.gh: trimmed by brickL + g/2 (even
+                     courses) or brickL + g (odd courses) at each end, with
+                     one middle-brick count m = round(shortest trimmed course
+                     / (brickL + g)) for the whole wall.  Even courses get a
+                     full brick flush with each end plus m middle bricks; odd
+                     courses get a half brick (brickL/2) flush with each end
+                     plus m + 1 middle bricks.  The middle joints stretch with
+                     the course length.  Closed courses: the count whose head
+                     joint is closest to g within [min_head, max_head]
     min_head:        Minimum head joint [mm], default 10
-    max_head:        Maximum head joint [mm], default 25
-    offset_distance: Running-bond offset of odd courses along the course [mm],
-                     default (brickL + head_joint) / 2
+    max_head:        Maximum head joint [mm], default 25 (closed courses only)
+    offset_distance: Running-bond offset of odd closed courses along the
+                     course [mm], default (brickL + head_joint) / 2
     face_offset:     0 if the surface is the wall centreline; otherwise the
                      signed offset [mm] from the surface to the centreline
                      (+/- brickW/2), positive towards the section's +X side
@@ -41,9 +47,9 @@ Component inputs (GhPython):
     SF:              Safety factor on f_t, default 2.0
     max_overhang:    Max overhang of a brick past its support, perpendicular
                      to the wall [mm], default brickW / 2
-    thickness_cap:   Max wall thickness [mm], default 3 * brickW
     min_contact:     Min bed overlap with the bricks below, as a fraction of
-                     the bed area brickL*brickW, default 0.25
+                     the brick's own bed area (length * brickW; a half brick
+                     uses brickL/2), default 0.25
     max_iter:        Outer-loop iterations, default 10
     cra_timeout:     Time limit per CRA solve [s], default 300; 0 = no limit.
                      When it is hit the loop stops and reports L1 as not
@@ -72,7 +78,8 @@ Component inputs (GhPython):
     through too if an input with that name is added.)
 Component outputs:
     Frames:          Brick centre planes after the checks
-    Bricks:          Brick boxes (brickL x brickW x brickH)
+    Bricks:          Brick boxes (length x brickW x brickH; length is brickL,
+                     or brickL/2 for the half bricks at odd course ends)
     Status:          Per brick: passed / moved / flagged / failed (still
                      failing L0 or L1 when the loop stopped)
     Deviation:       Per brick: plan distance from its fitted position [mm]
@@ -97,7 +104,7 @@ import os
 PARAM_NAMES = (
     "brickL", "brickW", "brickH", "mortar_t", "head_joint", "min_head", "max_head",
     "offset_distance", "face_offset", "density", "mu", "f_t", "SF", "max_overhang",
-    "thickness_cap", "min_contact", "max_iter", "l0_max_iter", "move_step", "max_move",
+    "min_contact", "max_iter", "l0_max_iter", "move_step", "max_move",
     "min_step", "slide_step", "nmax", "tmax", "amin", "cra_timeout",
 )
 BRICK_H = 57.0     # pc/params.py default brickH [mm]
@@ -298,11 +305,12 @@ def gh_main(g):
         o, x, y = f
         return rg.Plane(rg.Point3d(*o), rg.Vector3d(*x), rg.Vector3d(*y))
 
-    hl, hw, hh = 0.5 * result["brickL"], 0.5 * result["brickW"], 0.5 * result["brickH"]
+    hw, hh = 0.5 * result["brickW"], 0.5 * result["brickH"]
     for b in result.get("bricks", []):
         pl = plane(b["frame"])
         out["Frames"].append(pl)
-        out["Bricks"].append(rg.Box(pl, rg.Interval(-hw, hw), rg.Interval(-hl, hl), rg.Interval(-hh, hh)))
+        bl = 0.5 * b.get("length", result["brickL"])     # half bricks at open course ends
+        out["Bricks"].append(rg.Box(pl, rg.Interval(-hw, hw), rg.Interval(-bl, bl), rg.Interval(-hh, hh)))
         out["Status"].append(b["status"])
         out["Deviation"].append(b["deviation"])
         out["FittedFrames"].append(plane(b["fitted_frame"]))
