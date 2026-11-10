@@ -72,6 +72,31 @@ def interface_stress(points, origin, xaxis, yaxis, forces):
             "tensioned": tensioned}
 
 
+# IPOPT options added to compas_cra's penalty options (tol 1e-8 is kept).  On
+# brick walls IPOPT reaches the solution in a few dozen iterations - force
+# balance at ~1e-8, objective constant to 8 digits - and then never meets
+# tol: the dual infeasibility hovers around 1e-4 and spikes to ~1e3 every
+# few iterations, which also resets IPOPT's default 15-iteration acceptable
+# count, so the solve runs until cra_timeout.  These options stop it as
+# "acceptable" after 3 iterations in a row with the scaled overall error
+# below 1e-3, the force balance within acceptable_constr_viol_tol (1e-5 in
+# compas_cra) and the objective changing by less than 1e-8 (relative).
+# compas_cra's own tolerances (tol, mu strategy) are left unchanged: its
+# notes say they select the force distribution on indeterminate contacts.
+#
+# mumps_scaling 8 (MUMPS iterative row/column scaling instead of the default
+# automatic choice): almost all of the solve time is MUMPS factorization, and
+# the default scaling delays tens of thousands of pivots.  On a 170-brick
+# wall it cut the solve by ~15-25% with identical forces (4e-14 N).  MUMPS
+# in compas_cra is built without OpenMP, and OpenBLAS threads had no effect.
+EARLY_STOP = {
+    "acceptable_tol": 1e-3,
+    "acceptable_iter": 3,
+    "acceptable_obj_change_tol": 1e-8,
+    "mumps_scaling": 8,
+}
+
+
 def _solve(frames, dims, supports, p):
     """Build the compas_cra assembly and run the penalty solve.
 
@@ -79,7 +104,8 @@ def _solve(frames, dims, supports, p):
     frames: [[origin, xaxis, yaxis]] per node, in m; dims: [(W, L, H)] per
     node, in m (L differs for half bricks).
     Returns dict(state = 'solved' | 'geometry' | 'failed', n_interfaces,
-    floating [node], edges [(u, v, [interface dict])], error).
+    floating [node], edges [(u, v, [interface dict])], error, solver =
+    {status, message, iterations} of the IPOPT run).
     """
     import contextlib
     import io
@@ -89,7 +115,9 @@ def _solve(frames, dims, supports, p):
     from compas_assembly.datastructures import Block
     from compas_cra.algorithms import assembly_interfaces_numpy
     from compas_cra.datastructures import CRA_Assembly
-    from compas_cra.equilibrium import cra_penalty_solve
+    from compas_cra.equilibrium import cra_native
+    from compas_cra.equilibrium import cra_penalty_problem
+    from compas_cra.nlp import solve_nlp
 
     assembly = CRA_Assembly()
     for node, ((o, x, y), (W, L, H)) in enumerate(zip(frames, dims)):
@@ -112,11 +140,20 @@ def _solve(frames, dims, supports, p):
     if floating:
         return {"state": "geometry", "floating": floating, "n_interfaces": n_itf}
 
-    try:
-        with contextlib.redirect_stdout(io.StringIO()):
-            cra_penalty_solve(assembly, mu=p["mu"], density=p["density"], verbose=False, timer=False)
-    except ValueError as err:
-        return {"state": "failed", "error": str(err), "n_interfaces": n_itf}
+    # Same problem and IPOPT options as compas_cra's cra_penalty_solve, plus
+    # EARLY_STOP (see there).  Uses compas_cra internals (_CRA_PENALTY_OPTIONS,
+    # _result_to_assembly; compas_cra 0.8.0).
+    opts = dict(cra_native._CRA_PENALTY_OPTIONS)
+    opts.update(EARLY_STOP)
+    with contextlib.redirect_stdout(io.StringIO()):   # compas_cra prints per block
+        problem, layout = cra_penalty_problem(assembly, mu=p["mu"], density=p["density"])
+        result = solve_nlp(problem, backend="native", options=opts)
+    solver = {"status": result.status, "message": result.status_message,
+              "iterations": result.iterations}
+    if not result.success:
+        return {"state": "failed", "n_interfaces": n_itf, "solver": solver,
+                "error": "solve failed: {} ({})".format(result.status, result.status_message)}
+    cra_native._result_to_assembly(result.x, layout, assembly, shift=4)
 
     edges = []
     for u, v in graph.edges():
@@ -129,7 +166,7 @@ def _solve(frames, dims, supports, p):
                          "xaxis": list(fr.xaxis), "yaxis": list(fr.yaxis),
                          "forces": [dict(f) for f in itf.forces]})
         edges.append((u, v, itfs))
-    return {"state": "solved", "n_interfaces": n_itf, "edges": edges}
+    return {"state": "solved", "n_interfaces": n_itf, "edges": edges, "solver": solver}
 
 
 def _solve_child(conn, args):
@@ -196,7 +233,8 @@ def run_cra(wall):
     else:
         res = _solve(*args)
 
-    out = {"state": res["state"], "n_interfaces": res.get("n_interfaces", 0), "interfaces": []}
+    out = {"state": res["state"], "n_interfaces": res.get("n_interfaces", 0), "interfaces": [],
+           "solver": res.get("solver")}
     if res["state"] == "geometry":
         out["floating"] = [nodes[n] for n in res["floating"]]
     if res["state"] == "failed":

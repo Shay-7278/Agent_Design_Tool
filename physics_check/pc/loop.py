@@ -74,8 +74,10 @@ def run_check(job, use_cra=True):
             break
         n_fail = sum(1 for r in cra["interfaces"] if r["fails"])
         n_ten = sum(1 for r in cra["interfaces"] if r["tensioned"])
-        log.append("iteration {}: L0 pass, CRA {} ({} interfaces, {} need tension, {} over f_t/SF)".format(
-            it, cra["state"], cra.get("n_interfaces", 0), n_ten, n_fail))
+        sol = cra.get("solver") or {}
+        log.append("iteration {}: L0 pass, CRA {} ({} interfaces, {} need tension, {} over f_t/SF){}".format(
+            it, cra["state"], cra.get("n_interfaces", 0), n_ten, n_fail,
+            "; IPOPT {} after {} iterations".format(sol["status"], sol["iterations"]) if sol else ""))
         if cra["state"] == "solved" and n_fail == 0:
             l1_ok = True
             log.append("L1 pass: " + ("stable as a dry stack" if n_ten == 0 else
