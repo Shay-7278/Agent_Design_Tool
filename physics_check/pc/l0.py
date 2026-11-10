@@ -6,6 +6,7 @@ from __future__ import division
 import math
 
 from .geom2d import rect_gap
+from .params import move_cap
 
 DIRS16 = [(math.cos(2 * math.pi * j / 16.0), math.sin(2 * math.pi * j / 16.0)) for j in range(16)]
 DIRS_LATERAL = [(0.0, 1.0), (0.0, -1.0)]
@@ -14,7 +15,7 @@ DIRS_LATERAL = [(0.0, 1.0), (0.0, -1.0)]
 def smallest_move(wall, b, dirs, ok):
     """Smallest (distance, s, u) along any of dirs (ds, du per mm) where ok(s, u)."""
     p = wall.p
-    step, max_move = p["move_step"], p["max_move"]
+    step, max_move = p["move_step"], move_cap(p)
     best = None
     for ds, du in dirs:
         prev, d, found = 0.0, step, None
@@ -119,6 +120,7 @@ def settle_counts(wall, log):
             wall.place_course(k, n, widen=True)
         for b in wall.courses[k]:
             b.s0, b.u0, b.status = b.s, b.u, "passed"
+            b.st, b.ut = b.s, b.u
         if len(wall.courses[k]) != b0:
             msg = "course {}: {} -> {} bricks (curvature: head joints < min_head)".format(
                 k, b0, len(wall.courses[k]))

@@ -5,7 +5,7 @@ from __future__ import division
 
 import math
 
-from .params import EPS, MM
+from .params import EPS, MM, move_cap
 
 
 def _toward(wall, b, dir_xy, dist, label):
@@ -19,11 +19,12 @@ def _toward(wall, b, dir_xy, dist, label):
         return False
     dx, dy = dir_xy[0] / ln, dir_xy[1] / ln
     ds, du = dx * tx + dy * ty, dx * xx + dy * xy
-    d = min(max(dist, p["min_step"]), p["max_move"])
+    d = min(max(dist, p["min_step"]), move_cap(p))
     while d >= p["min_step"] - 1e-9:
         s, u = b.s + ds * d, b.u + du * d
         if not wall.check(b, s, u):
             wall.move(b, s, u)
+            b.st, b.ut = b.s, b.u      # the QP L0 repair keeps this move (l0qp.py)
             return True
         d *= 0.5
     b.flag(label + ": no passing position within the limits")

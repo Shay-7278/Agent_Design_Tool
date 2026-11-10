@@ -4,22 +4,28 @@ Open courses follow the baseline.gh layout (L = brickL, g = head_joint):
 
 * Each course is trimmed at both ends: by L + g/2 on even courses, L + g on
   odd courses.  What is left is the course's middle curve.
-* One middle-brick count m is shared by the whole wall:
-  m = round(shortest middle curve / (L + g)).  baseline.gh rounds down
-  (its N is 2 * m), which keeps every middle joint >= g but can leave them
-  nearly a brick too wide; rounding to nearest keeps them closer to g, so
-  on the shortest courses they can be somewhat below g.
+* Each course gets its own middle-brick count m, so the middle joints
+  (middle curve / m - L) stay near g on walls whose courses differ in
+  length.  Even courses: the m whose joint is closest to g within
+  [min_head, max_head] (``course_count``; if none is in range, the largest
+  m with joint >= min_head).  Odd courses keep the m of the course below,
+  so they stay bonded over its joints, unless their joint would then be
+  under min_head or wider than both max_head and their own choice.
+  (baseline.gh shares one m, from the shortest course, across the whole
+  wall; on a wall that bulges, the longer courses then get joints wider
+  than a brick.)
 * Even course: a full brick flush with each end, plus m bricks centred in m
   equal cells of the middle curve.  m + 2 bricks.
 * Odd course: a half brick (L/2) flush with each end, plus m + 1 bricks on the
   cell boundaries of the middle curve, so they sit over the joints of the
-  courses below.  m + 3 bricks.
+  course below when it has the same m.  m + 3 bricks.
 
-The two trims make the end joints about g: on odd courses the joint next to
-each half brick is exactly g; on even courses the joint next to each end
-brick is g/2 + (cell - L)/2, i.e. about g when the cell is about L + g.
-Longer courses keep the same m, so their middle joints are wider (no
-max_head cap).
+Where m changes between two courses the upper course's joints no longer
+line up with the middle of the bricks below; L0 then checks contact and
+overhang there as anywhere else.  The two trims make the end joints about g:
+on odd courses the joint next to each half brick is exactly g; on even
+courses the joint next to each end brick is g/2 + (cell - L)/2, i.e. about
+g when the cell is about L + g.
 
 Closed courses keep the per-course count from ``course_count`` and are placed
 evenly with the offset_distance running bond.
@@ -87,20 +93,26 @@ def middle_length(path, k, p):
     return path.length - 2.0 * end_trim(k, p)
 
 
-def middle_count(paths, p):
-    """Shared middle-brick count m for the open courses (baseline.gh's N / 2).
+def middle_count(mid, k, below, p):
+    """(m, middle head joint) for an open course with a middle curve of
+    length mid [mm]; below = the middle-brick count of course k - 1 if that
+    course is open, else None.
 
-    Returns (m, k_short): m = shortest middle curve / (brickL + head_joint)
-    rounded to the nearest whole number (baseline.gh rounds down), and the
-    index of that shortest course; (None, None) if there are no open courses.
+    Even courses: the count whose joint (mid / m - brickL) is closest to
+    head_joint within [min_head, max_head] (course_count; if no count gives
+    a joint in that range, the largest with joint >= min_head).  Odd courses
+    keep the count of the course below, so their bricks stay on the joints
+    below, unless that joint is under min_head or above both max_head and
+    the joint of their own choice.  Returns (0, None) if not even one middle
+    brick fits.
     """
-    open_k = [k for k, path in enumerate(paths) if not path.closed]
-    if not open_k:
-        return None, None
-    k_short = min(open_k, key=lambda k: middle_length(paths[k], k, p))
-    m = int(math.floor(middle_length(paths[k_short], k_short, p)
-                       / (p["brickL"] + p["head_joint"]) + 0.5))
-    return m, k_short
+    own = course_count(mid, False, p)
+    if k % 2 == 1 and below:
+        j = mid / below - p["brickL"]
+        j_max = max(p["max_head"], own[1] if own[0] else p["max_head"])
+        if p["min_head"] - 1e-6 <= j <= j_max + 1e-6:
+            return below, j
+    return own
 
 
 def course_count(length, closed, p):
@@ -122,24 +134,43 @@ def course_count(length, closed, p):
     return n, length / n - L
 
 
+def surface_lean(paths, max_overhang):
+    """How far the surface itself leans, from the course centrelines.
+
+    Returns (lean, need): lean[k] = the largest sideways distance from a
+    point of course k's centreline to course k - 1's centreline, signed (+ =
+    towards the +X side of course k - 1) [mm] (0 for course 0); need[k] = how
+    far the bricks lag behind the surface at that worst point if every course
+    steps at most max_overhang from the one below: the bricks step towards
+    where the surface is, clamped to +/- max_overhang, so they catch up again
+    where the surface leans back.  An estimate (worst points of different
+    courses need not line up, and the QP spreads the deviation over the
+    courses above and below): the bricks must depart from the surface about
+    this much to pass L0.
+    """
+    lean, need = [0.0], [0.0]
+    lag = 0.0
+    for k in range(1, len(paths)):
+        lo = paths[k - 1]
+        lats = [lo.nearest(q)[1] for q in paths[k].pts]
+        lean.append(max(lats, key=abs))
+        want = lag + lean[-1]                      # where the bricks would need to step
+        lag = want - max(-max_overhang, min(max_overhang, want))
+        need.append(abs(lag))
+    return lean, need
+
+
 def fit_sections(sections, p):
     """Offset to the centreline, align, and choose each course's brick count.
 
     sections: [(pts [(x, y)], closed)] per course, bottom up, already cut from
     the Z-scaled surface.  Returns ([Path2], [count], [middle head joint]),
-    where count is the shared middle-brick count m on open courses (see the
+    where count is the course's middle-brick count m on open courses (see the
     module docstring) and the total brick count on closed courses.
     """
     secs = [(offset_polyline(pts, closed, p["face_offset"]), closed) for pts, closed in sections]
     secs = align_sections(secs)
     paths = [Path2(pts, closed) for pts, closed in secs]
-
-    m, k_short = middle_count(paths, p)
-    if m is not None and m < 1:
-        need = 2 * end_trim(k_short, p) + p["brickL"] + p["head_joint"]
-        raise FitError(
-            "course {}: centreline is {:.1f} mm, too short for the end bricks plus one "
-            "middle brick ({:.1f} mm)".format(k_short, paths[k_short].length, need))
 
     counts, joints = [], []
     for k, path in enumerate(paths):
@@ -151,7 +182,13 @@ def fit_sections(sections, p):
                     "brickL + min_head = {:.1f} mm".format(
                         k, path.length, p["brickL"] + p["min_head"]))
         else:
-            n, j = m, middle_length(path, k, p) / m - p["brickL"]
+            below = counts[k - 1] if k > 0 and not paths[k - 1].closed else None
+            n, j = middle_count(middle_length(path, k, p), k, below, p)
+            if n == 0:
+                need = 2 * end_trim(k, p) + p["brickL"] + p["min_head"]
+                raise FitError(
+                    "course {}: centreline is {:.1f} mm, too short for the end bricks plus one "
+                    "middle brick ({:.1f} mm)".format(k, path.length, need))
         counts.append(n)
         joints.append(j)
     return paths, counts, joints

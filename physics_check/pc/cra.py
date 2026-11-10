@@ -117,6 +117,7 @@ def _solve(frames, dims, supports, p):
     from compas_cra.datastructures import CRA_Assembly
     from compas_cra.equilibrium import cra_native
     from compas_cra.equilibrium import cra_penalty_problem
+    from compas_cra.equilibrium import rbe_problem
     from compas_cra.nlp import solve_nlp
 
     assembly = CRA_Assembly()
@@ -140,13 +141,21 @@ def _solve(frames, dims, supports, p):
     if floating:
         return {"state": "geometry", "floating": floating, "n_interfaces": n_itf}
 
-    # Same problem and IPOPT options as compas_cra's cra_penalty_solve, plus
-    # EARLY_STOP (see there).  Uses compas_cra internals (_CRA_PENALTY_OPTIONS,
-    # _result_to_assembly; compas_cra 0.8.0).
-    opts = dict(cra_native._CRA_PENALTY_OPTIONS)
-    opts.update(EARLY_STOP)
+    # cra_penalty: same problem and IPOPT options as compas_cra's
+    # cra_penalty_solve, plus EARLY_STOP (see there).  rbe: same problem and
+    # options (IPOPT defaults) as compas_cra's rbe_solve - a convex QP over
+    # the contact forces only, no block displacements, so much faster, but it
+    # can accept force distributions the blocks cannot kinematically produce.
+    # Both give the forces in the same layout (shift 4: c_np, c_nn, c_u, c_v).
+    # Uses compas_cra internals (_CRA_PENALTY_OPTIONS, _result_to_assembly;
+    # compas_cra 0.8.0).
+    if p.get("solver") == "rbe":
+        build, opts = rbe_problem, None
+    else:
+        build, opts = cra_penalty_problem, dict(cra_native._CRA_PENALTY_OPTIONS)
+        opts.update(EARLY_STOP)
     with contextlib.redirect_stdout(io.StringIO()):   # compas_cra prints per block
-        problem, layout = cra_penalty_problem(assembly, mu=p["mu"], density=p["density"])
+        problem, layout = build(assembly, mu=p["mu"], density=p["density"])
         result = solve_nlp(problem, backend="native", options=opts)
     solver = {"status": result.status, "message": result.status_message,
               "iterations": result.iterations}
@@ -212,7 +221,7 @@ def _solve_with_timeout(args, timeout):
 
 
 def run_cra(wall):
-    """Step 5: penalty CRA solve, course 0 fixed.
+    """Step 5: penalty CRA (or RBE, p["solver"] = "rbe") solve, course 0 fixed.
 
     The solve is limited to p["cra_timeout"] seconds (0 = no limit, run in
     this process).  Returns dict(state = 'solved' | 'geometry' | 'failed' |
@@ -226,7 +235,7 @@ def run_cra(wall):
         frames.append([[c * MM for c in o], x, y])
     dims = [(wall.W * MM, b.length * MM, (wall.H + p["mortar_t"]) * MM) for b in nodes]
     supports = [n for n, b in enumerate(nodes) if b.k == 0]
-    keys = ("nmax", "tmax", "amin", "mu", "density")
+    keys = ("nmax", "tmax", "amin", "mu", "density", "solver")
     args = (frames, dims, supports, {k: p[k] for k in keys})
     if p["cra_timeout"] > 0:
         res = _solve_with_timeout(args, p["cra_timeout"])

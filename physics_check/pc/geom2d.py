@@ -75,6 +75,14 @@ def overlap(poly_a, poly_b):
     return abs(a), (cx / (6.0 * a), cy / (6.0 * a))
 
 
+def overlap_poly(poly_a, poly_b):
+    """Vertices of the intersection of two convex polygons ([] if none)."""
+    pts = _clip(poly_a, poly_b)
+    if len(pts) < 3 or abs(poly_signed_area(pts)) < 1e-6:
+        return []
+    return pts
+
+
 def _pt_seg_dist(p, a, b):
     dx, dy = b[0] - a[0], b[1] - a[1]
     l2 = dx * dx + dy * dy

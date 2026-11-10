@@ -24,17 +24,18 @@ Component inputs (GhPython):
     brickL, brickW, brickH:  Brick dimensions [mm], default 190 / 90 / 57
     mortar_t:        Bed joint thickness [mm], default 10
     head_joint:      Nominal head joint g [mm], default 15.  Open courses are
-                     laid out as in baseline.gh: trimmed by brickL + g/2 (even
-                     courses) or brickL + g (odd courses) at each end, with
-                     one middle-brick count m = round(shortest trimmed course
-                     / (brickL + g)) for the whole wall.  Even courses get a
-                     full brick flush with each end plus m middle bricks; odd
-                     courses get a half brick (brickL/2) flush with each end
-                     plus m + 1 middle bricks.  The middle joints stretch with
-                     the course length.  Closed courses: the count whose head
+                     trimmed by brickL + g/2 (even courses) or brickL + g (odd
+                     courses) at each end, and each course gets its own
+                     middle-brick count m: the one whose joint is closest to g
+                     within [min_head, max_head].  Odd courses keep the m of
+                     the course below while that stays in range, so they stay
+                     bonded over its joints.  Even courses get a full brick
+                     flush with each end plus m middle bricks; odd courses a
+                     half brick (brickL/2) flush with each end plus m + 1
+                     middle bricks.  Closed courses: the count whose head
                      joint is closest to g within [min_head, max_head]
-    min_head:        Minimum head joint [mm], default 10
-    max_head:        Maximum head joint [mm], default 25 (closed courses only)
+    min_head:        Minimum head joint [mm], default 5
+    max_head:        Maximum head joint [mm], default 25
     offset_distance: Running-bond offset of odd closed courses along the
                      course [mm], default (brickL + head_joint) / 2
     face_offset:     0 if the surface is the wall centreline; otherwise the
@@ -50,6 +51,11 @@ Component inputs (GhPython):
     min_contact:     Min bed overlap with the bricks below, as a fraction of
                      the brick's own bed area (length * brickW; a half brick
                      uses brickL/2), default 0.25
+    min_balance:     Min distance [mm] of a brick's centre inside its contact
+                     region with the course below (along the course and
+                     across the wall), default 10.  A brick resting on the
+                     end of a single brick fails it; one bridging a joint
+                     passes
     max_iter:        Outer-loop iterations, default 10
     cra_timeout:     Time limit per CRA solve [s], default 300; 0 = no limit.
                      When it is hit the loop stops and reports L1 as not
@@ -73,9 +79,20 @@ Component inputs (GhPython):
                      package (folder physics_check/) must then be importable
                      from Rhino's Python
     run:             Boolean - run the check when True
-    (The solver tuning keys in ``pc/params.py`` DEFAULTS - l0_max_iter,
-    move_step, max_move, min_step, slide_step, nmax, tmax, amin - are passed
-    through too if an input with that name is added.)
+    use_cra:         Boolean - run the CRA (L1) check, default True.  False =
+                     fit + L0 only (fast; the result then reports L1 as
+                     skipped)
+    solver:          L1 solver, default "cra_penalty".  "rbe" = rigid block
+                     equilibrium: a convex QP over the contact forces only,
+                     much faster, but it ignores block kinematics and can
+                     pass walls that the CRA penalty solve fails - use it for
+                     quick iterations, cra_penalty for the final check
+    (The solver tuning keys in ``pc/params.py`` DEFAULTS - l0_method ("qp",
+    default: all bricks moved together to the closest passing layout, or
+    "greedy": one brick at a time), qp_trust, qp_max_iter, l0_max_iter,
+    move_step, max_move (largest deviation from the fit [mm]; default 0 = no
+    limit), min_step, slide_step, nmax, tmax, amin - are passed through too
+    if an input with that name is added.)
 Component outputs:
     Frames:          Brick centre planes after the checks
     Bricks:          Brick boxes (length x brickW x brickH; length is brickL,
@@ -86,14 +103,18 @@ Component outputs:
     InterfacePts:    Centroid of each CRA interface
     InterfaceRatio:  Per interface: sigma_t / (f_t / SF) (> 1 fails)
     FittedFrames:    Brick planes straight after the fit (step 2)
-    Report:          Text summary (iterations, failures, flagged bricks)
+    Report:          Text summary (iterations, failures, flagged bricks,
+                     solver time)
+    SolveTime:       Solver time summary: total run time as seen by the
+                     component (including uv / Python start-up), the check
+                     loop's own time, and the time spent in CRA solves [s]
 """
 
 from __future__ import division
 from __future__ import print_function
 
 __author__ = "bn7278"
-__version__ = "2026.11.06"
+__version__ = "2026.11.10"
 
 import json
 import math
@@ -104,9 +125,11 @@ import os
 PARAM_NAMES = (
     "brickL", "brickW", "brickH", "mortar_t", "head_joint", "min_head", "max_head",
     "offset_distance", "face_offset", "density", "mu", "f_t", "SF", "max_overhang",
-    "min_contact", "max_iter", "l0_max_iter", "move_step", "max_move",
-    "min_step", "slide_step", "nmax", "tmax", "amin", "cra_timeout",
+    "min_contact", "min_balance", "max_iter", "l0_max_iter", "move_step", "max_move",
+    "min_step", "slide_step", "nmax", "tmax", "amin", "cra_timeout", "solver",
+    "l0_method", "qp_trust", "qp_max_iter",
 )
+SOLVERS = ("cra_penalty", "rbe")   # pc/params.py SOLVERS
 BRICK_H = 57.0     # pc/params.py default brickH [mm]
 MORTAR_T = 10.0    # pc/params.py default mortar_t [mm]
 
@@ -201,17 +224,40 @@ def run_in_process(job):
     return run_check(job)
 
 
+def format_time(total, result):
+    """SolveTime text: wall-clock total [s] plus the solver's own timings."""
+    lines = ["total: {:.1f} s".format(total)]
+    if "time" in result:
+        lines.append("check loop: {:.1f} s".format(result["time"]))
+    if result.get("use_cra", True):
+        lines.append("L1 ({}): {:.1f} s".format(result.get("solver", "cra_penalty"),
+                                               result.get("cra_time", 0.0)))
+    else:
+        lines.append("L1: off")
+    return "\n".join(lines)
+
+
 def gh_main(g):
     import subprocess
+    import time
 
     import Rhino
     import Rhino.Geometry as rg
 
-    params = {k: g[k] for k in PARAM_NAMES if g.get(k) is not None}
+    params = {k: g[k] for k in PARAM_NAMES if g.get(k) is not None and g.get(k) != ""}
+    if "solver" in params:
+        params["solver"] = str(params["solver"]).strip().lower()
+        if params["solver"] not in SOLVERS:
+            err = {k: [] for k in ("Frames", "Bricks", "Status", "Deviation", "InterfacePts",
+                                   "InterfaceRatio", "FittedFrames")}
+            err["Report"] = "solver must be one of: " + ", ".join(SOLVERS)
+            err["SolveTime"] = ""
+            return err
     brickH = float(params.get("brickH", BRICK_H))
     mortar_t = float(params.get("mortar_t", MORTAR_T))
     out = {"Frames": [], "Bricks": [], "Status": [], "Deviation": [], "InterfacePts": [],
-           "InterfaceRatio": [], "FittedFrames": [], "Report": "Set run to True"}
+           "InterfaceRatio": [], "FittedFrames": [], "Report": "Set run to True",
+           "SolveTime": ""}
 
     srf = g.get("surface")
     if srf is None:
@@ -250,7 +296,9 @@ def gh_main(g):
             pts.append(crv.PointAtEnd)
         sections.append({"points": [[q.X, q.Y] for q in pts], "closed": bool(crv.IsClosed)})
 
-    job = {"z_base": z_base, "params": params, "sections": sections}
+    use_cra = g.get("use_cra")
+    use_cra = True if use_cra is None else bool(use_cra)
+    job = {"z_base": z_base, "params": params, "sections": sections, "use_cra": use_cra}
     doc_path = Rhino.RhinoDoc.ActiveDoc.Path
     doc_dir = os.path.dirname(doc_path) if doc_path else None
     folder = g.get("job_path") or doc_dir
@@ -277,6 +325,7 @@ def gh_main(g):
     with open(job_file, "w") as fh:
         json.dump(job, fh)
 
+    t_start = time.time()
     if command == "":
         try:
             result = run_in_process(job)
@@ -297,9 +346,11 @@ def gh_main(g):
             # exit code 1 = checks failed but a result was written
             if not os.path.exists(res_file):
                 out["Report"] = "command failed:\n{}\n{}".format(cmd, err.output)
+                out["SolveTime"] = "failed after {:.1f} s".format(time.time() - t_start)
                 return out
         with open(res_file) as fh:
             result = json.load(fh)
+    out["SolveTime"] = format_time(time.time() - t_start, result)
 
     def plane(f):
         o, x, y = f
@@ -338,3 +389,4 @@ if __name__ == "__main__":
         InterfaceRatio = _o["InterfaceRatio"]
         FittedFrames = _o["FittedFrames"]
         Report = _o["Report"]
+        SolveTime = _o["SolveTime"]

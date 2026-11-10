@@ -5,17 +5,20 @@ from __future__ import division
 
 import math
 
-from .geom2d import overlap, rect_gap
+from .geom2d import overlap, overlap_poly, rect_gap
 
 
 class Brick(object):
-    __slots__ = ("k", "i", "s", "u", "s0", "u0", "length", "status", "notes")
+    __slots__ = ("k", "i", "s", "u", "s0", "u0", "st", "ut", "length", "status", "notes")
 
     def __init__(self, k, i, s, length):
         self.k, self.i = k, i
         self.length = length    # along the course: brickL, or brickL / 2 for a half brick
         self.s = self.s0 = s
         self.u = self.u0 = 0.0
+        # target the QP L0 repair pulls the brick back to: the fitted
+        # position, or where L1 last moved it (l0qp.py)
+        self.st, self.ut = s, 0.0
         self.status = "passed"
         self.notes = []
 
@@ -35,7 +38,7 @@ class Wall(object):
     Each brick is (s, u): arc position along its course centreline and lateral
     offset along the brick's X axis.  Its orientation follows the course chord
     over the brick length.  counts[k] is what fit_sections chose for course k:
-    the shared middle-brick count m on an open course, the total on a closed one.
+    the course's middle-brick count m on an open course, the total on a closed one.
     """
 
     def __init__(self, paths, z_base, p, counts):
@@ -58,8 +61,9 @@ class Wall(object):
         fit.py): even courses get a full brick flush with each end and m
         bricks centred in m equal cells of the middle curve; odd courses get a
         half brick flush with each end and m + 1 bricks on the cell
-        boundaries.  The middle joints stretch with the course length, so
-        they are not capped at max_head (widened).
+        boundaries.  fit.py picks m so the middle joints are within
+        [min_head, max_head]; settle_counts may later drop a brick, so the
+        joints are not capped at max_head (widened).
 
         Closed course (n = total): n bricks evenly spaced, odd courses
         shifted by offset_distance; widen=True only marks joints past
@@ -185,6 +189,31 @@ class Wall(object):
         cx, cy, _tx, _ty, xx, xy = self.pose(b, s, u)
         return (cx - sx) * xx + (cy - sy) * xy
 
+    def balance(self, b, s=None, u=None):
+        """How far b's centre lies inside its contact region with the course
+        below [mm]: the smallest of its distances to the four ends of that
+        region along b's own axes (Y along the course, X across the wall).
+        The region spans all contact polygons together, so a brick bridging
+        a joint is measured across both supports.  Negative = the centre is
+        outside (the brick tips off on its own).  None for course 0 or a
+        brick with no contact (the contact check fails then)."""
+        if b.k == 0:
+            return None
+        cx, cy, tx, ty, xx, xy = self.pose(b, s, u)
+        fp = self.footprint(b, s, u)
+        reach = self.L + self.W
+        ts, xs = [], []
+        for c in self.courses[b.k - 1]:
+            px, py = self.pose(c)[:2]
+            if math.hypot(px - cx, py - cy) > reach:
+                continue
+            for qx, qy in overlap_poly(fp, self.footprint(c)):
+                ts.append((qx - cx) * tx + (qy - cy) * ty)
+                xs.append((qx - cx) * xx + (qy - cy) * xy)
+        if not ts:
+            return None
+        return min(-min(ts), max(ts), -min(xs), max(xs))
+
     def head_gaps(self, b, s=None, u=None):
         """[(other brick, clear gap)] for nearby bricks in the same course."""
         cx, cy = self.pose(b, s, u)[:2]
@@ -202,7 +231,7 @@ class Wall(object):
 
     def check(self, b, s=None, u=None):
         """L0 failures of one brick at (s, u): subset of
-        {'contact', 'overhang', 'collision'}."""
+        {'contact', 'overhang', 'balance', 'collision'}."""
         p = self.p
         fails = set()
         if b.k > 0:
@@ -213,6 +242,9 @@ class Wall(object):
             ov = self.overhang(b, s, u, sup)
             if ov is not None and abs(ov) > p["max_overhang"] + 1e-6:
                 fails.add("overhang")
+            bal = self.balance(b, s, u) if tot > 0 else None
+            if bal is not None and bal < p["min_balance"] - 1e-6:
+                fails.add("balance")
         for _c, gap in self.head_gaps(b, s, u):
             if gap < p["min_head"] - 1e-6:
                 fails.add("collision")
