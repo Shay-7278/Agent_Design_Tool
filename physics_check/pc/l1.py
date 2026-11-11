@@ -24,7 +24,7 @@ def _toward(wall, b, dir_xy, dist, label):
         s, u = b.s + ds * d, b.u + du * d
         if not wall.check(b, s, u):
             wall.move(b, s, u)
-            b.st, b.ut = b.s, b.u      # the QP L0 repair keeps this move (l0qp.py)
+            b.st, b.ut, b.rt = b.s, b.u, b.r   # the QP L0 repair keeps this move (l0qp.py)
             return True
         d *= 0.5
     b.flag(label + ": no passing position within the limits")

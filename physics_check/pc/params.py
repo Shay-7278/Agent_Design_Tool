@@ -40,6 +40,9 @@ DEFAULTS = {
     "qp_trust": 20.0,          # QP L0 repair: starting largest move per round [mm]
                                # (grows up to 4x after good rounds, halves after bad ones)
     "qp_max_iter": 50,         # QP L0 repair: rounds per call
+    "max_rotation": 30.0,      # QP L0 repair: largest brick rotation from the course direction
+                               # [deg]; 0 = bricks keep following the course
+    "qp_smooth": 1.0,          # QP L0 repair: weight of (u_i - u_i+1)^2 between neighbours
 }
 
 SOLVERS = ("cra_penalty", "rbe")
@@ -60,7 +63,8 @@ def resolve_params(given):
             p[k] = v
     for k in ("brickL", "brickW", "brickH", "mortar_t", "head_joint", "min_head",
               "max_head", "face_offset", "density", "mu", "f_t", "SF", "min_contact", "min_balance",
-              "move_step", "min_step", "slide_step", "tmax", "amin", "cra_timeout", "qp_trust"):
+              "move_step", "min_step", "slide_step", "tmax", "amin", "cra_timeout", "qp_trust",
+              "max_rotation", "qp_smooth"):
         p[k] = float(p[k])
     for k in ("max_iter", "l0_max_iter", "nmax", "qp_max_iter"):
         p[k] = int(p[k])

@@ -2,6 +2,7 @@
 
 from __future__ import division
 
+import math
 import time
 
 from .cra import run_cra
@@ -134,7 +135,8 @@ def run_check(job, use_cra=True):
         bricks.append({
             "course": b.k, "index": b.i, "status": status, "length": b.length,
             "frame": wall.frame(b), "fitted_frame": wall.frame(b, fitted=True),
-            "deviation": wall.deviation(b), "notes": b.notes,
+            "deviation": wall.deviation(b), "rotation": math.degrees(b.r - b.r0),
+            "notes": b.notes,
             "l0_fail": l0_fail,
         })
     interfaces = []
@@ -167,6 +169,10 @@ def report(result):
         worst = max(br, key=lambda b: b["deviation"])
         lines.append("max deviation from fit: {:.1f} mm (course {} brick {})".format(
             worst["deviation"], worst["course"], worst["index"]))
+        turned = max(br, key=lambda b: abs(b.get("rotation", 0.0)))
+        if abs(turned.get("rotation", 0.0)) > 0.05:
+            lines.append("max rotation from the course direction: {:.1f} deg (course {} brick {})"
+                         .format(turned["rotation"], turned["course"], turned["index"]))
     for b in br:
         if b["status"] in ("flagged", "failed"):
             lines.append("  course {} brick {}: {} {} {}".format(

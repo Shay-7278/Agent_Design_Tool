@@ -9,16 +9,18 @@ from .geom2d import overlap, overlap_poly, rect_gap
 
 
 class Brick(object):
-    __slots__ = ("k", "i", "s", "u", "s0", "u0", "st", "ut", "length", "status", "notes")
+    __slots__ = ("k", "i", "s", "u", "r", "s0", "u0", "r0", "st", "ut", "rt", "length",
+                 "status", "notes")
 
     def __init__(self, k, i, s, length):
         self.k, self.i = k, i
         self.length = length    # along the course: brickL, or brickL / 2 for a half brick
         self.s = self.s0 = s
         self.u = self.u0 = 0.0
+        self.r = self.r0 = 0.0  # rotation in plan from the course direction [rad], CCW +
         # target the QP L0 repair pulls the brick back to: the fitted
         # position, or where L1 last moved it (l0qp.py)
-        self.st, self.ut = s, 0.0
+        self.st, self.ut, self.rt = s, 0.0, 0.0
         self.status = "passed"
         self.notes = []
 
@@ -114,15 +116,26 @@ class Wall(object):
         return self.steps[k] - self.L
 
     # -- poses ---------------------------------------------------------------
-    def pose(self, b, s=None, u=None):
-        """(cx, cy, tx, ty, xx, xy): plan centre, run axis Y, overhang axis X."""
+    def course_axes(self, b, s=None):
+        """(tx, ty, nx, ny): the course direction at b (chord over the brick
+        length) and its sideways normal.  s moves b along t, u along n."""
+        s = b.s if s is None else s
+        tx, ty = self.paths[b.k].tangent(s, 0.5 * b.length)
+        return tx, ty, ty, -tx
+
+    def pose(self, b, s=None, u=None, r=None):
+        """(cx, cy, tx, ty, xx, xy): plan centre, run axis Y, overhang axis X.
+        The axes are the course axes turned by the brick's rotation r."""
         s = b.s if s is None else s
         u = b.u if u is None else u
-        path = self.paths[b.k]
-        cx, cy = path.point(s)
-        tx, ty = path.tangent(s, 0.5 * b.length)
-        xx, xy = ty, -tx
-        return cx + u * xx, cy + u * xy, tx, ty, xx, xy
+        r = b.r if r is None else r
+        px, py = self.paths[b.k].point(s)
+        tx, ty, nx, ny = self.course_axes(b, s)
+        cx, cy = px + u * nx, py + u * ny
+        if r:
+            cr, sr = math.cos(r), math.sin(r)
+            tx, ty = tx * cr - ty * sr, tx * sr + ty * cr
+        return cx, cy, tx, ty, ty, -tx
 
     def footprint(self, b, s=None, u=None):
         cx, cy, tx, ty, xx, xy = self.pose(b, s, u)
@@ -197,6 +210,12 @@ class Wall(object):
         a joint is measured across both supports.  Negative = the centre is
         outside (the brick tips off on its own).  None for course 0 or a
         brick with no contact (the contact check fails then)."""
+        ends = self.balance_ends(b, s, u)
+        return min(ends.values()) if ends else None
+
+    def balance_ends(self, b, s=None, u=None):
+        """{'t+', 't-', 'x+', 'x-': distance from b's centre to that end of
+        its contact region along its own axes [mm]}, or None (see balance)."""
         if b.k == 0:
             return None
         cx, cy, tx, ty, xx, xy = self.pose(b, s, u)
@@ -212,7 +231,7 @@ class Wall(object):
                 xs.append((qx - cx) * xx + (qy - cy) * xy)
         if not ts:
             return None
-        return min(-min(ts), max(ts), -min(xs), max(xs))
+        return {"t+": max(ts), "t-": -min(ts), "x+": max(xs), "x-": -min(xs)}
 
     def head_gaps(self, b, s=None, u=None):
         """[(other brick, clear gap)] for nearby bricks in the same course."""

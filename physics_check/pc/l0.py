@@ -120,7 +120,7 @@ def settle_counts(wall, log):
             wall.place_course(k, n, widen=True)
         for b in wall.courses[k]:
             b.s0, b.u0, b.status = b.s, b.u, "passed"
-            b.st, b.ut = b.s, b.u
+            b.st, b.ut, b.r0, b.rt = b.s, b.u, b.r, b.r
         if len(wall.courses[k]) != b0:
             msg = "course {}: {} -> {} bricks (curvature: head joints < min_head)".format(
                 k, b0, len(wall.courses[k]))
