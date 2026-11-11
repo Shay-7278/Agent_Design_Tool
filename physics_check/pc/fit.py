@@ -160,95 +160,97 @@ def surface_lean(paths, max_overhang):
     return lean, need
 
 
-CLAMP_MARGIN = 5.0   # mm kept inside max_overhang / min_balance by clamp_course
+CLAMP_MARGIN = 20.0   # mm kept inside max_overhang / min_balance by clamp_paths
+CLAMP_STEP = 10.0     # clamp_paths: point spacing of the built course lines [mm]
 
 
-def _interp_u(row, s, length, closed):
-    """Sideways offset u of course row's bricks at arc position s, linear
-    between brick centres (held at the end values on an open course)."""
-    bs = sorted(row, key=lambda b: b.s)
-    if len(bs) == 1:
-        return bs[0].u
-    if closed:
-        for i, a in enumerate(bs):
-            b = bs[(i + 1) % len(bs)]
-            d = (b.s - a.s) % length or length
-            t = (s - a.s) % length
-            if t <= d:
-                return a.u + (b.u - a.u) * t / d
-        return bs[0].u
-    if s <= bs[0].s:
-        return bs[0].u
-    for a, b in zip(bs, bs[1:]):
-        if s <= b.s:
-            d = b.s - a.s
-            return a.u if d < 1e-9 else a.u + (b.u - a.u) * (s - a.s) / d
-    return bs[-1].u
+def _ray_hit(path, o, d):
+    """Signed distance t of the nearest crossing of the line o + t d with the
+    polyline path, or None."""
+    best = None
+    for a, b in path.segs:
+        sx, sy = b[0] - a[0], b[1] - a[1]
+        den = d[0] * sy - d[1] * sx
+        if abs(den) < 1e-12:
+            continue
+        qx, qy = a[0] - o[0], a[1] - o[1]
+        t = (qx * sy - qy * sx) / den
+        u = (qx * d[1] - qy * d[0]) / den
+        if -1e-9 <= u <= 1.0 + 1e-9 and (best is None or abs(t) < abs(best)):
+            best = t
+    return best
 
 
-def clamp_course(wall, k):
-    """Part of the fit (step 2, called by l0.settle_counts): start course k's
-    bricks over the course below.
+def _end_s(lo, q, end):
+    """Arc position on lo (extrapolated past its ends) of the point q."""
+    s, _lat = lo.nearest(q)
+    f_s = 0.0 if end == 0 else lo.length
+    if abs(s - f_s) > 1e-6:
+        return s
+    f_pt = lo.point(f_s)
+    tx, ty = lo.tangent(f_s + (0.5 if end == 0 else -0.5), 0.5)
+    return f_s + (q[0] - f_pt[0]) * tx + (q[1] - f_pt[1]) * ty
 
-    The fitted position follows the surface; where the surface leans or
-    flares further per course than a brick can overhang, the fitted bricks
-    float (no contact with the course below), and the L0 repair has no slope
-    to bring them back.  Course k - 1 must already be settled.
 
-    * sideways: a brick whose centre lies more than max_overhang - margin
-      from the centre line of the course below (through its brick centres)
-      moves sideways until it does not;
-    * along the course (end bricks of open courses): a brick whose centre
-      lies past the end of the course below, less min_balance + margin, moves
-      back along its course.
+def clamp_paths(paths, p):
+    """Step 2a: build each course line over the course below.
 
-    Only the current position (s, u) moves, and only by what the limits
-    require (the surface lag surface_lean estimates, bottom up).  The fitted
-    position (s0, u0) and the QP target (st, ut) stay on the surface, so the
-    repair keeps pulling towards it and the reported deviation still measures
-    the departure from it.  (Clamping the target too was tried and left more
-    bricks failing.)  Returns (bricks moved sideways, end bricks moved along,
-    largest move [mm]).
+    Where the surface leans or flares further per course than a brick can
+    overhang, bricks fitted to it would float.  Bottom up, course k is built
+    along the (already built) line of course k - 1: at points every
+    CLAMP_STEP mm along it, the surface course k is found along its normal,
+    and the new line follows it there, but at most max_overhang -
+    CLAMP_MARGIN to either side (smoothed over brickL / 2).  Where the
+    surface stays within that, the line is the surface; where it leans
+    further, the line is the course below offset by the limit, so the moves
+    add up course by course (the surface lag of surface_lean) and give way
+    where the surface leans back.  Built this way the line is as fair as the
+    one below and cannot fold over itself, however far it is from the
+    surface.  An open course spans the surface course's ends, but runs past
+    the ends of the course below by no more than an end half brick allows.
+
+    The bricks are then counted and placed on these lines, and the fitted
+    position is on them.  Returns (paths, [largest sideways distance from the
+    surface per course [mm]], [mm cut from the course's ends]).
     """
-    if k == 0 or not wall.courses[k - 1]:
-        return 0, 0, 0.0
-    p = wall.p
     lim = max(0.0, p["max_overhang"] - CLAMP_MARGIN)
-    lo, row_lo = wall.paths[k - 1], wall.courses[k - 1]
-    worst, n_side, n_end = 0.0, 0, 0
-    for b in wall.courses[k]:
-        moved = 0.0
-        for _ in range(2):              # course normals of k and k - 1 differ a little
-            cx, cy, _tx, _ty, nx, ny = wall.pose(b)
-            s_lo, lat = lo.nearest((cx, cy))
-            e = lat - _interp_u(row_lo, s_lo, lo.length, lo.closed)
-            excess = e - max(-lim, min(lim, e))
-            if abs(excess) < 1e-3:
-                break
-            ltx, lty = lo.tangent(s_lo, 0.5 * wall.L)
-            du = -excess * (lty * nx - ltx * ny)        # along course k - 1's +X normal
-            b.u += du
-            moved += abs(du)
-        if moved > 1e-3:
-            n_side += 1
-            worst = max(worst, moved)
-    if not (wall.paths[k].closed or lo.closed):
-        ext_lo = min(c.s - 0.5 * c.length for c in row_lo)
-        ext_hi = max(c.s + 0.5 * c.length for c in row_lo)
-        need = p["min_balance"] + CLAMP_MARGIN
-        bs = sorted(wall.courses[k], key=lambda b: b.s)
-        for b in (bs[0], bs[-1]):
-            s_lo = lo.nearest(wall.pose(b)[:2])[0]
-            if s_lo < ext_lo + need:
-                ds = ext_lo + need - s_lo
-            elif s_lo > ext_hi - need:
-                ds = ext_hi - need - s_lo
-            else:
-                continue
-            b.s = max(0.0, min(wall.paths[k].length, b.s + ds))
-            n_end += 1
-            worst = max(worst, abs(ds))
-    return n_side, n_end, worst
+    half = 0.5 * p["brickL"]
+    allow = max(0.0, 0.25 * p["brickL"] - p["min_balance"] - CLAMP_MARGIN)
+    out, moves, trims = [paths[0]], [0.0], [0.0]
+    for k in range(1, len(paths)):
+        lo, surf = out[k - 1], paths[k]
+        closed = surf.closed and lo.closed
+        if closed:
+            s_a, s_b, cut = 0.0, lo.length, 0.0
+        else:
+            ea = _end_s(lo, surf.pts[0], 0)
+            eb = _end_s(lo, surf.pts[-1], 1)
+            s_a, s_b = max(ea, -allow), min(eb, lo.length + allow)
+            cut = max(s_a - ea, eb - s_b, 0.0)
+        n = max(2, int(math.ceil((s_b - s_a) / CLAMP_STEP)) + (0 if closed else 1))
+        ss = [s_a + (s_b - s_a) * i / (n if closed else n - 1) for i in range(n)]
+        base, nrm, off = [], [], []
+        for s in ss:
+            o = lo.point(s)
+            tx, ty = lo.tangent(s, half)
+            nv = (ty, -tx)
+            hit = _ray_hit(surf, o, nv)
+            if hit is None:
+                hit = -surf.nearest(o)[1]       # no crossing: sideways distance instead
+            base.append(o)
+            nrm.append(nv)
+            off.append(max(-lim, min(lim, hit)))
+        win = int(round(0.25 * half / CLAMP_STEP))
+        sm = []
+        for i in range(n):
+            js = [(i + j) % n if closed else min(max(i + j, 0), n - 1) for j in range(-win, win + 1)]
+            sm.append(sum(off[j] for j in js) / len(js))
+        pts = [(o[0] + e * nv[0], o[1] + e * nv[1]) for o, e, nv in zip(base, sm, nrm)]
+        line = Path2(pts, closed)
+        out.append(line)
+        moves.append(max(abs(surf.nearest(q)[1]) for q in pts[::5]))
+        trims.append(cut)
+    return out, moves, trims
 
 
 def fit_sections(sections, p):
@@ -261,7 +263,8 @@ def fit_sections(sections, p):
     """
     secs = [(offset_polyline(pts, closed, p["face_offset"]), closed) for pts, closed in sections]
     secs = align_sections(secs)
-    paths = [Path2(pts, closed) for pts, closed in secs]
+    surface = [Path2(pts, closed) for pts, closed in secs]
+    paths, moves, trims = clamp_paths(surface, p)
 
     counts, joints = [], []
     for k, path in enumerate(paths):
@@ -282,4 +285,4 @@ def fit_sections(sections, p):
                     "middle brick ({:.1f} mm)".format(k, path.length, need))
         counts.append(n)
         joints.append(j)
-    return paths, counts, joints
+    return paths, counts, joints, {"surface": surface, "moves": moves, "trims": trims}

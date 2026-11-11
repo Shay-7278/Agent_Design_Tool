@@ -623,9 +623,9 @@ def _polish(wall, pins, passes=3):
     return moved
 
 
-def l0_repair_qp(wall, log):
-    """Steps 3-4 as a sequential QP.  Returns (passed, fatal message) like
-    l0.l0_repair."""
+def _solve(wall, log, label="L0 QP"):
+    """QP rounds from the current layout, then the single-brick clean-up.
+    Logs one line; returns the remaining total violation [mm]."""
     p = wall.p
     t0 = time.time()
     R = p["qp_trust"]
@@ -663,10 +663,118 @@ def l0_repair_qp(wall, log):
         viol = sum(violations(wall).values())
     t_pol = time.time() - t_pol
     if start > 1e-9:
-        log.append("L0 QP: violation {:.1f} -> {:.1f} mm in {} round(s) ({} kept, final trust "
+        log.append("{}: violation {:.1f} -> {:.1f} mm in {} round(s) ({} kept, final trust "
                    "radius {:.1f} mm), {} single-brick clean-up move(s), {:.1f} s ({:.1f} s "
                    "QP solves, {:.1f} s clean-up, rest geometry)".format(
-                       start, viol, rounds, kept, R, polished, time.time() - t0, t_qp, t_pol))
+                       label, start, viol, rounds, kept, R, polished, time.time() - t0, t_qp,
+                       t_pol))
+    return viol
+
+
+def _drop_unsupported(wall, log, budget):
+    """Drop the bricks of the lowest course that still fail contact after
+    the repair (floating, or under min_contact: no position with enough
+    contact was found, e.g. a neighbour blocks the way back onto support).
+    Only the lowest course: the courses above depend on it and are
+    re-solved before anything there is dropped.  Returns the number
+    dropped (at most budget)."""
+    p = wall.p
+    bad = [b for b in wall.bricks() if b.k > 0 and "contact" in wall.check(b)]
+    if not bad or budget <= 0:
+        return 0
+    k = min(b.k for b in bad)
+    bad = sorted((b for b in bad if b.k == k), key=lambda b: b.s)[:budget]
+    for b in bad:
+        area = sum(a for _c, a, _cen in wall.supports(b))
+        share = area / (b.length * wall.W)
+        reason = ("no contact with course {}".format(k - 1) if area <= 0 else
+                  "{:.0f}% contact with course {} (< min_contact {:.0f}%)".format(
+                      100 * share, k - 1, 100 * p["min_contact"]))
+        wall.drop(b, reason)
+        spread = _close_gap(wall, k, b)
+        log.append("dropped course {} brick {}: {}; no position with enough contact found; {}"
+                   "re-solving the courses above".format(
+                       b.k, b.i, reason,
+                       "gap spread over the course's head joints (+{:.1f} mm each), ".format(spread)
+                       if spread else ""))
+    return len(bad)
+
+
+def _close_gap(wall, k, gone):
+    """Spread the gap left by the dropped brick gone over all head joints of
+    course k: the bricks slide along the course towards the gap, each joint
+    grows by the same amount, and the gap shrinks to an ordinary joint.  (A
+    brick cannot span a one-brick gap, so without this the brick above it
+    floats too and the drops cascade up the wall.)  The end bricks of an open
+    course stay where they are; nothing moves when the dropped brick was an
+    end brick.  The moved bricks' targets move with them, so the repair does
+    not pull them back over the gap.  Returns the growth per joint [mm]."""
+    path = wall.paths[k]
+    row = sorted(wall.courses[k], key=lambda b: b.s)
+    n = len(row)
+    if n < 2:
+        return 0.0
+    ln = path.length
+
+    def joint(a, b):                     # arc-length head joint from a to the next brick b
+        d = b.s - a.s
+        if path.closed:
+            d %= ln
+        return d - 0.5 * (a.length + b.length)
+
+    if path.closed:
+        j = next((i for i in range(n) if (row[i].s - gone.s) % ln < 0.5 * ln and
+                  (gone.s - row[i - 1].s) % ln < 0.5 * ln), None)
+        if j is None:
+            return 0.0
+        order = row[j:] + row[:j]                  # starts right after the gap
+        joints = [joint(order[i], order[i + 1]) for i in range(n - 1)]
+        gap = joint(order[-1], order[0])
+        G = gap - sum(joints) / len(joints)
+        if G <= 0:
+            return 0.0
+        c = -(n - 1) * G / (2.0 * n)
+        shifts = [(b, c + i * G / n) for i, b in enumerate(order)]
+        per = G / n
+    else:
+        j = next((i for i in range(n) if row[i].s > gone.s), None)
+        if j is None or j == 0:                    # an end brick was dropped
+            return 0.0
+        nj = n - 1
+        joints = [joint(row[i], row[i + 1]) for i in range(nj)]
+        others = [g for i, g in enumerate(joints) if i != j - 1]
+        if not others:
+            return 0.0
+        G = joints[j - 1] - sum(others) / len(others)
+        if G <= 0:
+            return 0.0
+        shifts = [(b, i * G / nj if i < j else -(nj - i) * G / nj) for i, b in enumerate(row)]
+        per = G / nj
+    for b, d in shifts:
+        if abs(d) > 1e-9:
+            s = b.s + d
+            b.s = s % ln if path.closed else s
+            b.st = b.s
+    return per
+
+
+def l0_repair_qp(wall, log):
+    """Steps 3-4 as a sequential QP.  Returns (passed, fatal message) like
+    l0.l0_repair.
+
+    Bricks that still fail contact after the repair cannot be put anywhere
+    with enough support; up to max_drop of them are dropped, lowest course
+    first, re-solving after each course's drops so the bricks above adjust
+    to the gap (and are dropped in turn if they then have no support)."""
+    p = wall.p
+    viol = _solve(wall, log)
+    n_drop = 0
+    while viol > 1e-9 and n_drop < p["max_drop"]:
+        d = _drop_unsupported(wall, log, p["max_drop"] - n_drop)
+        if not d:
+            break
+        n_drop += d
+        viol = _solve(wall, log, "L0 QP after dropping")
 
     failing = 0
     for b in wall.bricks():

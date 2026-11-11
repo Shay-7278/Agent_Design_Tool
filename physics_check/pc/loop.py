@@ -40,13 +40,13 @@ def run_check(job, use_cra=True):
     result = {"units": "mm", "brickL": p["brickL"], "brickW": p["brickW"],
               "brickH": p["brickH"], "mortar_t": p["mortar_t"], "params": p}
     try:
-        paths, counts, _joints = fit_sections(sections, p)
+        paths, counts, _joints, info = fit_sections(sections, p)
         shifts = ["{} ({} -> {})".format(k, counts[k - 1], counts[k]) for k in range(1, len(paths))
                   if not paths[k].closed and not paths[k - 1].closed and counts[k] != counts[k - 1]]
         if shifts:
             log.append("middle-brick count changes (joints not over the bricks below) at course(s): "
                        + ", ".join(shifts))
-        lean, need = surface_lean(paths, p["max_overhang"])
+        lean, need = surface_lean(info["surface"], p["max_overhang"])
         log.append("surface lean per course, max sideways offset from the course below [mm, signed]: "
                    + " ".join("{:+.0f}".format(v) for v in lean[1:]))
         steep = [k for k in range(1, len(lean)) if abs(lean[k]) > p["max_overhang"]]
@@ -60,6 +60,17 @@ def run_check(job, use_cra=True):
                            need[k_worst], k_worst,
                            "; above max_move ({:.0f} mm), L0 cannot pass there".format(p["max_move"])
                            if capped else ""))
+        moved = [k for k in range(len(paths)) if info["moves"][k] > 0.5 or info["trims"][k] > 0.5]
+        if moved:
+            k_worst = max(moved, key=lambda k: info["moves"][k])
+            log.append("course lines moved over the course below (the fit and the deviations "
+                       "below are measured from the moved lines): {} course(s), up to {:.0f} mm "
+                       "sideways at course {}{}".format(
+                           len(moved), info["moves"][k_worst], k_worst,
+                           "; open ends trimmed at course(s) " + " ".join(
+                               "{} ({:.0f} mm)".format(k, info["trims"][k]) for k in moved
+                               if info["trims"][k] > 0.5)
+                           if any(info["trims"][k] > 0.5 for k in moved) else ""))
     except FitError as err:
         result.update({"ok": False, "fatal": str(err), "log": log + [str(err)], "frames": [],
                        "bricks": []})
@@ -126,6 +137,13 @@ def run_check(job, use_cra=True):
     # bricks still failing when the loop stopped are "failed", whatever they
     # did before (a fatal stop or max_iter can leave them unrepaired)
     l1_fail = set(r["upper"] for r in cra["interfaces"] if r["fails"])
+    if wall.dropped:
+        counts = [len(row) for row in wall.courses]
+        log.append("bricks per course after dropping {} brick(s) (bottom up): {}".format(
+            len(wall.dropped), " ".join(str(n) for n in counts)))
+    dropped = [{"course": b.k, "index": b.i, "length": b.length, "frame": frame,
+                "fitted_frame": wall.frame(b, fitted=True), "reason": reason}
+               for b, frame, reason in wall.dropped]
     bricks = []
     for b in wall.bricks():
         l0_fail = sorted(wall.check(b))
@@ -149,7 +167,8 @@ def run_check(job, use_cra=True):
     result.update({
         "ok": bool(l0_ok and l1_ok and not fatal), "fatal": fatal, "iterations": it,
         "l0_pass": l0_ok, "l1_state": cra["state"], "l1_pass": l1_ok,
-        "bricks_per_course": counts, "head_joints": joints, "log": log, "bricks": bricks, "interfaces": interfaces,
+        "bricks_per_course": counts, "head_joints": joints, "log": log, "bricks": bricks,
+        "dropped": dropped, "interfaces": interfaces,
         "frames": [b["frame"] for b in bricks],     # export_frames_json / cra_check format
         "use_cra": use_cra, "solver": p["solver"], "cra_time": cra_time,
         "time": time.time() - t_start,
@@ -164,6 +183,8 @@ def report(result):
     counts = {}
     for b in br:
         counts[b["status"]] = counts.get(b["status"], 0) + 1
+    if result.get("dropped"):
+        counts["dropped"] = len(result["dropped"])
     lines.append("bricks: " + ", ".join("{} {}".format(v, k) for k, v in sorted(counts.items())))
     if br:
         worst = max(br, key=lambda b: b["deviation"])
@@ -177,6 +198,8 @@ def report(result):
         if b["status"] in ("flagged", "failed"):
             lines.append("  course {} brick {}: {} {} {}".format(
                 b["course"], b["index"], b["status"], ",".join(b["l0_fail"]), "; ".join(b["notes"])))
+    for d in result.get("dropped", []):
+        lines.append("  course {} brick {}: dropped ({})".format(d["course"], d["index"], d["reason"]))
     bad = [i for i in result.get("interfaces", []) if i["fails"]]
     for i in bad:
         lines.append("  interface {}->{}: sigma_t/(f_t/SF) = {:.2f}".format(i["lower"], i["upper"], i["ratio"]))

@@ -53,6 +53,7 @@ class Wall(object):
         self.steps = [0.0 for _ in paths]
         self.widened = [False for _ in paths]   # joints allowed past max_head
         self.counts = list(counts)
+        self.dropped = []                       # bricks removed by the L0 repair (l0qp.py)
         for k, n in enumerate(counts):
             self.place_course(k, n)
 
@@ -164,6 +165,14 @@ class Wall(object):
         for row in self.courses:
             for b in row:
                 yield b
+
+    def drop(self, b, reason):
+        """Remove brick b from its course (it keeps its (course, index) label;
+        the other bricks keep theirs).  Recorded in self.dropped with its
+        pose at the time."""
+        self.courses[b.k].remove(b)
+        b.status = "dropped"
+        self.dropped.append((b, self.frame(b), reason))
 
     def move(self, b, s, u):
         if self.paths[b.k].closed:

@@ -43,6 +43,8 @@ DEFAULTS = {
     "max_rotation": 30.0,      # QP L0 repair: largest brick rotation from the course direction
                                # [deg]; 0 = bricks keep following the course
     "qp_smooth": 1.0,          # QP L0 repair: weight of (u_i - u_i+1)^2 between neighbours
+    "max_drop": 10,            # QP L0 repair: most bricks dropped per call where no position
+                               # with enough contact exists (l0qp.py); 0 = never drop
 }
 
 SOLVERS = ("cra_penalty", "rbe")
@@ -66,7 +68,7 @@ def resolve_params(given):
               "move_step", "min_step", "slide_step", "tmax", "amin", "cra_timeout", "qp_trust",
               "max_rotation", "qp_smooth"):
         p[k] = float(p[k])
-    for k in ("max_iter", "l0_max_iter", "nmax", "qp_max_iter"):
+    for k in ("max_iter", "l0_max_iter", "nmax", "qp_max_iter", "max_drop"):
         p[k] = int(p[k])
     if p["offset_distance"] is None:
         p["offset_distance"] = 0.5 * (p["brickL"] + p["head_joint"])
