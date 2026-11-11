@@ -6,6 +6,7 @@ from __future__ import division
 import math
 
 from .geom2d import rect_gap
+from .fit import clamp_course
 from .params import move_cap
 
 DIRS16 = [(math.cos(2 * math.pi * j / 16.0), math.sin(2 * math.pi * j / 16.0)) for j in range(16)]
@@ -111,15 +112,27 @@ def settle_counts(wall, log):
     [min_head, max_head]; if that cannot work, it drops a brick and is
     re-spaced over its full length, so its ends stay in line with the courses
     above and below (its head joints may then exceed max_head; reported).
-    The settled positions are the fitted reference."""
+    The settled positions are the fitted reference.
+
+    Bottom up, each course first starts over the course below
+    (fit.clamp_course), so a wall that leans or flares more per course than
+    a brick can overhang does not start with floating bricks; the collision
+    check then sees the course where it will actually be (shifted sideways
+    on a curve, a course gets shorter on the concave side).  The fitted
+    reference and the QP target stay on the surface (u0 = ut = 0)."""
+    side = ends = 0
+    worst = 0.0
     for k in range(len(wall.courses)):
         n = wall.counts[k]     # middle-brick count on an open course, total on a closed one
         b0 = len(wall.courses[k])
+        c = clamp_course(wall, k)
         while wall.course_collides(k) and repair_spacing(wall, k) and n > 1:
             n -= 1
             wall.place_course(k, n, widen=True)
+            c = clamp_course(wall, k)
+        side, ends, worst = side + c[0], ends + c[1], max(worst, c[2])
         for b in wall.courses[k]:
-            b.s0, b.u0, b.status = b.s, b.u, "passed"
+            b.s0, b.u0, b.status = b.s, 0.0, "passed"
             b.st, b.ut, b.r0, b.rt = b.s, b.u, b.r, b.r
         if len(wall.courses[k]) != b0:
             msg = "course {}: {} -> {} bricks (curvature: head joints < min_head)".format(
@@ -128,6 +141,9 @@ def settle_counts(wall, log):
                 msg += "; head joints widened to {:.1f} mm (> max_head {:.0f} mm)".format(
                     wall.head_joint(k), wall.p["max_head"])
             log.append(msg)
+    if side or ends:
+        log.append("fit started over the course below: {} brick(s) moved sideways, {} end brick(s) "
+                   "along the course, up to {:.1f} mm from the surface".format(side, ends, worst))
 
 
 def l0_failures(wall):

@@ -160,6 +160,97 @@ def surface_lean(paths, max_overhang):
     return lean, need
 
 
+CLAMP_MARGIN = 5.0   # mm kept inside max_overhang / min_balance by clamp_course
+
+
+def _interp_u(row, s, length, closed):
+    """Sideways offset u of course row's bricks at arc position s, linear
+    between brick centres (held at the end values on an open course)."""
+    bs = sorted(row, key=lambda b: b.s)
+    if len(bs) == 1:
+        return bs[0].u
+    if closed:
+        for i, a in enumerate(bs):
+            b = bs[(i + 1) % len(bs)]
+            d = (b.s - a.s) % length or length
+            t = (s - a.s) % length
+            if t <= d:
+                return a.u + (b.u - a.u) * t / d
+        return bs[0].u
+    if s <= bs[0].s:
+        return bs[0].u
+    for a, b in zip(bs, bs[1:]):
+        if s <= b.s:
+            d = b.s - a.s
+            return a.u if d < 1e-9 else a.u + (b.u - a.u) * (s - a.s) / d
+    return bs[-1].u
+
+
+def clamp_course(wall, k):
+    """Part of the fit (step 2, called by l0.settle_counts): start course k's
+    bricks over the course below.
+
+    The fitted position follows the surface; where the surface leans or
+    flares further per course than a brick can overhang, the fitted bricks
+    float (no contact with the course below), and the L0 repair has no slope
+    to bring them back.  Course k - 1 must already be settled.
+
+    * sideways: a brick whose centre lies more than max_overhang - margin
+      from the centre line of the course below (through its brick centres)
+      moves sideways until it does not;
+    * along the course (end bricks of open courses): a brick whose centre
+      lies past the end of the course below, less min_balance + margin, moves
+      back along its course.
+
+    Only the current position (s, u) moves, and only by what the limits
+    require (the surface lag surface_lean estimates, bottom up).  The fitted
+    position (s0, u0) and the QP target (st, ut) stay on the surface, so the
+    repair keeps pulling towards it and the reported deviation still measures
+    the departure from it.  (Clamping the target too was tried and left more
+    bricks failing.)  Returns (bricks moved sideways, end bricks moved along,
+    largest move [mm]).
+    """
+    if k == 0 or not wall.courses[k - 1]:
+        return 0, 0, 0.0
+    p = wall.p
+    lim = max(0.0, p["max_overhang"] - CLAMP_MARGIN)
+    lo, row_lo = wall.paths[k - 1], wall.courses[k - 1]
+    worst, n_side, n_end = 0.0, 0, 0
+    for b in wall.courses[k]:
+        moved = 0.0
+        for _ in range(2):              # course normals of k and k - 1 differ a little
+            cx, cy, _tx, _ty, nx, ny = wall.pose(b)
+            s_lo, lat = lo.nearest((cx, cy))
+            e = lat - _interp_u(row_lo, s_lo, lo.length, lo.closed)
+            excess = e - max(-lim, min(lim, e))
+            if abs(excess) < 1e-3:
+                break
+            ltx, lty = lo.tangent(s_lo, 0.5 * wall.L)
+            du = -excess * (lty * nx - ltx * ny)        # along course k - 1's +X normal
+            b.u += du
+            moved += abs(du)
+        if moved > 1e-3:
+            n_side += 1
+            worst = max(worst, moved)
+    if not (wall.paths[k].closed or lo.closed):
+        ext_lo = min(c.s - 0.5 * c.length for c in row_lo)
+        ext_hi = max(c.s + 0.5 * c.length for c in row_lo)
+        need = p["min_balance"] + CLAMP_MARGIN
+        bs = sorted(wall.courses[k], key=lambda b: b.s)
+        for b in (bs[0], bs[-1]):
+            s_lo = lo.nearest(wall.pose(b)[:2])[0]
+            if s_lo < ext_lo + need:
+                ds = ext_lo + need - s_lo
+            elif s_lo > ext_hi - need:
+                ds = ext_hi - need - s_lo
+            else:
+                continue
+            b.s = max(0.0, min(wall.paths[k].length, b.s + ds))
+            n_end += 1
+            worst = max(worst, abs(ds))
+    return n_side, n_end, worst
+
+
 def fit_sections(sections, p):
     """Offset to the centreline, align, and choose each course's brick count.
 

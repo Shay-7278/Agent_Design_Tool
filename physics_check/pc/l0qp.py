@@ -7,7 +7,8 @@ Variables, per brick: ds (along its course), du (sideways, along the
 course normal) and, if max_rotation > 0, dr (rotation in plan from the
 course direction, about the brick centre, capped at +/- max_rotation).
 Course 0 (the base) does not move; the end bricks of open courses are
-pinned along the course (ds = 0) so the wall ends follow the surface edge.
+pinned along the course (ds = 0) so the wall ends follow the surface edge,
+unless they lack support (contact or balance fails), re-checked each round.
 
 Objective (least squares, all in mm^2):
 * deviation:  (s - target_s)^2 + (u - target_u)^2 per brick.  The target is
@@ -143,13 +144,21 @@ def _acc(co, d, scale=1.0):
 
 def brick_violation(wall, b):
     """Amount by which brick b fails L0 [mm]: contact deficit / brickW +
-    overhang excess + balance deficit + collision depth below min_head."""
+    overhang excess + balance deficit + collision depth below min_head.
+
+    A brick with no contact at all also adds its clear gap to the nearest
+    brick below, so moving a stranded brick towards support counts as
+    progress (without it the contact deficit is the same at any distance and
+    the keep/undo test cannot see the brick coming back)."""
     p = wall.p
     v = 0.0
     if b.k > 0:
         sup = wall.supports(b)
         area = sum(a for _c, a, _cen in sup)
         v += max(0.0, p["min_contact"] * b.length * wall.W - area) / wall.W
+        if not sup and wall.courses[b.k - 1]:
+            fp = wall.footprint(b)
+            v += max(0.0, min(rect_gap(fp, wall.footprint(c)) for c in wall.courses[b.k - 1]))
         ov = wall.overhang(b, sup=sup)
         if ov is not None:
             v += max(0.0, abs(ov) - p["max_overhang"])
@@ -342,13 +351,18 @@ def _rows(wall, geo, R):
 
 
 def _pinned(wall):
-    """End bricks of open courses (pinned along the course)."""
+    """End bricks of open courses (pinned along the course), except those that
+    lack support (contact or balance fails, or no contact at all): an end brick
+    whose course runs past the end of the course below can only get back onto
+    it by sliding along the course.  Re-evaluated every round, so a brick
+    that slid back onto support is pinned again where it now is."""
     pins = set()
     for k, row in enumerate(wall.courses):
         if row and not wall.paths[k].closed:
             bs = sorted(row, key=lambda b: b.s)
-            pins.add(bs[0])
-            pins.add(bs[-1])
+            for b in (bs[0], bs[-1]):
+                if b.k == 0 or not (wall.check(b) & {"contact", "balance"}):
+                    pins.add(b)
     return pins
 
 
@@ -615,7 +629,6 @@ def l0_repair_qp(wall, log):
     p = wall.p
     t0 = time.time()
     R = p["qp_trust"]
-    pins = _pinned(wall)
     per = violations(wall)
     viol = start = sum(per.values())
     unsup = _unsupported(wall)
@@ -625,7 +638,7 @@ def l0_repair_qp(wall, log):
     while viol > 1e-9 and rounds < p["qp_max_iter"] and R >= p["min_step"] - 1e-9:
         rounds += 1
         saved = [(b, b.s, b.u, b.r) for b in wall.bricks()]
-        size = _qp_round(wall, R, pins)
+        size = _qp_round(wall, R, _pinned(wall))
         if size:
             t_qp += size[3]
         new_per = violations(wall) if size else per
@@ -646,7 +659,7 @@ def l0_repair_qp(wall, log):
             R *= 0.5
     polished, t_pol = 0, time.time()
     if viol > 1e-9:
-        polished = _polish(wall, pins)
+        polished = _polish(wall, _pinned(wall))
         viol = sum(violations(wall).values())
     t_pol = time.time() - t_pol
     if start > 1e-9:
