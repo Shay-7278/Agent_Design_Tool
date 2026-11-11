@@ -260,7 +260,12 @@ def run_cra(wall):
             st = interface_stress(itf["points"], itf["origin"], itf["xaxis"], itf["yaxis"],
                                   itf["forces"])
             st["upper"], st["lower"] = upper, lower
-            st["ratio"] = st["sigma_t"] / allow if allow > 0 else float("inf")
+            # f_t = 0 (dry stack): any tension fails, so the ratio is
+            # infinite for a tensioned interface and 0 for one without tension
+            if allow > 0:
+                st["ratio"] = st["sigma_t"] / allow
+            else:
+                st["ratio"] = float("inf") if st["tensioned"] else 0.0
             st["fails"] = st["tensioned"] and st["ratio"] > 1.0
             rows.append(st)
     out["interfaces"] = rows

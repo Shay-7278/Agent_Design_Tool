@@ -104,7 +104,11 @@ Component outputs:
                      failing L0 or L1 when the loop stopped)
     Deviation:       Per brick: plan distance from its fitted position [mm]
     InterfacePts:    Centroid of each CRA interface
-    InterfaceRatio:  Per interface: sigma_t / (f_t / SF) (> 1 fails)
+    InterfaceRatio:  Per interface: sigma_t / (f_t / SF) (> 1 fails).  With
+                     f_t = 0 (dry stack: mortar_t = 0, f_t = 0) the ratio has
+                     no finite value, so a tensioned interface shows its
+                     tensile stress sigma_t in kPa instead (any value > 0
+                     fails); interfaces without tension show 0
     FittedFrames:    Brick planes straight after the fit (step 2)
     Report:          Text summary (iterations, failures, flagged bricks,
                      solver time)
@@ -225,6 +229,18 @@ def run_in_process(job):
     """Run the check inside Rhino's Python (command = "")."""
     from pc.loop import run_check
     return run_check(job)
+
+
+def interface_value(itf):
+    """InterfaceRatio value of one result interface: sigma_t / (f_t / SF), or,
+    when that has no finite value (f_t = 0, a dry stack), the tensile stress
+    itself in kPa (0 = no tension; with f_t = 0 any value > 0 fails).  None
+    only for tension on a degenerate contact."""
+    if itf.get("ratio") is not None:
+        return itf["ratio"]
+    if itf.get("sigma_t") is not None:
+        return itf["sigma_t"] / 1e3
+    return None
 
 
 def format_time(total, result):
@@ -370,7 +386,7 @@ def gh_main(g):
         out["FittedFrames"].append(plane(b["fitted_frame"]))
     for i in result.get("interfaces", []):
         out["InterfacePts"].append(rg.Point3d(*i["centroid"]))
-        out["InterfaceRatio"].append(i["ratio"])
+        out["InterfaceRatio"].append(interface_value(i))
     out["Report"] = result.get("report", "")
     return out
 

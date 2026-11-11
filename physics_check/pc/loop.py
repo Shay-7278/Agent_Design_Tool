@@ -161,8 +161,9 @@ def run_check(job, use_cra=True):
     for r in cra["interfaces"]:
         interfaces.append({
             "upper": [r["upper"].k, r["upper"].i], "lower": [r["lower"].k, r["lower"].i],
-            "centroid": [c / MM for c in r["centroid"]], "sigma_t": r["sigma_t"],
-            "P": r["P"], "ratio": r["ratio"], "tensioned": r["tensioned"], "fails": r["fails"],
+            "centroid": [c / MM for c in r["centroid"]], "sigma_t": _finite(r["sigma_t"]),
+            "P": r["P"], "ratio": _finite(r["ratio"]), "tensioned": r["tensioned"],
+            "fails": r["fails"],
         })
     result.update({
         "ok": bool(l0_ok and l1_ok and not fatal), "fatal": fatal, "iterations": it,
@@ -175,6 +176,12 @@ def run_check(job, use_cra=True):
     })
     result["report"] = report(result)
     return result
+
+
+def _finite(v):
+    """v, or None when it is infinite / NaN (JSON has no Infinity: strict
+    readers reject it).  Works in IronPython 2.7 (no math.isfinite)."""
+    return v if v == v and abs(v) != float("inf") else None
 
 
 def report(result):
@@ -202,7 +209,15 @@ def report(result):
         lines.append("  course {} brick {}: dropped ({})".format(d["course"], d["index"], d["reason"]))
     bad = [i for i in result.get("interfaces", []) if i["fails"]]
     for i in bad:
-        lines.append("  interface {}->{}: sigma_t/(f_t/SF) = {:.2f}".format(i["lower"], i["upper"], i["ratio"]))
+        if i["ratio"] is not None:
+            lines.append("  interface {}->{}: sigma_t/(f_t/SF) = {:.2f}".format(
+                i["lower"], i["upper"], i["ratio"]))
+        elif i["sigma_t"] is not None:      # f_t = 0 (dry stack)
+            lines.append("  interface {}->{}: sigma_t = {:.1f} kPa with f_t/SF = 0 (dry stack: "
+                         "any tension fails)".format(i["lower"], i["upper"], i["sigma_t"] / 1e3))
+        else:
+            lines.append("  interface {}->{}: tension on a degenerate contact (no stress "
+                         "computed)".format(i["lower"], i["upper"]))
     if "time" in result:
         lines.append("solver time: {:.1f} s total, {:.1f} s in L1 solves ({})".format(
             result["time"], result.get("cra_time", 0.0),
