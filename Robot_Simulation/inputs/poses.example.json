@@ -1,0 +1,12 @@
+{
+  "frame": "world",
+  "position_units": "m",
+  "orientation_format": "euler_xyz",
+  "angle_units": "degrees",
+  "bricks": [
+    {
+      "position": [0.12, 0.30, 0.031],
+      "orientation": [0.0, 0.0, 0.0]
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="milling_table" params="
+    prefix:=MT_
+    parent:=world
+    xyz
+    rpy
+    ">
+
+    <!--links-->
+    <link name="${prefix}base">
+      <visual>
+        <geometry>
+          <mesh filename="package://abb_irb4600_workcell_description/meshes/visual/fixtures/MT_base.stl"/>
+        </geometry>
+        <origin xyz="0 0 0"/>
+        <material name="milling_table_white">
+          <color rgba="0.9607843 0.9450980 0.9137255 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://abb_irb4600_workcell_description/meshes/collision/fixtures/MT_base.stl"/>
+        </geometry>
+        <origin xyz="0 0 0"/>
+      </collision>
+    </link>
+
+    <!--joints-->
+    <joint name="${prefix}fixed_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${prefix}base"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+
+  </xacro:macro>
+</robot>

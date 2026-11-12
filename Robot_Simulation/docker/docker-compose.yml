@@ -1,0 +1,26 @@
+name: robot-brick-simulator
+
+services:
+  robot-sim:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: robot-brick-sim:local
+    ports:
+      - "6080:6080"
+      - "5900:5900"
+    volumes:
+      - ../inputs:/ros2_ws/inputs
+      - ../outputs:/ros2_ws/outputs
+    environment:
+      SIM_WORLD_FILE: workcell.sdf
+      DISPLAY: :1
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      CYCLONEDDS_URI: /cyclonedds.xml
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      GALLIUM_DRIVER: llvmpipe
+      QT_X11_NO_MITSHM: "1"
+    ipc: host
+    stdin_open: true
+    tty: true
+    restart: unless-stopped

@@ -1,0 +1,156 @@
+# tools.yaml — End-effector registry for the ABB IRB4600 workcell.
+#
+# Each entry describes one mountable end-effector.  Required fields:
+#
+#   nominal_tcp    — TCP in the flange frame based on CAD/design geometry.
+#                    xyz in metres, rpy in radians.
+#                    Defines the ${prefix}vis_tcp frame in the URDF.
+#
+#   calibrated_tcp — Correction measured after physical calibration on the
+#                    real robot.  This is a DELTA applied ON TOP of vis_tcp.
+#                    Set to identity (zeros / identity quaternion) before
+#                    calibration and fill in after running the calibration
+#                    procedure.  See urdf/end_effectors/README.md for the
+#                    workflow.
+#
+#     xyz   : position delta [x, y, z] in metres
+#     quat  : orientation delta as [w, x, y, z]  ← preferred; matches ABB output
+#     rpy   : fallback Euler angles [r, p, y] in radians, used by xacro when
+#             quat is not present or during development.  Must be kept in sync
+#             with quat by running scripts/update_tcp_calibration.py.
+#
+#   meshes — paths relative to the package share directory.
+#            Leave empty / omit for tools without geometry (e.g. "none").
+#
+#   joints — articulated joints carried by the tool (e.g. gripper fingers).
+#            Empty dict {} for rigid tools (saws, mills).
+#            Each joint entry: type, axis, lower/upper limits (SI), velocity.
+#
+# Mesh STL conventions:
+#   - Visual mesh  : detailed geometry for display.
+#   - Collision mesh: simplified convex hull for collision checking.
+#   - The STL coordinate frame origin MUST coincide with the ${prefix}tool0
+#     frame (i.e. the flange face) so the ee_body joint has a zero transform.
+#     If the model origin is elsewhere, bake a transform into the mesh file.
+
+tools:
+
+  none:
+    description: "Bare flange — no end-effector mounted"
+    nominal_tcp:
+      xyz: [0.0, 0.0, 0.0]
+      rpy: [0.0, 0.0, 0.0]
+    calibrated_tcp:
+      xyz:  [0.0, 0.0, 0.0]
+      quat: [1.0, 0.0, 0.0, 0.0]   # [w, x, y, z] identity — no calibration needed
+      rpy:  [0.0, 0.0, 0.0]
+    meshes: {}
+    joints: {}
+
+  gripper:
+    description: "Pneumatic parallel gripper"
+    nominal_tcp:
+      # Zero offset until gripper CAD is finalised and TCP is calibrated.
+      # The LL_tcp frame will coincide with LL_tool0 (flange face).
+      xyz: [0.0, 0.0, 0.0]
+      rpy: [0.0, 0.0, 0.0]
+    calibrated_tcp:
+      xyz:  [0.0, 0.0, 0.0]
+      quat: [1.0, 0.0, 0.0, 0.0]   # [w, x, y, z]
+      rpy:  [0.0, 0.0, 0.0]
+    meshes:
+      visual:    "meshes/visual/end_effectors/gripper.stl"
+      collision: "meshes/collision/end_effectors/gripper_collision.stl"
+    joints:
+      left_finger:
+        type: prismatic
+        axis: [0, 1, 0]      # +Y direction
+        lower: 0.0
+        upper: 0.030         # metres — max opening per finger (30 mm per side)
+        velocity: 0.05       # m/s
+      right_finger:
+        type: prismatic
+        axis: [0, -1, 0]     # −Y direction (mirrored)
+        lower: 0.0
+        upper: 0.030
+        velocity: 0.05
+
+  psh42-100_gripper:
+    description: "PSH42-100 pneumatic parallel gripper"
+    nominal_tcp:
+      xyz: [0.0, 0.0, 0.1867018]   # fingertip midpoint from gripper body origin
+      rpy: [0.0, 0.0, 0.0]
+    calibrated_tcp:
+      xyz:  [0.0, 0.0, 0.0]
+      quat: [1.0, 0.0, 0.0, 0.0]   # [w, x, y, z] identity — fill in after calibration
+      rpy:  [0.0, 0.0, 0.0]
+    meshes:
+      visual_body:            "meshes/visual/end_effectors/psh42-100_gripper_body.stl"
+      visual_fingers_left:    "meshes/visual/end_effectors/psh42-100_gripper_fingers_left.stl"
+      visual_fingers_right:   "meshes/visual/end_effectors/psh42-100_gripper_fingers_right.stl"
+      collision_body:         "meshes/collision/end_effectors/psh42-100_gripper_body.stl"
+      collision_fingers_left: "meshes/collision/end_effectors/psh42-100_gripper_fingers_left.stl"
+      collision_fingers_right: "meshes/collision/end_effectors/psh42-100_gripper_fingers_right.stl"
+    joints:
+      left_finger:
+        type: prismatic
+        axis: [-1, 0, 0]
+        lower: 0.0
+        upper: 0.1             # metres
+        velocity: 0.25         # m/s
+      right_finger:
+        type: prismatic
+        axis: [1, 0, 0]
+        lower: 0.0
+        upper: 0.1
+        velocity: 0.25
+
+  psh32-1_gripper:
+    description: "PSH32-1 pneumatic parallel long timber gripper"
+    nominal_tcp:
+      xyz: [0.0, 0.0, 0.333]   # fingertip midpoint from gripper body origin
+      rpy: [0.0, 0.0, 0.0]
+    calibrated_tcp:
+      xyz:  [0.0, 0.0, 0.0]
+      quat: [1.0, 0.0, 0.0, 0.0]   # [w, x, y, z] identity — fill in after calibration
+      rpy:  [0.0, 0.0, 0.0]
+    meshes:
+      visual_body:            "meshes/visual/end_effectors/psh32-1_gripper_body.stl"
+      visual_fingers_left:    "meshes/visual/end_effectors/psh32-1_gripper_fingers_left.stl"
+      visual_fingers_right:   "meshes/visual/end_effectors/psh32-1_gripper_fingers_right.stl"
+      collision_body:         "meshes/collision/end_effectors/psh32-1_gripper_body.stl"
+      collision_fingers_left: "meshes/collision/end_effectors/psh32-1_gripper_fingers_left.stl"
+      collision_fingers_right: "meshes/collision/end_effectors/psh32-1_gripper_fingers_right.stl"
+    joints:
+      left_finger:
+        type: prismatic
+        axis: [-1, 0, 0]
+        lower: 0.0
+        upper: 0.1             # metres
+        velocity: 0.25         # m/s
+      right_finger:
+        type: prismatic
+        axis: [1, 0, 0]
+        lower: 0.0
+        upper: 0.1
+        velocity: 0.25
+
+
+
+  # ---------------------------------------------------------------------------
+  # Template for adding a new tool — copy this block, rename, and fill in:
+  # ---------------------------------------------------------------------------
+  #
+  # saw:
+  #   description: "Circular saw end-effector"
+  #   nominal_tcp:
+  #     xyz: [0.0, 0.0, 0.250]
+  #     rpy: [0.0, 0.0, 0.0]
+  #   calibrated_tcp:
+  #     xyz:  [0.0, 0.0, 0.0]
+  #     quat: [1.0, 0.0, 0.0, 0.0]
+  #     rpy:  [0.0, 0.0, 0.0]
+  #   meshes:
+  #     visual:    "meshes/visual/end_effectors/saw.stl"
+  #     collision: "meshes/collision/end_effectors/saw_collision.stl"
+  #   joints: {}

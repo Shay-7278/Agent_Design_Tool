@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <xacro:macro name="tc_master" params="prefix">
+
+    <link name="${prefix}tc_master">
+      <!-- TODO: Update inertial values -->
+      <inertial>
+        <origin xyz="0.00252 -0.01095 0.03960" rpy="0 0 0"/>
+        <mass value="3.0"/>
+        <inertia
+          ixx="0.01" ixy="0" ixz="0"
+          iyy="0.01" iyz="0"
+          izz="0.01"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://abb_irb4600_workcell_description/meshes/visual/end_effectors/TC_master.stl"/>
+        </geometry>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://abb_irb4600_workcell_description/meshes/collision/end_effectors/TC_master.stl"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="${prefix}flange_to_tc_master" type="fixed">
+      <parent link="${prefix}flange"/>
+      <child link="${prefix}tc_master"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${prefix}tool_attachment_frame"/>
+    <joint name="${prefix}tc_master_to_tool_attachment_frame" type="fixed">
+      <parent link="${prefix}tc_master"/>
+      <child link="${prefix}tool_attachment_frame"/>
+      <origin xyz="0.000001713 0.000002148 0.075844400" rpy="0 0 0.174479714"/>
+    </joint>
+
+  </xacro:macro>
+
+</robot>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<robot name="abb_irb4600_workcell" xmlns:xacro="http://wiki.ros.org/xacro">
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/abb_irb4600_workcell_macro.xacro"/>
+
+  <!-- Which tool is attached to the TC master on each arm.
+       Valid values: none | psh42-100_gripper | psh32-1_gripper | <any key in config/tools.yaml>
+       Pass at build time:  xacro ... tool_ll:=psh42-100_gripper tool_rr:=none
+       Default "none" leaves the TC master with no tool attached.  -->
+  <xacro:arg name="tool_ll" default="none"/>
+  <xacro:arg name="tool_rr" default="none"/>
+
+  <link name="world"/>
+  <xacro:abb_irb4600_workcell
+    parent="world"
+    tool_ll="$(arg tool_ll)"
+    tool_rr="$(arg tool_rr)"
+  />
+
+</robot>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="platform_length" value="5.47" />
+  <xacro:property name="platform_width" value="2.44" />
+  <xacro:property name="platform_thickness" value="0.01905" />
+  <xacro:property name="platform_pos_xy" value="1.455 1.720" />
+
+  <xacro:property name="platform_size" value="${platform_length} ${platform_width} ${platform_thickness}" />
+
+  <xacro:macro name="material_platform_white">
+    <material name="platform_white">
+      <color rgba="0.9607843 0.9450980 0.9137255 1"/>
+    </material>
+  </xacro:macro>
+
+  <!-- pos_z is calibrated height of the top surface of the platform in the workcell base frame -->
+  <xacro:macro name="platform" params="parent:=workcell_base pos_z:=0.0">
+    <link name="platform">
+      <visual>
+        <geometry>
+          <box size="${platform_size}"/>
+        </geometry>
+        <origin xyz="0 0 ${-platform_thickness / 2}" rpy="0 0 0"/>
+        <xacro:material_platform_white />
+      </visual>
+      <collision>
+        <geometry>
+          <box size="${platform_size}"/>
+        </geometry>
+        <origin xyz="0 0 ${-platform_thickness / 2}" rpy="0 0 0"/>
+      </collision>
+    </link>
+
+    <joint name="platform_fixed_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="platform"/>
+      <origin xyz="${platform_pos_xy} ${pos_z}" rpy="0 0 0"/>
+    </joint>
+
+  </xacro:macro>
+</robot>

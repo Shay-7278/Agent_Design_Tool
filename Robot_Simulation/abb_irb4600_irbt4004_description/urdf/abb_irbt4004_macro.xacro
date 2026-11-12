@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- RAL 7035 light grey (abb graphite white), standard robot color May 2014 - current -->
+  <xacro:property name="color_abb_graphite_white_track" value="0.7725490 0.7803922 0.7686275 1" />
+
+  <xacro:macro name="material_abb_graphite_white_track">
+    <material name="abb_graphite_white_track">
+      <color rgba="${color_abb_graphite_white_track}"/>
+    </material>
+  </xacro:macro>
+
+  <!-- RAL 7012 basalt gray (abb dark gray) , robot primer -->
+  <xacro:property name="color_abb_dark_gray_track" value="0.3450980 0.3647059 0.3686275 1" />
+
+  <xacro:macro name="material_abb_dark_gray_track">
+    <material name="abb_dark_gray_track">
+      <color rgba="${color_abb_dark_gray_track}"/>
+    </material>
+  </xacro:macro>
+
+  <xacro:macro name="abb_irbt4004" params="
+    prefix
+    parent:=world
+    xyz:='0 0 0'
+    rpy:='0 0 0'
+    robot_mount_xyz:='0 0 0'
+    robot_mount_rpy:='0 0 ${radians(90)}'
+  ">
+    <!-- link list -->
+    <link name="${prefix}track_mount"/>
+
+    <link name="${prefix}track">
+      <inertial>
+        <origin xyz="0.0 0.0 0.0"/>
+        <mass value="7000"/>
+        <inertia ixx="939.576" iyy="16002.884" izz="16775.440" ixy="-311.548" ixz="-33.801" iyz="51.091"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://abb_irb4600_irbt4004_description/meshes/visual/track.stl"/>
+        </geometry>
+        <xacro:material_abb_dark_gray_track />
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://abb_irb4600_irbt4004_description/meshes/collision/track.stl"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="${prefix}carriage">
+      <inertial>
+        <origin xyz="0.0 0.0 0.0"/>
+        <mass value="1000"/>
+        <inertia ixx="121.893" iyy="314.924" izz="400.431" ixy="-67.212" ixz="15.829" iyz="8.772"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://abb_irb4600_irbt4004_description/meshes/visual/carriage.stl"/>
+        </geometry>
+        <xacro:material_abb_graphite_white_track />
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://abb_irb4600_irbt4004_description/meshes/collision/carriage.stl"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="${prefix}carriage_mount"/>
+    <!-- end of link list -->
+
+    <!-- joint list -->
+    <joint name="${prefix}track_base_mount_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${prefix}track_mount"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+
+    <joint name="${prefix}track_base_fixed_joint" type="fixed">
+        <parent link="${prefix}track_mount"/>
+        <child link="${prefix}track"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <joint name="joint_${prefix}ext_1" type="prismatic">
+      <parent link="${prefix}track"/>
+      <child link="${prefix}carriage"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-0.001" upper="3.901" effort="100000" velocity="2.0" />
+      <dynamics damping="5.0" friction="0.2" />
+    </joint>
+
+    <joint name="${prefix}carriage_mount_fixed_joint" type="fixed">
+      <parent link="${prefix}carriage"/>
+      <child link="${prefix}carriage_mount"/>
+      <origin xyz="${robot_mount_xyz}" rpy="${robot_mount_rpy}"/>
+    </joint>
+    <!-- end of joint list -->
+
+  </xacro:macro>
+</robot>

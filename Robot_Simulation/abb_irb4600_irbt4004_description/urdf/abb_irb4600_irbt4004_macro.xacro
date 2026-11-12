@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find abb_irb4600_description)/urdf/abb_irb4600_40_255_macro.xacro"/>
+  <xacro:include filename="$(find abb_irb4600_irbt4004_description)/urdf/abb_irbt4004_macro.xacro"/>
+
+  <xacro:macro name="abb_irb4600_irbt4004" params="
+    prefix
+    parent:=world
+    xyz:='0 0 0'
+    rpy:='0 0 0'
+  ">
+    <xacro:abb_irbt4004
+      prefix="${prefix}"
+      parent="${parent}"
+      xyz="${xyz}"
+      rpy="${rpy}"
+      robot_mount_xyz="0 0 0"
+      robot_mount_rpy="0 0 ${radians(90)}"
+    />
+    <xacro:abb_irb4600_40_255
+      prefix="${prefix}"
+      parent="${prefix}carriage_mount"
+    />
+  </xacro:macro>
+
+</robot>

@@ -1,0 +1,50 @@
+<sdf version="1.9">
+  <model name="workcell">
+    <static>true</static>
+
+    <link name="table">
+      <pose>0 0 0 0 0 0</pose>
+
+      <visual name="table_visual">
+        <geometry>
+          <mesh>
+            <uri>model://workcell/meshes/visual/table.glb</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="table_collision">
+        <geometry>
+          <mesh>
+            <uri>model://workcell/meshes/collision/table.glb</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="controller_1">
+      <pose>0 0 0 0 0 0</pose>
+
+      <visual name="controller_1_visual">
+        <geometry>
+          <mesh>
+            <uri>model://workcell/meshes/visual/controller.glb</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="controller_2">
+      <pose>0.773 0 0 0 0 0</pose>
+
+      <visual name="controller_2_visual">
+        <geometry>
+          <mesh>
+            <uri>model://workcell/meshes/visual/controller.glb</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+  </model>
+</sdf>

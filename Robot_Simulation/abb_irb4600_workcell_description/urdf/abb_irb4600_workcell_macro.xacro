@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<robot name="abb_irb4600_workcell" xmlns:xacro="http://wiki.ros.org/xacro">
+  <!-- Robot + track -->
+  <xacro:include filename="$(find abb_irb4600_irbt4004_description)/urdf/abb_irb4600_irbt4004_macro.xacro"/>
+
+  <!-- Workcell fixtures -->
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/fixtures/platform_macro.xacro"/>
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/fixtures/MHS_macro.xacro"/>
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/fixtures/SS_macro.xacro"/>
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/fixtures/MT_macro.xacro"/>
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/fixtures/TCS_macro.xacro"/>
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/fixtures/IRB7600_macro.xacro"/>
+  <!-- Helper for fixture semantic frames below -->
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/fixtures/fixture_frames_macro.xacro"/>
+
+  <!-- End-effector macros — tc_master is always mounted; add a new xacro:include for each new tool -->
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/end_effectors/TC_master_macro.xacro"/>
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/end_effectors/psh42-100_gripper_macro.xacro"/>
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/end_effectors/psh32-1_gripper_macro.xacro"/>
+
+  <xacro:macro name="abb_irb4600_workcell" params="parent:=world tool_ll:=none tool_rr:=none">
+
+    <!-- Load fixture calibration config (poses + named frames). -->
+    <xacro:property name="fixtures_cfg"
+      value="${xacro.load_yaml('$(find abb_irb4600_workcell_description)/config/fixtures.yaml')['fixtures']}"/>
+
+    <!-- Workcell base -->
+    <link name="workcell_base"/>
+    <joint name="workcell_base_fixed_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="workcell_base"/>
+    </joint>
+
+    <!-- Robots (poses kept in macro — these are surveyed positions, not fixture configs) -->
+    <xacro:abb_irb4600_irbt4004
+      prefix="RR_"
+      parent="workcell_base"
+      xyz="0 0 0"
+      rpy="0 0 0"
+    />
+    <xacro:abb_irb4600_irbt4004
+      prefix="LL_"
+      parent="workcell_base"
+      xyz="3.69928 3.45103 0.0175951"
+      rpy="0.0008572 -0.0012691 ${-1.5709245-pi/2}"
+    />
+
+    <!-- TC master — always fixed to both robot flanges regardless of which tool is mounted. -->
+    <xacro:tc_master prefix="RR_"/>
+    <xacro:tc_master prefix="LL_"/>
+
+    <!-- Tool attached to TC master — selected by tool_ll / tool_rr arguments.
+         "none" requires no extra links; tc_master already exposes tool_attachment_frame.
+         Add a new <xacro:if> block here when registering a new tool.
+         The macro for each tool is included at the top of this file. -->
+    <xacro:if value="${tool_rr == 'psh42-100_gripper'}"><xacro:psh42-100_gripper prefix="RR_"/></xacro:if>
+    <xacro:if value="${tool_rr == 'psh32-1_gripper'}"><xacro:psh32-1_gripper prefix="RR_"/></xacro:if>
+
+    <xacro:if value="${tool_ll == 'psh42-100_gripper'}"><xacro:psh42-100_gripper prefix="LL_"/></xacro:if>
+    <xacro:if value="${tool_ll == 'psh32-1_gripper'}"><xacro:psh32-1_gripper prefix="LL_"/></xacro:if>
+
+    <!-- ================================================================== -->
+    <!-- Fixtures — poses and named frames from config/fixtures.yaml.
+         To update a fixture position: edit that entry's pose.xyz / pose.rpy.
+         To add a semantic frame: add a key under the fixture's frames dict.  -->
+    <!-- ================================================================== -->
+
+    <!-- Platform -->
+    <xacro:property name="plat" value="${fixtures_cfg['platform']}"/>
+    <xacro:platform
+      parent="workcell_base"
+      pos_z="${plat['pose']['xyz'][2]}"
+    />
+
+    <!-- Material Handling Station -->
+    <xacro:property name="mhs"   value="${fixtures_cfg['material_handling_station']}"/>
+    <xacro:property name="mhs_p" value="${mhs['pose']}"/>
+    <xacro:material_handling_station
+      prefix="MHS_"
+      parent="workcell_base"
+      xyz="${mhs_p['xyz'][0]} ${mhs_p['xyz'][1]} ${mhs_p['xyz'][2]}"
+      rpy="${mhs_p['rpy'][0]} ${mhs_p['rpy'][1]} ${mhs_p['rpy'][2]}"
+    />
+
+    <!-- Stationary Saw -->
+    <xacro:property name="ss"   value="${fixtures_cfg['stationary_saw']}"/>
+    <xacro:property name="ss_p" value="${ss['pose']}"/>
+    <xacro:stationary_saw
+      prefix="SS_"
+      parent="workcell_base"
+      xyz="${ss_p['xyz'][0]} ${ss_p['xyz'][1]} ${ss_p['xyz'][2]}"
+      rpy="${ss_p['rpy'][0]} ${ss_p['rpy'][1]} ${ss_p['rpy'][2]}"
+    />
+
+    <!-- Milling Table -->
+    <xacro:property name="mt"   value="${fixtures_cfg['milling_table']}"/>
+    <xacro:property name="mt_p" value="${mt['pose']}"/>
+    <xacro:milling_table
+      prefix="MT_"
+      parent="workcell_base"
+      xyz="${mt_p['xyz'][0]} ${mt_p['xyz'][1]} ${mt_p['xyz'][2]}"
+      rpy="${mt_p['rpy'][0]} ${mt_p['rpy'][1]} ${mt_p['rpy'][2]}"
+    />
+
+    <!-- Tool Changing Station — RR -->
+    <xacro:property name="tcs_rr"   value="${fixtures_cfg['tool_changing_station_rr']}"/>
+    <xacro:property name="tcs_rr_p" value="${tcs_rr['pose']}"/>
+    <xacro:tool_changing_station
+      prefix="TCS_RR_"
+      parent="workcell_base"
+      xyz="${tcs_rr_p['xyz'][0]} ${tcs_rr_p['xyz'][1]} ${tcs_rr_p['xyz'][2]}"
+      rpy="${tcs_rr_p['rpy'][0]} ${tcs_rr_p['rpy'][1]} ${tcs_rr_p['rpy'][2]}"
+    />
+
+    <!-- Tool Changing Station — LL -->
+    <xacro:property name="tcs_ll"   value="${fixtures_cfg['tool_changing_station_ll']}"/>
+    <xacro:property name="tcs_ll_p" value="${tcs_ll['pose']}"/>
+    <xacro:tool_changing_station
+      prefix="TCS_LL_"
+      parent="workcell_base"
+      xyz="${tcs_ll_p['xyz'][0]} ${tcs_ll_p['xyz'][1]} ${tcs_ll_p['xyz'][2]}"
+      rpy="${tcs_ll_p['rpy'][0]} ${tcs_ll_p['rpy'][1]} ${tcs_ll_p['rpy'][2]}"
+    />
+
+    <!-- ABB IRB7600 (decorative) -->
+    <xacro:property name="irb7600"   value="${fixtures_cfg['irb7600']}"/>
+    <xacro:property name="irb7600_p" value="${irb7600['pose']}"/>
+    <xacro:irb7600
+      prefix="IRB7600_"
+      parent="workcell_base"
+      xyz="${irb7600_p['xyz'][0]} ${irb7600_p['xyz'][1]} ${irb7600_p['xyz'][2]}"
+      rpy="${irb7600_p['rpy'][0]} ${irb7600_p['rpy'][1]} ${irb7600_p['rpy'][2]}"
+    />
+
+  </xacro:macro>
+
+</robot>

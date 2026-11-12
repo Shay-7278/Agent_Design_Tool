@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <xacro:macro name="psh42-100_gripper" params="prefix">
+
+    <!-- Load tool configuration from the central registry. -->
+    <xacro:property name="tools_cfg"
+      value="${xacro.load_yaml('$(find abb_irb4600_workcell_description)/config/tools.yaml')}"/>
+    <xacro:property name="cfg"     value="${tools_cfg['tools']['psh42-100_gripper']}"/>
+    <xacro:property name="cal"     value="${cfg['calibrated_tcp']}"/>
+
+    <link name="${prefix}psh_gripper_body">
+      <!-- TODO: Update inertial values with measured/CAD data -->
+      <inertial>
+        <origin xyz="0 0 0.05" rpy="0 0 0"/>
+        <mass value="6.0"/>
+        <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.005"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://abb_irb4600_workcell_description/meshes/visual/end_effectors/psh42-100_gripper_body.stl"/>
+        </geometry>
+      </visual>
+      <!-- <collision>
+        <geometry>
+          <mesh filename="package://abb_irb4600_workcell_description/meshes/collision/end_effectors/psh42-100_gripper_body.stl"/>
+        </geometry>
+      </collision> -->
+    </link>
+    
+    <link name="${prefix}psh_gripper_fingers_left">
+      <!-- TODO: Update inertial values with measured/CAD data -->
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="2.0"/>
+        <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://abb_irb4600_workcell_description/meshes/visual/end_effectors/psh42-100_gripper_fingers_left.stl"/>
+        </geometry>
+      </visual>
+      <!-- <collision>
+        <geometry>
+          <mesh filename="package://abb_irb4600_workcell_description/meshes/collision/end_effectors/psh42-100_gripper_fingers_left.stl"/>
+        </geometry>
+      </collision> -->
+    </link>
+
+    <link name="${prefix}psh_gripper_fingers_right">
+      <!-- TODO: Update inertial values with measured/CAD data -->
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="2.0"/>
+        <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://abb_irb4600_workcell_description/meshes/visual/end_effectors/psh42-100_gripper_fingers_right.stl"/>
+        </geometry>
+      </visual>
+      <!-- <collision>
+        <geometry>
+          <mesh filename="package://abb_irb4600_workcell_description/meshes/collision/end_effectors/psh42-100_gripper_fingers_right.stl"/>
+        </geometry>
+      </collision> -->
+    </link>
+
+    <joint name="${prefix}tool_attachment_frame_to_psh_gripper_body" type="fixed">
+      <parent link="${prefix}tool_attachment_frame"/>
+      <child link="${prefix}psh_gripper_body"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+
+    <joint name="${prefix}psh_left_finger_joint" type="prismatic">
+      <parent link="${prefix}psh_gripper_body"/>
+      <child link="${prefix}psh_gripper_fingers_left"/>
+      <axis xyz="-1 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <limit lower="0.0" upper="0.1" effort="100" velocity="0.25"/>
+      <dynamics damping="1.0" friction="0.1"/>
+    </joint>
+
+
+    <joint name="${prefix}psh_right_finger_joint" type="prismatic">
+      <parent link="${prefix}psh_gripper_body"/>
+      <child link="${prefix}psh_gripper_fingers_right"/>
+      <axis xyz="1 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <limit lower="0.0" upper="0.1" effort="100" velocity="0.25"/>
+      <mimic joint="${prefix}psh_left_finger_joint" multiplier="1.0" offset="0.0"/>
+      <dynamics damping="1.0" friction="0.1"/>
+    </joint>
+
+    <link name="${prefix}psh_vis_tcp"/>
+
+    <joint name="${prefix}psh_gripper_body_to_psh_vis_tcp" type="fixed">
+      <parent link="${prefix}psh_gripper_body"/>
+      <child link="${prefix}psh_vis_tcp"/>
+      <origin xyz="0 0 0.1867018" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${prefix}psh_gripper_tcp"/>
+
+    <joint name="${prefix}tool0_to_psh_gripper_tcp" type="fixed">
+      <parent link="${prefix}tool0"/>
+      <child link="${prefix}psh_gripper_tcp"/>
+      <origin
+        xyz="${cal['xyz'][0]} ${cal['xyz'][1]} ${cal['xyz'][2]}"
+        rpy="${cal['rpy'][0]} ${cal['rpy'][1]} ${cal['rpy'][2]}"/>
+    </joint>
+
+    <ros2_control name="${prefix}psh42_100_gripper" type="system">
+      <hardware>
+        <plugin>mock_components/GenericSystem</plugin>
+      </hardware>
+      <joint name="${prefix}psh_left_finger_joint">
+        <command_interface name="position">
+          <param name="min">0.0</param>
+          <param name="max">0.1</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+      </joint>
+      <joint name="${prefix}psh_right_finger_joint">
+        <!-- Mimic joint — no command interface; mock_components mirrors psh_left_finger_joint -->
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+      </joint>
+    </ros2_control>
+
+  </xacro:macro>
+
+</robot>

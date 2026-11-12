@@ -1,0 +1,25 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: abb_irb120_description
+    relative_path: urdf/irb120_3_60.xacro
+  srdf:
+    relative_path: config/abb_irb120_3_60.srdf
+  package_settings:
+    author_name: Daniel Ruan
+    author_email: daniel.ruan@princeton.edu
+    generated_timestamp: 1772570552
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity

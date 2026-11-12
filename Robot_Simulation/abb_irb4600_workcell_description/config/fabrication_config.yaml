@@ -1,0 +1,55 @@
+# fabrication_config.yaml — Calibration parameters for fabrication operations.
+#
+# These values supplement fixtures.yaml with operation-specific geometry that
+# is not tied to a single fixture (e.g., cut approach offsets, retract distances).
+# All distances are in metres unless noted.
+# Calibrate after the workcell is physically surveyed.
+
+mhs:
+  # Height of the MHS_gripper_axis TF frame above the bottom of a loaded element.
+  # The clamp frame (origin of all tool_configurations transforms) has Z=0 at
+  # the element bottom, so the transform from MHS_gripper_axis to clamp origin
+  # is a -gripper_axis_height_m translation along the MHS local Z axis.
+  # Derived from the MHS_macro.xacro joint origin: xyz="... 0.635..." and the
+  # as-installed workcell platform surface height.
+  gripper_axis_height_m: 0.048
+
+tool_changing:
+  # Vertical standoff used to compute the approach/retract frame for every slot.
+  # The approach frame = dock_frame translated by this distance in world +Z.
+  # The robot moves: above_joints → approach frame → dock frame → approach frame.
+  slot_approach_offset_m: 0.15
+
+cut:
+  # Standoff distance above the cut start frame used for the MoveIt approach plan.
+  # The arm moves here in free space, then descends linearly via RRC.
+  approach_offset_m: 0.15
+
+  # Linear track positioning for saw cuts.
+  # The track zero is at world X = origin_x_m; positive track values move the
+  # robot base in the −X direction.  Track position is computed as:
+  #   track_pos_m = clamp(origin_x_m − (cut_x_world_m − arm_reach_offset_m), 0, origin_x_m)
+  # Example: origin=3.9, reach=1.0, cut at X=3.3 → track = 3.9−(3.3−1.0) = 1.6 m
+  track:
+    origin_x_m: 3.9        # World X of track zero position (metres)
+    arm_reach_offset_m: 1.0  # Desired arm reach in X from track base to cut face (metres)
+
+  # Speed for the saw cut stroke (mm/s). Keep conservative until path is validated.
+  default_speed_mms: 10
+
+  # Speed for approach to cut start and retract after cut (mm/s).
+  approach_speed_mms: 100
+
+  # Per-orientation cut tolerances and retract parameters.
+  # start_offset_mm / end_offset_mm: extra clearance beyond the element edge in the
+  # saw +X (cut) direction before entry and after exit.
+  horizontal:
+    start_offset_mm: 30.0   # clearance before element entry
+    end_offset_mm: 30.0     # clearance past element exit
+    retract_mm: 100.0       # world +Z lift after cut to clear blade
+
+  vertical:
+    start_offset_mm: 30.0   # clearance above element top (saw starts well above)
+    end_offset_mm: 10.0     # clearance below element bottom
+    z_retract_mm: 50.0      # retract along −saw_Z (world −Y) to pull blade out of kerf
+    world_z_lift_mm: 300.0  # then lift in world +Z to clear MHS station

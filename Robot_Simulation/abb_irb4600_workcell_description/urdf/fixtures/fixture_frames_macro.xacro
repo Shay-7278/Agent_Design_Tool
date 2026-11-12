@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  fixture_frames_macro.xacro
+
+  Provides the fixture_frame helper macro used by abb_irb4600_workcell_macro.xacro
+  to add named semantic TF frames to each fixture from fixtures.yaml.
+
+  Usage (in the workcell macro, after instantiating a fixture):
+
+    <xacro:if value="${'approach' in fixture_cfg['frames']}">
+      <xacro:property name="f" value="${fixture_cfg['frames']['approach']}"/>
+      <xacro:fixture_frame
+        prefix="SS_" name="approach" parent="SS_base"
+        xyz="${f['xyz'][0]} ${f['xyz'][1]} ${f['xyz'][2]}"
+        rpy="${f['rpy'][0]} ${f['rpy'][1]} ${f['rpy'][2]}"/>
+    </xacro:if>
+
+  The resulting TF link name is ${prefix}${name}, e.g. SS_approach, TC_RR_dock.
+  These links are published by robot_state_publisher and can be used directly
+  as planning targets in workcell_api.
+-->
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <xacro:macro name="fixture_frame" params="prefix name parent xyz rpy">
+    <link name="${prefix}${name}"/>
+    <joint name="${prefix}${name}_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child  link="${prefix}${name}"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+  </xacro:macro>
+
+</robot>

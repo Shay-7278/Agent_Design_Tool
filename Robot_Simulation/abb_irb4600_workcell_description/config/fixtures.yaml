@@ -1,0 +1,121 @@
+# fixtures.yaml — Calibrated poses and semantic frames for all workcell fixtures.
+#
+# pose   : position and orientation of the fixture BASE in the workcell_base frame.
+#          xyz in metres.
+#          rpy in radians.
+#
+#          Initial values are the as-designed (CAD) positions.  Overwrite after
+#          physical survey of the installed workcell.
+#
+# frames : named semantic frames relative to the fixture BASE link.
+#          Each entry becomes a TF link published by robot_state_publisher:
+#            ${prefix}${frame_name}   e.g.  SS_approach, TC_RR_dock, MHS_load_approach
+#          Use these as planning targets in workcell_api rather than hard-coding poses.
+#          xyz/rpy/quat follow the same convention as pose.
+#          Set to {} if no semantic frames are needed for a fixture.
+
+fixtures:
+
+  platform:
+    description: "Main work platform surface"
+    # The platform macro uses pos_z (= pose.xyz[2]) as the calibrated top surface height.
+    pose:
+      xyz: [0.0, 0.0, 0.044]
+      rpy: [0.0, 0.0, 0.0]
+    frames: {}
+
+  material_handling_station:
+    description: "Material handling station"
+    pose:
+      xyz: [2.070740859, 4.503546969, -0.367793700]
+      rpy: [0.002637207, -0.001884356, -0.006336069]
+    frames: {}
+
+  stationary_saw:
+    description: "Stationary circular saw"
+    pose:
+      xyz: [-1.423849809, 3.138570587, -0.363398631]
+      rpy: [0.0, -0.004530035, 0.011332967]
+    frames: {}
+
+  milling_table:
+    description: "CNC milling table origin, top surface bottom-left corner"
+    pose:
+      xyz: [-1.018799012, 4.387074083, 0.371454666]
+      rpy: [0.0, 0.0, 0.0]
+    frames: {}
+
+  tool_changing_station_rr:
+    description: "Tool changing station for RR arm"
+    pose:
+      xyz: [4.530877611, -0.502742169, -0.3635]
+      rpy: [0.0, 0.0, 0.0]
+    frames: {}
+    # Joint configuration the arm moves to (via RRC MoveToJoints) before any
+    # linear approach to a slot.  One position covers all slots in the station.
+    # above_joints in degrees [j1..j6], above_ext_mm in mm [e1].
+    above_joints: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]  # TODO: calibrate
+    above_ext_mm: [0.0]                              # TODO: calibrate
+    # Tool slots: keyed by physical slot number (slot_1, slot_2, …).
+    # dock_frame: TCP pose at the fully-docked position.
+    #   xyz in metres (world frame), quaternion [w, x, y, z].
+    # The approach frame is computed at runtime as dock_frame offset in +world-Z
+    # by fabrication_config.yaml → tool_changing.slot_approach_offset_m.
+    slots:
+      slot_1:
+        dock_frame:
+          xyz: [0.0, 0.0, 0.0]           # world frame (metres) — TODO: calibrate
+          quaternion: [1.0, 0.0, 0.0, 0.0]  # [w, x, y, z] — TODO: calibrate
+      slot_2:
+        dock_frame:
+          xyz: [0.0, 0.0, 0.0]
+          quaternion: [1.0, 0.0, 0.0, 0.0]
+      slot_3:
+        dock_frame:
+          xyz: [0.0, 0.0, 0.0]
+          quaternion: [1.0, 0.0, 0.0, 0.0]
+      slot_4:
+        dock_frame:
+          xyz: [0.0, 0.0, 0.0]
+          quaternion: [1.0, 0.0, 0.0, 0.0]
+
+  tool_changing_station_ll:
+    description: "Tool changing station for LL arm"
+    pose:
+      xyz: [4.505833886, 2.503951683, -0.356080699]
+      rpy: [-0.000290022, 0.000001365, 0.004706949]
+    frames: {}
+    # Joint configuration the arm moves to (via RRC MoveToJoints) before any
+    # linear approach to a slot.  One position covers all slots in the station.
+    # above_joints in degrees [j1..j6], above_ext_mm in mm [e1].
+    above_joints: [81.95, 33.77, -13.42, 0.0, 69.71, -8.56]
+    above_ext_mm: [1000.0]
+    # Tool slots: keyed by physical slot number (slot_1, slot_2, …).
+    # dock_frame: TCP pose at the fully-docked position.
+    #   xyz in metres (world frame), quaternion [w, x, y, z].
+    # The approach frame is computed at runtime as dock_frame offset in +world-Z
+    # by fabrication_config.yaml → tool_changing.slot_approach_offset_m.
+    slots:
+      slot_1: # LL left (when looking from computer)
+        dock_frame:
+          xyz: [4.71908, 3.89674, 0.46140]           # world frame (metres)
+          quaternion: [0.01185, -0.08706, 0.99611, 0.00598]  # [w, x, y, z]
+      slot_2: # LL middle back
+        dock_frame:
+          xyz: [5.04693, 3.20843, 0.25552]
+          quaternion: [0.00118, -0.99595, -0.08866, 0.01512]
+      slot_3: # LL middle front
+        dock_frame:
+          xyz: [4.72465, 3.20694, 0.25650]
+          quaternion: [0.00395, -0.09024, 0.99591, -0.00347]
+      slot_4: # LL right
+        dock_frame:
+          xyz: [4.72781, 2.55085, 0.46303]
+          quaternion: [0.00035, -0.09638, 0.99534, -0.00379]
+
+  irb7600:
+    description: "ABB IRB7600 decorative object"
+    pose:
+      xyz: [4.695842450, 1.648095331, -0.3735]
+      rpy: [0.0, 0.004530035, -3.130259687]
+    frames: {}
