@@ -1,0 +1,15 @@
+initial_positions:
+  joint_LL_ext_1: 0.0
+  joint_LL_1: 0.0
+  joint_LL_2: 0.0
+  joint_LL_3: 0.0
+  joint_LL_4: 0.0
+  joint_LL_5: 0.0
+  joint_LL_6: 0.0
+  joint_RR_ext_1: 0.0
+  joint_RR_1: 0.0
+  joint_RR_2: 0.0
+  joint_RR_3: 0.0
+  joint_RR_4: 0.0
+  joint_RR_5: 0.0
+  joint_RR_6: 0.0

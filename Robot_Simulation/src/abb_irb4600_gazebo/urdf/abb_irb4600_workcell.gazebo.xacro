@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="abb_irb4600_workcell" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg
+    name="initial_positions_file"
+    default="$(find abb_irb4600_gazebo)/config/initial_positions.yaml"
+  />
+
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/abb_irb4600_workcell_macro.xacro"/>
+
+  <link name="world"/>
+  <xacro:abb_irb4600_workcell parent="world" tool_ll="none" tool_rr="none"/>
+
+  <xacro:property
+    name="initial_positions"
+    value="${xacro.load_yaml(initial_positions_file)['initial_positions']}"
+  />
+
+  <ros2_control name="DualIRB4600GazeboSystem" type="system">
+    <hardware>
+      <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+    </hardware>
+
+    <joint name="joint_LL_ext_1">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['joint_LL_ext_1']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_LL_1">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['joint_LL_1']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_LL_2">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['joint_LL_2']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_LL_3">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['joint_LL_3']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_LL_4">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['joint_LL_4']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_LL_5">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['joint_LL_5']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_LL_6">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['joint_LL_6']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="joint_RR_ext_1">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['joint_RR_ext_1']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_RR_1">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['joint_RR_1']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_RR_2">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['joint_RR_2']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_RR_3">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['joint_RR_3']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_RR_4">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['joint_RR_4']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_RR_5">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['joint_RR_5']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_RR_6">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['joint_RR_6']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+
+  <gazebo>
+    <plugin
+      filename="libgz_ros2_control-system.so"
+      name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(find abb_irb4600_gazebo)/config/ros2_controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+</robot>
