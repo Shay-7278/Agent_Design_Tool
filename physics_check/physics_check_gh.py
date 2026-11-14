@@ -135,6 +135,7 @@ PARAM_NAMES = (
     "min_contact", "min_balance", "max_iter", "l0_max_iter", "move_step", "max_move",
     "min_step", "slide_step", "nmax", "tmax", "amin", "cra_timeout", "solver",
     "l0_method", "qp_trust", "qp_max_iter", "max_rotation", "qp_smooth",
+    "layout", "end_tol", "end_overrun", "end_support",
 )
 SOLVERS = ("cra_penalty", "rbe")   # pc/params.py SOLVERS
 BRICK_H = 57.0     # pc/params.py default brickH [mm]

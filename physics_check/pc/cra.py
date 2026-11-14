@@ -220,21 +220,26 @@ def _solve_with_timeout(args, timeout):
     return payload
 
 
-def run_cra(wall):
+def run_cra(wall, nodes=None, held=(), allow=None):
     """Step 5: penalty CRA (or RBE, p["solver"] = "rbe") solve, course 0 fixed.
+
+    nodes: the bricks to solve (default all; the construction-stage check in
+    stages.py passes a partial wall).  held: bricks fixed like course 0 (held
+    by a robot arm).  allow: tensile stress limit [Pa] (default f_t / SF).
 
     The solve is limited to p["cra_timeout"] seconds (0 = no limit, run in
     this process).  Returns dict(state = 'solved' | 'geometry' | 'failed' |
     'timeout', interfaces, ...).
     """
     p = wall.p
-    nodes = list(wall.bricks())
+    nodes = list(wall.bricks()) if nodes is None else list(nodes)
+    held = set(held)
     frames = []
     for b in nodes:
         o, x, y = wall.frame(b)
         frames.append([[c * MM for c in o], x, y])
     dims = [(wall.W * MM, b.length * MM, (wall.H + p["mortar_t"]) * MM) for b in nodes]
-    supports = [n for n, b in enumerate(nodes) if b.k == 0]
+    supports = [n for n, b in enumerate(nodes) if b.k == 0 or b in held]
     keys = ("nmax", "tmax", "amin", "mu", "density", "solver")
     args = (frames, dims, supports, {k: p[k] for k in keys})
     if p["cra_timeout"] > 0:
@@ -251,7 +256,8 @@ def run_cra(wall):
     if res["state"] != "solved":
         return out
 
-    allow = p["f_t"] / p["SF"]
+    if allow is None:
+        allow = p["f_t"] / p["SF"]
     rows = []
     for u, v, itfs in res["edges"]:
         bu, bv = nodes[u], nodes[v]

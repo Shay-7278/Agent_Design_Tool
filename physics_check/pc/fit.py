@@ -162,6 +162,8 @@ def surface_lean(paths, max_overhang):
 
 CLAMP_MARGIN = 20.0   # mm kept inside max_overhang / min_balance by clamp_paths
 CLAMP_STEP = 10.0     # clamp_paths: point spacing of the built course lines [mm]
+LAG_FULL = 20.0       # clamp_paths: lag behind the surface [mm] at which a course line
+                      # is fully smoothed over a brick length (less lag: blended)
 
 
 def _ray_hit(path, o, d):
@@ -229,7 +231,7 @@ def clamp_paths(paths, p):
             cut = max(s_a - ea, eb - s_b, 0.0)
         n = max(2, int(math.ceil((s_b - s_a) / CLAMP_STEP)) + (0 if closed else 1))
         ss = [s_a + (s_b - s_a) * i / (n if closed else n - 1) for i in range(n)]
-        base, nrm, off = [], [], []
+        base, nrm, off, lag = [], [], [], []
         for s in ss:
             o = lo.point(s)
             tx, ty = lo.tangent(s, half)
@@ -240,12 +242,39 @@ def clamp_paths(paths, p):
             base.append(o)
             nrm.append(nv)
             off.append(max(-lim, min(lim, hit)))
-        win = int(round(0.25 * half / CLAMP_STEP))
-        sm = []
-        for i in range(n):
-            js = [(i + j) % n if closed else min(max(i + j, 0), n - 1) for j in range(-win, win + 1)]
-            sm.append(sum(off[j] for j in js) / len(js))
+            lag.append(max(0.0, abs(hit) - lim))   # how far the line stays behind the surface
+
+        def nbrs(i, w):
+            return [(i + j) % n if closed else min(max(i + j, 0), n - 1) for j in range(-w, w + 1)]
+
+        def avg(vals, w):
+            return [sum(vals[j] for j in nbrs(i, w)) / (2 * w + 1) for i in range(n)]
+
+        # Where the line lags the surface, smooth over a full brick length
+        # (+/- half a brick): a lag narrower than a brick makes a corner a
+        # straight brick cannot follow.  Where it follows the surface, keep
+        # the short window, so it stays on the surface.  Blend weight: lag
+        # / LAG_FULL (capped at 1), spread over a brick length either side so
+        # the edges of a lagging stretch are smoothed too.
+        win_s = int(round(0.25 * half / CLAMP_STEP))
+        win = int(round(half / CLAMP_STEP))
+        wl = [min(1.0, x / LAG_FULL) for x in lag]
+        wl = avg([max(wl[j] for j in nbrs(i, win)) for i in range(n)], win)
+        short, long_ = avg(off, win_s), avg(off, win)
+        sm = [(1.0 - w) * a + w * b for w, a, b in zip(wl, short, long_)]
         pts = [(o[0] + e * nv[0], o[1] + e * nv[1]) for o, e, nv in zip(base, sm, nrm)]
+        # offsetting along the normals of the line below keeps (and on the
+        # concave side sharpens) its bends, so where it lags also fair the
+        # points themselves over a brick length (open: the window shrinks at
+        # the ends, which stay)
+        fair = []
+        for i in range(n):
+            w = win if closed else min(win, i, n - 1 - i)
+            js = [(i + j) % n for j in range(-w, w + 1)]
+            fx = sum(pts[j][0] for j in js) / len(js)
+            fy = sum(pts[j][1] for j in js) / len(js)
+            fair.append(((1.0 - wl[i]) * pts[i][0] + wl[i] * fx, (1.0 - wl[i]) * pts[i][1] + wl[i] * fy))
+        pts = fair
         line = Path2(pts, closed)
         out.append(line)
         moves.append(max(abs(surf.nearest(q)[1]) for q in pts[::5]))

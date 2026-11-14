@@ -11,6 +11,7 @@ from .l0 import l0_repair, settle_counts
 from .l0qp import l0_repair_qp
 from .l1 import l1_repair
 from .params import DEFAULTS, MM, resolve_params
+from .stages import stage_check
 from .wall import Wall
 
 
@@ -43,7 +44,7 @@ def run_check(job, use_cra=True):
         paths, counts, _joints, info = fit_sections(sections, p)
         shifts = ["{} ({} -> {})".format(k, counts[k - 1], counts[k]) for k in range(1, len(paths))
                   if not paths[k].closed and not paths[k - 1].closed and counts[k] != counts[k - 1]]
-        if shifts:
+        if shifts and p["layout"] != "bond":
             log.append("middle-brick count changes (joints not over the bricks below) at course(s): "
                        + ", ".join(shifts))
         lean, need = surface_lean(info["surface"], p["max_overhang"])
@@ -134,6 +135,13 @@ def run_check(job, use_cra=True):
     else:
         log.append("stop: max_iter = {} reached".format(p["max_iter"]))
 
+    # construction stages: only on a geometry that passed L0 and whose
+    # finished-wall solve finished (stages.py)
+    stages = None
+    if p["stage_check"] and use_cra and l0_ok and not fatal and cra["state"] == "solved":
+        stages, t_st = stage_check(wall, log)
+        cra_time += t_st
+
     # bricks still failing when the loop stopped are "failed", whatever they
     # did before (a fatal stop or max_iter can leave them unrepaired)
     l1_fail = set(r["upper"] for r in cra["interfaces"] if r["fails"])
@@ -169,7 +177,7 @@ def run_check(job, use_cra=True):
         "ok": bool(l0_ok and l1_ok and not fatal), "fatal": fatal, "iterations": it,
         "l0_pass": l0_ok, "l1_state": cra["state"], "l1_pass": l1_ok,
         "bricks_per_course": counts, "head_joints": joints, "log": log, "bricks": bricks,
-        "dropped": dropped, "interfaces": interfaces,
+        "dropped": dropped, "interfaces": interfaces, "stages": stages,
         "frames": [b["frame"] for b in bricks],     # export_frames_json / cra_check format
         "use_cra": use_cra, "solver": p["solver"], "cra_time": cra_time,
         "time": time.time() - t_start,

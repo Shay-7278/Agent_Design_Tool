@@ -112,9 +112,22 @@ def settle_counts(wall, log):
     re-spaced over its full length, so its ends stay in line with the courses
     above and below (its head joints may then exceed max_head; reported).
     The settled positions are the fitted reference."""
+    bond = wall.p["layout"] == "bond"
     for k in range(len(wall.courses)):
         n = wall.counts[k]     # middle-brick count on an open course, total on a closed one
         b0 = len(wall.courses[k])
+        if (bond and k > 0 and not wall.paths[k].closed and not wall.paths[k - 1].closed
+                and wall.place_bond(k)):
+            # running bond: bricks stay over the joints below; a curve that
+            # makes them collide only shifts joints (no brick is dropped)
+            if wall.course_collides(k):
+                err = repair_spacing(wall, k)
+                if err:
+                    log.append(err + " (bond layout: left to the L0 repair)")
+            for b in wall.courses[k]:
+                b.s0, b.u0, b.status = b.s, b.u, "passed"
+                b.st, b.ut, b.r0, b.rt = b.s, b.u, b.r, b.r
+            continue
         while wall.course_collides(k) and repair_spacing(wall, k) and n > 1:
             n -= 1
             wall.place_course(k, n, widen=True)
@@ -128,6 +141,24 @@ def settle_counts(wall, log):
                 msg += "; head joints widened to {:.1f} mm (> max_head {:.0f} mm)".format(
                     wall.head_joint(k), wall.p["max_head"])
             log.append(msg)
+    if wall.end_dev:
+        devs = [(d, k, e) for k, ds in wall.end_dev.items() for e, d in zip(("start", "end"), ds)]
+        gap, kg, eg = max(devs)
+        hang, kh, eh = min(devs)
+        log.append("bond layout: {} course(s) laid over the joints below (end bricks not clipped); "
+                   "largest open end gap {:.0f} mm (course {} {}), largest overhang past the "
+                   "surface edge {:.0f} mm (course {} {})".format(
+                       len(wall.end_dev), max(gap, 0.0), kg, eg, max(-hang, 0.0), kh, eh))
+        ch = [(k, c) for k, c in sorted(wall.bond_change.items()) if c]
+        log.append("bond layout: middle bricks inserted/removed to keep head joints near head_joint: "
+                   + (", ".join("course {} {:+d}".format(k, c) for k, c in ch) if ch else "none"))
+        log.append("bond end gaps/overhangs per course [mm, + = gap, - = past edge]: " + ", ".join(
+            "{}: {:+.0f}/{:+.0f}".format(k, *wall.end_dev[k]) for k in sorted(wall.end_dev)))
+        if wall.end_cut:
+            log.append("bond layout: end fill cut back where the course below stops short "
+                       "(end_support; pieces left out start/end, 0.5 = full brick -> half bat): "
+                       + ", ".join("course {} {:g}/{:g}".format(k, *wall.end_cut[k])
+                                   for k in sorted(wall.end_cut)))
 
 
 def l0_failures(wall):
