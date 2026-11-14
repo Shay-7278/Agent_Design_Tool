@@ -12,7 +12,7 @@
 
   <xacro:property
     name="initial_positions"
-    value="${xacro.load_yaml(initial_positions_file)['initial_positions']}"
+    value="${xacro.load_yaml('$(arg initial_positions_file)')['initial_positions']}"
   />
 
   <ros2_control name="DualIRB4600GazeboSystem" type="system">
