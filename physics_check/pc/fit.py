@@ -1,5 +1,10 @@
 """Step 2: offset and align each course section, and choose its brick count.
 
+The count chosen here places course 0 and closed courses.  Open courses
+above an open course are re-laid in l0.settle_counts by wall.place_bond
+(each brick over a head joint of the course below); the count below is
+used for them only if no joint below falls on their line.
+
 Open courses follow the baseline.gh layout (L = brickL, g = head_joint):
 
 * Each course is trimmed at both ends: by L + g/2 on even courses, L + g on

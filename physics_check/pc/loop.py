@@ -42,11 +42,6 @@ def run_check(job, use_cra=True):
               "brickH": p["brickH"], "mortar_t": p["mortar_t"], "params": p}
     try:
         paths, counts, _joints, info = fit_sections(sections, p)
-        shifts = ["{} ({} -> {})".format(k, counts[k - 1], counts[k]) for k in range(1, len(paths))
-                  if not paths[k].closed and not paths[k - 1].closed and counts[k] != counts[k - 1]]
-        if shifts and p["layout"] != "bond":
-            log.append("middle-brick count changes (joints not over the bricks below) at course(s): "
-                       + ", ".join(shifts))
         lean, need = surface_lean(info["surface"], p["max_overhang"])
         log.append("surface lean per course, max sideways offset from the course below [mm, signed]: "
                    + " ".join("{:+.0f}".format(v) for v in lean[1:]))

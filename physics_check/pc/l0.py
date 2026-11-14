@@ -106,17 +106,20 @@ def repair_spacing(wall, k):
 
 def settle_counts(wall, log):
     """Part of the fit (step 2): make every course collision-free before the
-    checks.  Chord bricks on a curve lose head joint on the concave side, so a
+    checks.  An open course above an open course is laid over the joints
+    below (wall.place_bond).  Other courses (course 0, closed courses, or a
+    course with no joint below on its line) keep the count from fit.py.
+    Chord bricks on a curve lose head joint on the concave side, so a
     colliding course first has its head joints redistributed within
-    [min_head, max_head]; if that cannot work, it drops a brick and is
-    re-spaced over its full length, so its ends stay in line with the courses
-    above and below (its head joints may then exceed max_head; reported).
-    The settled positions are the fitted reference."""
-    bond = wall.p["layout"] == "bond"
+    [min_head, max_head].  If that fails, a bond course is left to the L0
+    repair; a count course drops a brick and is re-spaced over its full
+    length, so its ends stay in line with the courses above and below (its
+    head joints may then exceed max_head; reported).  The settled positions
+    are the fitted reference."""
     for k in range(len(wall.courses)):
         n = wall.counts[k]     # middle-brick count on an open course, total on a closed one
         b0 = len(wall.courses[k])
-        if (bond and k > 0 and not wall.paths[k].closed and not wall.paths[k - 1].closed
+        if (k > 0 and not wall.paths[k].closed and not wall.paths[k - 1].closed
                 and wall.place_bond(k)):
             # running bond: bricks stay over the joints below; a curve that
             # makes them collide only shifts joints (no brick is dropped)

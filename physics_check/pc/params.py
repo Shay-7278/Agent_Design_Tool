@@ -43,10 +43,9 @@ DEFAULTS = {
     "max_rotation": 30.0,      # QP L0 repair: largest brick rotation from the course direction
                                # [deg]; 0 = bricks keep following the course
     "qp_smooth": 1.0,          # QP L0 repair: weight of (u_i - u_i+1)^2 between neighbours
-    "layout": "bond",          # open courses above the base: "bond" = each brick centred over a
-                               # head joint of the course below (running bond kept, ends follow
-                               # the surface edge within end_tol), "count" = brick count per
-                               # course from its length (the original fit)
+    # Open courses above the base always use the bond layout (wall.place_bond):
+    # each brick centred over a head joint of the course below, ends filled up
+    # to the surface edge.
     "end_tol": 50.0,           # bond layout: largest distance of a course end from the surface
                                # edge [mm] before it is reported
     "end_overrun": 1.0,        # bond layout: an end-fill piece (full brick or half bat) may run
@@ -67,7 +66,6 @@ DEFAULTS = {
 
 SOLVERS = ("cra_penalty", "rbe")
 L0_METHODS = ("qp", "greedy")
-LAYOUTS = ("bond", "count")
 
 
 def move_cap(p):
@@ -114,7 +112,4 @@ def resolve_params(given):
     if p["l0_method"] not in L0_METHODS:
         raise ValueError("l0_method must be one of {}, got {!r}".format(
             ", ".join(L0_METHODS), p["l0_method"]))
-    p["layout"] = str(p["layout"]).strip().lower()
-    if p["layout"] not in LAYOUTS:
-        raise ValueError("layout must be one of {}, got {!r}".format(", ".join(LAYOUTS), p["layout"]))
     return p

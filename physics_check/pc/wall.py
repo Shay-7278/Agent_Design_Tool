@@ -105,8 +105,8 @@ class Wall(object):
         self.courses[k] = [Brick(k, i, s, ln) for i, (s, ln) in enumerate(placed)]
 
     def place_bond(self, k):
-        """Place open course k over the head joints of course k - 1 (layout
-        "bond"; course k - 1 must be placed and settled).
+        """Place open course k over the head joints of course k - 1 (course
+        k - 1 must be placed and settled).
 
         Every brick of the bond is a full brick centred over a head joint of
         the course below (the joint's midpoint projected onto course k's

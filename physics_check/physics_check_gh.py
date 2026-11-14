@@ -23,19 +23,20 @@ Component inputs (GhPython):
     surface:         Wall surface (Surface or Brep) [mm]
     brickL, brickW, brickH:  Brick dimensions [mm], default 190 / 90 / 57
     mortar_t:        Bed joint thickness [mm], default 10
-    head_joint:      Nominal head joint g [mm], default 15.  Open courses are
-                     trimmed by brickL + g/2 (even courses) or brickL + g (odd
-                     courses) at each end, and each course gets its own
-                     middle-brick count m: the one whose joint is closest to g
-                     within [min_head, max_head].  Odd courses keep the m of
-                     the course below while that stays in range, so they stay
-                     bonded over its joints.  Even courses get a full brick
-                     flush with each end plus m middle bricks; odd courses a
-                     half brick (brickL/2) flush with each end plus m + 1
-                     middle bricks.  Closed courses: the count whose head
-                     joint is closest to g within [min_head, max_head]
-    min_head:        Minimum head joint [mm], default 5
-    max_head:        Maximum head joint [mm], default 25
+    head_joint:      Nominal head joint g [mm], default 15.  Course 0 (open):
+                     trimmed by brickL + g/2 at each end, a full brick flush
+                     with each end plus the middle-brick count m whose joint
+                     is closest to g within [min_head, max_head].  Open
+                     courses above it: every bond brick centred over a head
+                     joint of the course below, middle bricks added/removed
+                     to keep joints near g, ends filled with full bricks or
+                     half bats (joints g, down to min_head where tight).
+                     Closed courses: the count whose head joint is closest to
+                     g within [min_head, max_head]
+    min_head:        Minimum head joint [mm], default 5.  Also the L0
+                     collision check
+    max_head:        Maximum head joint [mm], default 25.  Used when the
+                     courses are laid out (all courses); not an L0 check
     offset_distance: Running-bond offset of odd closed courses along the
                      course [mm], default (brickL + head_joint) / 2
     face_offset:     0 if the surface is the wall centreline; otherwise the
@@ -135,7 +136,7 @@ PARAM_NAMES = (
     "min_contact", "min_balance", "max_iter", "l0_max_iter", "move_step", "max_move",
     "min_step", "slide_step", "nmax", "tmax", "amin", "cra_timeout", "solver",
     "l0_method", "qp_trust", "qp_max_iter", "max_rotation", "qp_smooth",
-    "layout", "end_tol", "end_overrun", "end_support",
+    "end_tol", "end_overrun", "end_support",
 )
 SOLVERS = ("cra_penalty", "rbe")   # pc/params.py SOLVERS
 BRICK_H = 57.0     # pc/params.py default brickH [mm]
