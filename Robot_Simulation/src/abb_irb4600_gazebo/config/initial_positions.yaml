@@ -6,6 +6,8 @@ initial_positions:
   joint_LL_4: 0.0
   joint_LL_5: 0.0
   joint_LL_6: 0.0
+  LL_schunk_left_finger_joint: 0.0
+  LL_schunk_right_finger_joint: 0.0
   joint_RR_ext_1: 0.0
   joint_RR_1: 0.0
   joint_RR_2: 0.0

@@ -129,11 +129,11 @@ def generate_launch_description():
         output="screen",
     )
 
-    right_controller = Node(
+    gripper_controller = Node(
         package="controller_manager",
         executable="spawner",
         arguments=[
-            "RR_manipulator_controller",
+            "LL_gripper_controller",
             "--controller-manager",
             "/controller_manager",
             "--controller-manager-timeout",
@@ -178,7 +178,7 @@ def generate_launch_description():
             RegisterEventHandler(
                 OnProcessExit(
                     target_action=joint_state_broadcaster,
-                    on_exit=[left_controller, right_controller],
+                    on_exit=[left_controller, gripper_controller],
                 )
             ),
         ]

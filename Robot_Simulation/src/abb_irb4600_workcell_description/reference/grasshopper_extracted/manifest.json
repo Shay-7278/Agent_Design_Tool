@@ -1,0 +1,218 @@
+﻿[
+    {
+        "index":  1,
+        "title":  "Py3",
+        "extracted_file":  "01_py3_01.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "a645c5fac7ecfb4846b35b967564ac03924e7e7ef0c6894dc517a69a2b50a227",
+        "characters":  1127
+    },
+    {
+        "index":  2,
+        "title":  "Py3",
+        "extracted_file":  "02_py3_02.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "f5cac1b255632de1a450759a9e31bbb5607509030ba4e541fe06a48da23de20e",
+        "characters":  625
+    },
+    {
+        "index":  3,
+        "title":  "Py3",
+        "extracted_file":  "03_py3_03.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "2d6c0d95235facb2df9e7fe9eed4d5a29c783abf88671a56514936af4eb6d4e2",
+        "characters":  654
+    },
+    {
+        "index":  4,
+        "title":  "Py3",
+        "extracted_file":  "04_py3_04.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "b3e7cce9ecb83ea10e215a540214d51b835de846363fde52308b493cf77ae50f",
+        "characters":  23584
+    },
+    {
+        "index":  5,
+        "title":  "Define Tool",
+        "extracted_file":  "05_define_tool_01.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "71cccec3ed5d5878849d7eaf103bd67d3cf9595f6aa14f2f25fa3f1029d623d4",
+        "characters":  12098
+    },
+    {
+        "index":  6,
+        "title":  "MoveJ",
+        "extracted_file":  "06_movej_01.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "c81f778efcbcba3c629faa8d332812e9619068599a725877316ac18aa077a348",
+        "characters":  20995
+    },
+    {
+        "index":  7,
+        "title":  "Visualizer",
+        "extracted_file":  "07_visualizer_01.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "3a811f89a86e8d4ec4e35d284b1f490b94951064fae2f2339d43ff7daa9e64ab",
+        "characters":  38329
+    },
+    {
+        "index":  8,
+        "title":  "Py3",
+        "extracted_file":  "08_py3_05.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "4f049db679f2b3fec2b938d4747cc78e9d8766c14beedc7bde553057285c2b04",
+        "characters":  263
+    },
+    {
+        "index":  9,
+        "title":  "Py3",
+        "extracted_file":  "09_py3_06.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "94a05ca1cd169aec6dcffedf0ec170f7abb5b363188483d7132a4e744eeeeb4c",
+        "characters":  21553
+    },
+    {
+        "index":  10,
+        "title":  "Py3",
+        "extracted_file":  "10_py3_07.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "5e367f82ea16d21976051e9e3aa99b77d77d2bd0c3f9626c6b8b8d429656b826",
+        "characters":  1090
+    },
+    {
+        "index":  11,
+        "title":  "Py3",
+        "extracted_file":  "11_py3_08.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "b72becf8c467fa3c05e465131ff25797c8625672eb0d066d4aa80a42e8a5943b",
+        "characters":  1069
+    },
+    {
+        "index":  12,
+        "title":  "MoveL",
+        "extracted_file":  "12_movel_01.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "ef8e7f2b0b2964fd9173c66401b69b2bbeb27041371975eb05d787bb21edd2b5",
+        "characters":  20997
+    },
+    {
+        "index":  13,
+        "title":  "MoveJ",
+        "extracted_file":  "13_movej_02.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "c81f778efcbcba3c629faa8d332812e9619068599a725877316ac18aa077a348",
+        "characters":  20995
+    },
+    {
+        "index":  14,
+        "title":  "MoveL",
+        "extracted_file":  "14_movel_02.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "ef8e7f2b0b2964fd9173c66401b69b2bbeb27041371975eb05d787bb21edd2b5",
+        "characters":  20997
+    },
+    {
+        "index":  15,
+        "title":  "MoveJ",
+        "extracted_file":  "15_movej_03.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "c81f778efcbcba3c629faa8d332812e9619068599a725877316ac18aa077a348",
+        "characters":  20995
+    },
+    {
+        "index":  16,
+        "title":  "MoveJ",
+        "extracted_file":  "16_movej_04.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "c81f778efcbcba3c629faa8d332812e9619068599a725877316ac18aa077a348",
+        "characters":  20995
+    },
+    {
+        "index":  17,
+        "title":  "MoveL",
+        "extracted_file":  "17_movel_03.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "ef8e7f2b0b2964fd9173c66401b69b2bbeb27041371975eb05d787bb21edd2b5",
+        "characters":  20997
+    },
+    {
+        "index":  18,
+        "title":  "MoveL",
+        "extracted_file":  "18_movel_04.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "ef8e7f2b0b2964fd9173c66401b69b2bbeb27041371975eb05d787bb21edd2b5",
+        "characters":  20997
+    },
+    {
+        "index":  19,
+        "title":  "MoveJ",
+        "extracted_file":  "19_movej_05.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "c81f778efcbcba3c629faa8d332812e9619068599a725877316ac18aa077a348",
+        "characters":  20995
+    },
+    {
+        "index":  20,
+        "title":  "Py3",
+        "extracted_file":  "20_py3_09.py",
+        "excluded":  false,
+        "exclusion_reason":  null,
+        "sha256":  "5371718d2c310e687f315e01023173fcca19e1b40abd50a64eac91675dd1cbe1",
+        "characters":  31
+    },
+    {
+        "index":  21,
+        "title":  "Py3",
+        "extracted_file":  null,
+        "excluded":  true,
+        "exclusion_reason":  "brick graph logic deferred by user",
+        "sha256":  "16fb93c39b94c8d62ab41a7d3e2998938370aed4e1ad71e775602e1f2bacdaf1",
+        "characters":  9075
+    },
+    {
+        "index":  22,
+        "title":  "Py3",
+        "extracted_file":  null,
+        "excluded":  true,
+        "exclusion_reason":  "brick graph logic deferred by user",
+        "sha256":  "9c0efb614c9525fb65bc2043f02fd79c647a9fa50361de946cf605b6140f7e5e",
+        "characters":  1195
+    },
+    {
+        "index":  23,
+        "title":  "Py3",
+        "extracted_file":  null,
+        "excluded":  true,
+        "exclusion_reason":  "brick graph logic deferred by user",
+        "sha256":  "2bddeda9f893ebc8b6d310091a08e35c79c1795313e666ac3ce92cf629545a04",
+        "characters":  3447
+    },
+    {
+        "index":  24,
+        "title":  "Py3",
+        "extracted_file":  null,
+        "excluded":  true,
+        "exclusion_reason":  "brick graph logic deferred by user",
+        "sha256":  "a9567c003d7db86c877070695d2da15686eb1cb8e78ff50c396fa3f3a6a0944d",
+        "characters":  13481
+    }
+]

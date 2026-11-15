@@ -16,10 +16,9 @@
 
   <!-- End-effector macros — tc_master is always mounted; add a new xacro:include for each new tool -->
   <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/end_effectors/TC_master_macro.xacro"/>
-  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/end_effectors/psh42-100_gripper_macro.xacro"/>
-  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/end_effectors/psh32-1_gripper_macro.xacro"/>
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/end_effectors/schunk_pgf_100_gripper_macro.xacro"/>
 
-  <xacro:macro name="abb_irb4600_workcell" params="parent:=world tool_ll:=none tool_rr:=none">
+  <xacro:macro name="abb_irb4600_workcell" params="parent:=world tool_ll:=schunk_pgf_100">
 
     <!-- Load fixture calibration config (poses + named frames). -->
     <xacro:property name="fixtures_cfg"
@@ -54,11 +53,9 @@
          "none" requires no extra links; tc_master already exposes tool_attachment_frame.
          Add a new <xacro:if> block here when registering a new tool.
          The macro for each tool is included at the top of this file. -->
-    <xacro:if value="${tool_rr == 'psh42-100_gripper'}"><xacro:psh42-100_gripper prefix="RR_"/></xacro:if>
-    <xacro:if value="${tool_rr == 'psh32-1_gripper'}"><xacro:psh32-1_gripper prefix="RR_"/></xacro:if>
-
-    <xacro:if value="${tool_ll == 'psh42-100_gripper'}"><xacro:psh42-100_gripper prefix="LL_"/></xacro:if>
-    <xacro:if value="${tool_ll == 'psh32-1_gripper'}"><xacro:psh32-1_gripper prefix="LL_"/></xacro:if>
+    <xacro:if value="${tool_ll == 'schunk_pgf_100'}">
+      <xacro:schunk_pgf_100_gripper prefix="LL_"/>
+    </xacro:if>
 
     <!-- ================================================================== -->
     <!-- Fixtures — poses and named frames from config/fixtures.yaml.

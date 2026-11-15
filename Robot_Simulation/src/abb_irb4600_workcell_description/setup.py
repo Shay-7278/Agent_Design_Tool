@@ -13,6 +13,7 @@ setup(
         ("share/" + package_name, ["package.xml"]),
         # Config (tools.yaml and any future package-level config)
         (os.path.join("share", package_name, "config"), glob("config/*.yaml")),
+        (os.path.join("share", package_name, "config"), glob("config/*.json")),
         # URDF/Xacro
         (os.path.join("share", package_name, "urdf"), glob("urdf/*.xacro")),
         (os.path.join("share", package_name, "urdf", "fixtures"), glob("urdf/fixtures/*.xacro")),

@@ -8,6 +8,9 @@ controller_manager:
     LL_manipulator_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
+    LL_gripper_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
     RR_manipulator_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
@@ -21,11 +24,8 @@ LL_manipulator_controller:
       - joint_LL_4
       - joint_LL_5
       - joint_LL_6
-    command_interfaces:
-      - position
-    state_interfaces:
-      - position
-      - velocity
+    command_interfaces: [position]
+    state_interfaces: [position, velocity]
     state_publish_rate: 50.0
     action_monitor_rate: 20.0
     allow_partial_joints_goal: false
@@ -42,6 +42,21 @@ LL_manipulator_controller:
       joint_LL_5: {trajectory: 0.2, goal: 0.1}
       joint_LL_6: {trajectory: 0.2, goal: 0.1}
 
+LL_gripper_controller:
+  ros__parameters:
+    joints:
+      - LL_schunk_left_finger_joint
+    command_interfaces: [position]
+    state_interfaces: [position, velocity]
+    state_publish_rate: 50.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: false
+    open_loop_control: false
+    constraints:
+      stopped_velocity_tolerance: 0.01
+      goal_time: 1.0
+      LL_schunk_left_finger_joint: {trajectory: 0.005, goal: 0.001}
+
 RR_manipulator_controller:
   ros__parameters:
     joints:
@@ -52,11 +67,8 @@ RR_manipulator_controller:
       - joint_RR_4
       - joint_RR_5
       - joint_RR_6
-    command_interfaces:
-      - position
-    state_interfaces:
-      - position
-      - velocity
+    command_interfaces: [position]
+    state_interfaces: [position, velocity]
     state_publish_rate: 50.0
     action_monitor_rate: 20.0
     allow_partial_joints_goal: false

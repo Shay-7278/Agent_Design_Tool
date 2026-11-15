@@ -8,7 +8,7 @@
   <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/abb_irb4600_workcell_macro.xacro"/>
 
   <link name="world"/>
-  <xacro:abb_irb4600_workcell parent="world" tool_ll="none" tool_rr="none"/>
+  <xacro:abb_irb4600_workcell parent="world" tool_ll="schunk_pgf_100"/>
 
   <xacro:property
     name="initial_positions"
@@ -66,6 +66,22 @@
       <command_interface name="position"/>
       <state_interface name="position">
         <param name="initial_value">${initial_positions['joint_LL_6']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="LL_schunk_left_finger_joint">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['LL_schunk_left_finger_joint']}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="LL_schunk_right_finger_joint">
+      <param name="mimic">LL_schunk_left_finger_joint</param>
+      <param name="multiplier">1.0</param>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions['LL_schunk_right_finger_joint']}</param>
       </state_interface>
       <state_interface name="velocity"/>
     </joint>
