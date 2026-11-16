@@ -22,6 +22,7 @@ setup(
         (os.path.join("share", package_name, "launch"), glob("launch/*.launch.py")),
         (os.path.join("share", package_name, "urdf"), glob("urdf/*.xacro")),
         (os.path.join("share", package_name, "worlds"), glob("worlds/*.sdf")),
+        (os.path.join("share", package_name, "models", "brick"), glob("models/brick/*")),
     ],
     install_requires=["setuptools"],
     zip_safe=True,

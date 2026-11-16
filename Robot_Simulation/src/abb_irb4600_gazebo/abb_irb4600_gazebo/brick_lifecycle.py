@@ -90,13 +90,16 @@ class BrickPlan:
 def pair_pickups_with_placements(
     pickup_layout: Sequence[Pose], placements: Sequence[Placement]
 ) -> tuple[BrickPlan, ...]:
-    if len(placements) > len(pickup_layout):
-        raise ValueError(
-            f"received {len(placements)} placements but only "
-            f"{len(pickup_layout)} pickup slots are available"
-        )
+    if not pickup_layout:
+        raise ValueError("pickup layout must contain at least one supply slot")
+    # Pickup slots are reusable supply locations, not a wall-size limit.  A
+    # later executor may replenish a slot after its brick is consumed.
     return tuple(
-        BrickPlan(f"assembly_brick_{item.index:03d}", pickup_layout[item.index], item.pose)
+        BrickPlan(
+            f"assembly_brick_{item.index:03d}",
+            pickup_layout[item.index % len(pickup_layout)],
+            item.pose,
+        )
         for item in placements
     )
 
