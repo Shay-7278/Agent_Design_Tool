@@ -21,9 +21,9 @@ echo "[3/5] Starting VNC and noVNC..."
 x11vnc -display :1 -nopw -forever -shared -bg -quiet
 websockify --web /usr/share/novnc/ --daemon 6080 localhost:5900
 
-echo "[4/5] Starting Gazebo and MoveIt..."
-WORLD_FILE="${SIM_WORLD_FILE:-workcell.sdf}"
-ros2 launch abb_irb120_gazebo gz_moveit.launch.py "world_file:=${WORLD_FILE}" &
+echo "[4/5] Starting Gazebo workcell..."
+WORLD_FILE="${SIM_WORLD_FILE:-irb4600_workcell.sdf}"
+ros2 launch abb_irb4600_gazebo simulation.launch.py "world_file:=${WORLD_FILE}" &
 SIM_PID=$!
 
 sleep 15

@@ -57,7 +57,7 @@ ENV LIBGL_ALWAYS_SOFTWARE=1
 ENV GALLIUM_DRIVER=llvmpipe
 ENV QT_X11_NO_MITSHM=1
 ENV DISPLAY=:1
-ENV GZ_SIM_RESOURCE_PATH=/ros2_ws/install/abb_irb120_description/share:/ros2_ws/install/abb_irb120_gazebo/share/abb_irb120_gazebo/models
+ENV GZ_SIM_RESOURCE_PATH=/ros2_ws/install/abb_irb4600_description/share:/ros2_ws/install/abb_irb4600_irbt4004_description/share:/ros2_ws/install/abb_irb4600_workcell_description/share:/ros2_ws/install/abb_irb4600_gazebo/share:/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models
 
 RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 RUN echo 'source /opt/ros/jazzy/setup.bash' >> /etc/bash.bashrc && \

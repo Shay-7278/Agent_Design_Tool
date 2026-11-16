@@ -58,6 +58,25 @@ def load_placements(path: str | Path) -> tuple[Placement, ...]:
     # ``placements`` is the preferred name; ``brick_frames`` is accepted for
     # the existing GH/Rhino export convention.
     placements = document.get("placements", document.get("brick_frames"))
+    # Native physics-check export: each frame is [origin, x_axis, y_axis] in mm.
+    if placements is None and isinstance(document.get("frames"), list):
+        placements = []
+        for frame in document["frames"]:
+            if not isinstance(frame, list) or len(frame) != 3:
+                raise ValueError("each exported frame must contain origin, x-axis, and y-axis")
+            origin, x_axis, y_axis = frame
+            x = tuple(float(v) for v in x_axis)
+            y = tuple(float(v) for v in y_axis)
+            z = (x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0])
+            trace = x[0] + y[1] + z[2]
+            if trace > 0:
+                s = (trace + 1.0) ** 0.5 * 2
+                q = ((y[2] - z[1]) / s, (z[0] - x[2]) / s, (x[1] - y[0]) / s, 0.25 * s)
+            else:
+                raise ValueError("exported frame rotation is not supported")
+            units = document.get("units", "mm")
+            scale = 0.001 if units == "mm" else 1.0
+            placements.append({"position": [float(v) * scale for v in origin], "orientation": q})
     if not isinstance(placements, list) or not placements:
         raise ValueError(
             'placement JSON requires a non-empty "placements" or "brick_frames" array'

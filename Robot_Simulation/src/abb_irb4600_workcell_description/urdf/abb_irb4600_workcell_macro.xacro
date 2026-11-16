@@ -14,8 +14,7 @@
   <!-- Helper for fixture semantic frames below -->
   <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/fixtures/fixture_frames_macro.xacro"/>
 
-  <!-- End-effector macros — tc_master is always mounted; add a new xacro:include for each new tool -->
-  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/end_effectors/TC_master_macro.xacro"/>
+  <!-- End-effector macros -->
   <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/end_effectors/schunk_pgf_100_gripper_macro.xacro"/>
 
   <xacro:macro name="abb_irb4600_workcell" params="parent:=world tool_ll:=schunk_pgf_100">
@@ -45,14 +44,7 @@
       rpy="0.0008572 -0.0012691 ${-1.5709245-pi/2}"
     />
 
-    <!-- TC master — always fixed to both robot flanges regardless of which tool is mounted. -->
-    <xacro:tc_master prefix="RR_"/>
-    <xacro:tc_master prefix="LL_"/>
-
-    <!-- Tool attached to TC master — selected by tool_ll / tool_rr arguments.
-         "none" requires no extra links; tc_master already exposes tool_attachment_frame.
-         Add a new <xacro:if> block here when registering a new tool.
-         The macro for each tool is included at the top of this file. -->
+    <!-- Tool mounted directly to the left robot flange. -->
     <xacro:if value="${tool_ll == 'schunk_pgf_100'}">
       <xacro:schunk_pgf_100_gripper prefix="LL_"/>
     </xacro:if>

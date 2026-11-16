@@ -1,7 +1,7 @@
 # End-effector registry. Distances are metres and angles are radians.
 tools:
   none:
-    description: "Bare flange with TC master"
+    description: "Bare robot flange with no tool"
 
   schunk_pgf_100:
     description: "SCHUNK PGF 100 brick gripper in its open CAD configuration"

@@ -4,7 +4,8 @@
     <xacro:property name="tools_cfg"
       value="${xacro.load_yaml('$(find abb_irb4600_workcell_description)/config/tools.yaml')}"/>
     <xacro:property name="cfg" value="${tools_cfg['tools']['schunk_pgf_100']}"/>
-    <xacro:property name="tcp" value="${cfg['attachment_tcp']}"/>
+    <!-- Direct flange mount: use the confirmed full flange -> TCP transform. -->
+    <xacro:property name="tcp" value="${cfg['flange_tcp']}"/>
     <xacro:property name="travel" value="${cfg['finger_travel']}"/>
     <xacro:property name="mesh_scale" value="0.001 0.001 0.001"/>
 
@@ -15,7 +16,7 @@
         <mass value="6.0"/>
         <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.005"/>
       </inertial>
-      <visual><geometry><mesh filename="package://abb_irb4600_workcell_description/${cfg['meshes']['visual_body']}" scale="${mesh_scale}"/></geometry></visual>
+      <visual><geometry><mesh filename="package://abb_irb4600_workcell_description/${cfg['meshes']['visual_body']}" scale="${mesh_scale}"/></geometry><material name="gripper_metal"><color rgba="0.62 0.40 0.18 1"/></material></visual>
       <collision><geometry><mesh filename="package://abb_irb4600_workcell_description/${cfg['meshes']['collision_body']}" scale="${mesh_scale}"/></geometry></collision>
     </link>
 
@@ -25,7 +26,7 @@
         <mass value="2.0"/>
         <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
       </inertial>
-      <visual><geometry><mesh filename="package://abb_irb4600_workcell_description/${cfg['meshes']['visual_left_finger']}" scale="${mesh_scale}"/></geometry></visual>
+      <visual><geometry><mesh filename="package://abb_irb4600_workcell_description/${cfg['meshes']['visual_left_finger']}" scale="${mesh_scale}"/></geometry><material name="finger_gray"><color rgba="0.58 0.60 0.58 1"/></material></visual>
       <collision><geometry><mesh filename="package://abb_irb4600_workcell_description/${cfg['meshes']['collision_left_finger']}" scale="${mesh_scale}"/></geometry></collision>
     </link>
 
@@ -35,13 +36,13 @@
         <mass value="2.0"/>
         <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
       </inertial>
-      <visual><geometry><mesh filename="package://abb_irb4600_workcell_description/${cfg['meshes']['visual_right_finger']}" scale="${mesh_scale}"/></geometry></visual>
+      <visual><geometry><mesh filename="package://abb_irb4600_workcell_description/${cfg['meshes']['visual_right_finger']}" scale="${mesh_scale}"/></geometry><material name="finger_gray"><color rgba="0.58 0.60 0.58 1"/></material></visual>
       <collision><geometry><mesh filename="package://abb_irb4600_workcell_description/${cfg['meshes']['collision_right_finger']}" scale="${mesh_scale}"/></geometry></collision>
     </link>
 
     <!-- CAD extends along -Z; rotate it onto the outward tool +Z axis. -->
     <joint name="${prefix}tool_attachment_to_schunk_body" type="fixed">
-      <parent link="${prefix}tool_attachment_frame"/>
+      <parent link="${prefix}flange"/>
       <child link="${prefix}schunk_gripper_body"/>
       <origin xyz="0 0 0" rpy="${pi} 0 0"/>
     </joint>
@@ -68,7 +69,7 @@
 
     <link name="${prefix}schunk_tcp"/>
     <joint name="${prefix}tool_attachment_to_schunk_tcp" type="fixed">
-      <parent link="${prefix}tool_attachment_frame"/>
+      <parent link="${prefix}flange"/>
       <child link="${prefix}schunk_tcp"/>
       <origin xyz="${tcp['xyz'][0]} ${tcp['xyz'][1]} ${tcp['xyz'][2]}"
         rpy="${tcp['rpy'][0]} ${tcp['rpy'][1]} ${tcp['rpy'][2]}"/>

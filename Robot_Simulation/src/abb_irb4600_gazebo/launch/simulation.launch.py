@@ -32,6 +32,8 @@ def generate_launch_description():
     world_file = LaunchConfiguration("world_file")
     start_gui = LaunchConfiguration("start_gui")
     use_sim_time = LaunchConfiguration("use_sim_time")
+    pickup_file = LaunchConfiguration("pickup_file")
+    placement_file = LaunchConfiguration("placement_file")
 
     robot_description = {
         "robot_description": ParameterValue(
@@ -93,6 +95,18 @@ def generate_launch_description():
             "robot_description",
             "-allow_renaming",
             "false",
+        ],
+        output="screen",
+    )
+
+    spawn_pickup_grid = Node(
+        package="abb_irb4600_gazebo",
+        executable="spawn_pickup_grid",
+        name="spawn_pickup_grid",
+        arguments=[
+            "--pickup-file", pickup_file,
+            "--placement-file", placement_file,
+            "--model-dir", os.path.join(gazebo_share, "models"),
         ],
         output="screen",
     )
@@ -163,6 +177,16 @@ def generate_launch_description():
                 description="Start a separate Gazebo GUI client",
             ),
             DeclareLaunchArgument("use_sim_time", default_value="true"),
+            DeclareLaunchArgument(
+                "pickup_file",
+                default_value=os.path.join(
+                    get_package_share_directory("abb_irb4600_workcell_description"),
+                    "config", "fixed_pickup_layout.json"),
+            ),
+            DeclareLaunchArgument(
+                "placement_file",
+                default_value="/ros2_ws/inputs/brick_frames.json",
+            ),
             SetEnvironmentVariable("GZ_SIM_RESOURCE_PATH", resource_path),
             gazebo_server,
             gazebo_gui,
@@ -172,7 +196,7 @@ def generate_launch_description():
             RegisterEventHandler(
                 OnProcessExit(
                     target_action=spawn_workcell,
-                    on_exit=[joint_state_broadcaster],
+                    on_exit=[joint_state_broadcaster, spawn_pickup_grid],
                 )
             ),
             RegisterEventHandler(
