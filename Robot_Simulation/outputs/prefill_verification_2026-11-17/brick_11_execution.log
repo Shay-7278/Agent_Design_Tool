@@ -1,0 +1,40 @@
+[INFO] [1794931002.769082800] [execute_one_brick]: GH motion preflight passed: bricks 11..11 in MT_base; home, rail offset, MoveJ and MoveL included
+[WARN] [1794931003.220377459] [execute_one_brick]: PREFILL: placing bricks 1..10 directly, then executing brick 11; full-brick geometry, gravity and collisions remain enabled. Overlapping targets may move.
+[INFO] [1794931011.342518966] [execute_one_brick]: pickup_brick_000 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794931011.344257972] [execute_one_brick]: pickup_brick_001 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794931011.345659794] [execute_one_brick]: pickup_brick_002 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794931011.346810044] [execute_one_brick]: pickup_brick_003 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794931011.348286378] [execute_one_brick]: pickup_brick_004 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794931011.349552542] [execute_one_brick]: pickup_brick_005 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794931011.356639269] [execute_one_brick]: pickup_brick_006 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794931011.362280816] [execute_one_brick]: pickup_brick_007 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794931011.363462917] [execute_one_brick]: pickup_brick_008 PREFILLED; measured displacement=0.002141 m
+[INFO] [1794931011.364568690] [execute_one_brick]: pickup_brick_009 PREFILLED; measured displacement=0.000068 m
+[INFO] [1794931011.370016975] [execute_one_brick]: brick 11/11 AVAILABLE: pickup_brick_010
+[INFO] [1794931016.529821235] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794931031.536294026] [execute_one_brick]: trajectory in progress: 6.34/14.12 sim s; 15 real s; simulation speed=0.423x
+[INFO] [1794931046.537744999] [execute_one_brick]: trajectory in progress: 13.21/14.12 sim s; 30 real s; simulation speed=0.440x
+[INFO] [1794931048.839983437] [execute_one_brick]: executing move_j: (0.005386666666666215, 1.8509722222222218, 0.2724992281596427)
+[INFO] [1794931062.182617077] [execute_one_brick]: executing move_l: (0.005386666666666215, 1.8509722222222218, 0.07249922815964271)
+[INFO] [1794931085.098806702] [execute_one_brick]: pickup_brick_010 ATTACHED; {'state': 'attached', 'joint_entity': 259, 'parent_link': 38, 'child_link': 100, 'simulation_stamp': 53.861, 'verification': 'Gazebo ECM readback', 'notification': None}
+[INFO] [1794931086.052741812] [execute_one_brick]: executing move_l: (0.005386666666666215, 1.8509722222222218, 0.2724992281596427)
+[INFO] [1794931099.578572829] [execute_one_brick]: pickup_brick_010 TRANSPORTING
+[INFO] [1794931099.579831943] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794931112.526304359] [execute_one_brick]: executing move_j: (-0.027898479363015483, 4.50511352600419, 0.6569546660000001)
+[INFO] [1794931121.120046931] [execute_one_brick]: executing move_l: (-0.027898479363015483, 4.50511352600419, 0.456954666)
+[ERROR] [1794931135.446155710] [execute_one_brick]: pickup_brick_010 FAILED
+Traceback (most recent call last):
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/abb_irb4600_gazebo/execute_wall", line 33, in <module>
+    sys.exit(load_entry_point('abb-irb4600-gazebo==0.1.0', 'console_scripts', 'execute_wall')())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 492, in wall_main
+    main(wall=True)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 482, in main
+    try: node.run()
+         ^^^^^^^^^^
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 299, in run
+    self._move_target(step.target, self.flange_tcp, step.kind)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 451, in _move_target
+    raise RuntimeError("controller finished but measured TCP missed target by more than 3 mm")
+RuntimeError: controller finished but measured TCP missed target by more than 3 mm
+[ros2run]: Process exited with failure 1

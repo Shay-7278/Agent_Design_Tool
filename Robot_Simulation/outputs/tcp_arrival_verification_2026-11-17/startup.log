@@ -1,0 +1,224 @@
+﻿[1/5] Starting virtual display...
+docker : The XKEYBOARD keymap compiler (xkbcomp) reports:
+At line:2 char:1
++ docker logs irb4600-tcp-arrival-verification 2>&1 | Out-File -Encodin ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (The XKEYBOARD k...bcomp) reports::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2/5] Starting window manager...
+Openbox-Message: Unable to find a valid menu file "/var/lib/openbox/debian-menu.xml"
+[3/5] Starting VNC and noVNC...
+PORT=5900
+> Warning:          Could not resolve keysym XF86CameraAccessEnable
+> Warning:          Could not resolve keysym XF86CameraAccessDisable
+> Warning:          Could not resolve keysym XF86CameraAccessToggle
+> Warning:          Could not resolve keysym XF86NextElement
+> Warning:          Could not resolve keysym XF86PreviousElement
+> Warning:          Could not resolve keysym XF86AutopilotEngageToggle
+> Warning:          Could not resolve keysym XF86MarkWaypoint
+> Warning:          Could not resolve keysym XF86Sos
+> Warning:          Could not resolve keysym XF86NavChart
+> Warning:          Could not resolve keysym XF86FishingChart
+> Warning:          Could not resolve keysym XF86SingleRangeRadar
+> Warning:          Could not resolve keysym XF86DualRangeRadar
+> Warning:          Could not resolve keysym XF86RadarOverlay
+> Warning:          Could not resolve keysym XF86TraditionalSonar
+> Warning:          Could not resolve keysym XF86ClearvuSonar
+> Warning:          Could not resolve keysym XF86SidevuSonar
+> Warning:          Could not resolve keysym XF86NavInfo
+Errors from xkbcomp are not fatal to the X server
+Xlib:  extension "DPMS" missing on display ":1".
+
+The VNC desktop is:      6b8ce9eb118d:0
+[4/5] Starting Gazebo workcell...
+[5/5] Headless physics server; GUI disabled.
+WebSocket server settings:
+  - Listen on :6080
+  - Web server. Web root: /usr/share/novnc
+  - No SSL/TLS support (no cert file)
+  - Backgrounding (daemon)
+Gazebo desktop: http://localhost:6080/vnc.html
+Run the builder with: docker compose -f docker/docker-compose.yml exec robot-sim bash
+[INFO] [launch]: All log files can be found below /root/.ros/log/2026-11-17-16-07-18-056767-6b8ce9eb118d-35
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [gazebo-1]: process started with pid [42]
+[INFO] [parameter_bridge-2]: process started with pid [43]
+[INFO] [robot_state_publisher-3]: process started with pid [45]
+[INFO] [create-4]: process started with pid [46]
+[create-4] [INFO] [1794931638.542228352] [spawn_irb4600_workcell]: Requesting list of world names.
+[robot_state_publisher-3] [INFO] [1794931638.542403684] [robot_state_publisher]: Robot initialized
+[parameter_bridge-2] [INFO] [1794931638.567919159] [clock_bridge]: Creating GZ->ROS Bridge: [/clock (gz.msgs.Clock) -> /clock (rosgraph_msgs/msg/Clock)] (Lazy 0)
+[create-4] [INFO] [1794931639.081763259] [spawn_irb4600_workcell]: Waiting messages on topic [robot_description].
+[create-4] [INFO] [1794931639.084538505] [spawn_irb4600_workcell]: Entity creation successful.
+[INFO] [create-4]: process has finished cleanly [pid 46]
+[INFO] [spawner-5]: process started with pid [102]
+[INFO] [spawn_pickup_grid-6]: process started with pid [103]
+[spawner-5] [INFO] [1794931639.707684540] [spawner_joint_state_broadcaster]: waiting for service /controller_manager/list_controllers to become available...
+[gazebo-1] [INFO] [1794931640.877270962] [gz_ros_control]: [gz_ros2_control] Fixed joint ['workcell_base_fixed_joint'] (Entity='49') is skipped.
+[gazebo-1] [INFO] [1794931640.878296165] [gz_ros_control]: Loading controller_manager
+[gazebo-1] [INFO] [1794931640.891620453] [controller_manager]: Using ROS clock for triggering controller manager cycles.
+[gazebo-1] [WARN] [1794931640.891696522] [controller_manager]: The resource manager is not yet initialized, will wait for the robot description to initialize it..
+[gazebo-1] [INFO] [1794931640.895814407] [controller_manager]: Subscribing to '/robot_description' topic for robot description.
+[gazebo-1] [WARN] [1794931640.895922640] [gz_ros_control]: Waiting RM to load and initialize hardware...
+[gazebo-1] [INFO] [1794931640.898625220] [controller_manager]: Received robot description from topic.
+[gazebo-1] [INFO] [1794931640.898733793] [controller_manager]: Enforcing command limits is disabled. Command limits from URDF will be ignored.
+[gazebo-1] [INFO] [1794931640.902498439] [gz_ros_control]: The position_proportional_gain has been set to: 0.1
+[gazebo-1] [INFO] [1794931640.902567342] [gz_ros_control]: Loading joint: joint_LL_ext_1
+[gazebo-1] [INFO] [1794931640.902582757] [gz_ros_control]: 	State:
+[gazebo-1] [INFO] [1794931640.902590480] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902607190] [gz_ros_control]: 			 found initial value: 0.000000
+[gazebo-1] [INFO] [1794931640.902613507] [gz_ros_control]: 		 velocity
+[gazebo-1] [INFO] [1794931640.902628540] [gz_ros_control]: 	Command:
+[gazebo-1] [INFO] [1794931640.902638888] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902651762] [gz_ros_control]: Loading joint: joint_LL_1
+[gazebo-1] [INFO] [1794931640.902655297] [gz_ros_control]: 	State:
+[gazebo-1] [INFO] [1794931640.902658238] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902661134] [gz_ros_control]: 			 found initial value: 0.000000
+[gazebo-1] [INFO] [1794931640.902664043] [gz_ros_control]: 		 velocity
+[gazebo-1] [INFO] [1794931640.902666265] [gz_ros_control]: 	Command:
+[gazebo-1] [INFO] [1794931640.902668280] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902674577] [gz_ros_control]: Loading joint: joint_LL_2
+[gazebo-1] [INFO] [1794931640.902676900] [gz_ros_control]: 	State:
+[gazebo-1] [INFO] [1794931640.902679096] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902681609] [gz_ros_control]: 			 found initial value: 0.000000
+[gazebo-1] [INFO] [1794931640.902684214] [gz_ros_control]: 		 velocity
+[gazebo-1] [INFO] [1794931640.902686317] [gz_ros_control]: 	Command:
+[gazebo-1] [INFO] [1794931640.902688396] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902694833] [gz_ros_control]: Loading joint: joint_LL_3
+[gazebo-1] [INFO] [1794931640.902697216] [gz_ros_control]: 	State:
+[gazebo-1] [INFO] [1794931640.902699410] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902701526] [gz_ros_control]: 			 found initial value: 0.000000
+[gazebo-1] [INFO] [1794931640.902704087] [gz_ros_control]: 		 velocity
+[gazebo-1] [INFO] [1794931640.902706172] [gz_ros_control]: 	Command:
+[gazebo-1] [INFO] [1794931640.902708132] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902713771] [gz_ros_control]: Loading joint: joint_LL_4
+[gazebo-1] [INFO] [1794931640.902716557] [gz_ros_control]: 	State:
+[gazebo-1] [INFO] [1794931640.902718644] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902721700] [gz_ros_control]: 			 found initial value: 0.000000
+[gazebo-1] [INFO] [1794931640.902724267] [gz_ros_control]: 		 velocity
+[gazebo-1] [INFO] [1794931640.902726363] [gz_ros_control]: 	Command:
+[gazebo-1] [INFO] [1794931640.902728354] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902734090] [gz_ros_control]: Loading joint: joint_LL_5
+[gazebo-1] [INFO] [1794931640.902736714] [gz_ros_control]: 	State:
+[gazebo-1] [INFO] [1794931640.902738908] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902740957] [gz_ros_control]: 			 found initial value: 0.000000
+[gazebo-1] [INFO] [1794931640.902743420] [gz_ros_control]: 		 velocity
+[gazebo-1] [INFO] [1794931640.902745481] [gz_ros_control]: 	Command:
+[gazebo-1] [INFO] [1794931640.902747448] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902752631] [gz_ros_control]: Loading joint: joint_LL_6
+[gazebo-1] [INFO] [1794931640.902755052] [gz_ros_control]: 	State:
+[gazebo-1] [INFO] [1794931640.902757066] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902759081] [gz_ros_control]: 			 found initial value: 0.000000
+[gazebo-1] [INFO] [1794931640.902777152] [gz_ros_control]: 		 velocity
+[gazebo-1] [INFO] [1794931640.902782201] [gz_ros_control]: 	Command:
+[gazebo-1] [INFO] [1794931640.902815885] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902825004] [gz_ros_control]: Loading joint: LL_schunk_left_finger_joint
+[gazebo-1] [INFO] [1794931640.902829121] [gz_ros_control]: 	State:
+[gazebo-1] [INFO] [1794931640.902832103] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902834767] [gz_ros_control]: 			 found initial value: 0.000000
+[gazebo-1] [INFO] [1794931640.902837767] [gz_ros_control]: 		 velocity
+[gazebo-1] [INFO] [1794931640.902840018] [gz_ros_control]: 	Command:
+[gazebo-1] [INFO] [1794931640.902842156] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902848076] [gz_ros_control]: Loading joint: LL_schunk_right_finger_joint
+[gazebo-1] [INFO] [1794931640.902850756] [gz_ros_control]: 	State:
+[gazebo-1] [INFO] [1794931640.902853131] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.902856770] [gz_ros_control]: 			 found initial value: 0.000000
+[gazebo-1] [INFO] [1794931640.902859561] [gz_ros_control]: 		 velocity
+[gazebo-1] [INFO] [1794931640.902862236] [gz_ros_control]: 	Command:
+[gazebo-1] [INFO] [1794931640.902864581] [gz_ros_control]: 		 position
+[gazebo-1] [INFO] [1794931640.903004480] [controller_manager]: Initialize hardware 'LLIRB4600GazeboSystem' 
+[gazebo-1] [WARN] [1794931640.903027551] [controller_manager.hardware_component.system.LLIRB4600GazeboSystem]: Executor is not available during hardware component initialization for 'LLIRB4600GazeboSystem'. Skipping node creation!
+[gazebo-1] [INFO] [1794931640.903106317] [controller_manager]: Successful initialization of hardware 'LLIRB4600GazeboSystem'
+[gazebo-1] [INFO] [1794931640.903263530] [controller_manager]: Activating component 'LLIRB4600GazeboSystem'.
+[gazebo-1] [INFO] [1794931640.903288176] [resource_manager]: 'configure' hardware 'LLIRB4600GazeboSystem' 
+[gazebo-1] [INFO] [1794931640.903293032] [gz_ros_control]: System Successfully configured!
+[gazebo-1] [INFO] [1794931640.903297268] [resource_manager]: Successful 'configure' of hardware 'LLIRB4600GazeboSystem'
+[gazebo-1] [INFO] [1794931640.903303930] [resource_manager]: 'activate' hardware 'LLIRB4600GazeboSystem' 
+[gazebo-1] [INFO] [1794931640.903315914] [resource_manager]: Successful 'activate' of hardware 'LLIRB4600GazeboSystem'
+[gazebo-1] [WARN] [1794931640.903340475] [controller_manager]: Component 'LLIRB4600GazeboSystem' does not have read or write statistics initialized, skipping registration.
+[gazebo-1] [INFO] [1794931640.903345634] [controller_manager]: Resource Manager has been successfully initialized. Starting Controller Manager services...
+[spawner-5] [INFO] [1794931640.972109043] [spawner_joint_state_broadcaster]: Setting controller param "params_file" to "['/tmp/launch_params_occxkc2t']" for joint_state_broadcaster
+[gazebo-1] [INFO] [1794931640.974412981] [controller_manager]: Loading controller : 'joint_state_broadcaster' of type 'joint_state_broadcaster/JointStateBroadcaster'
+[gazebo-1] [INFO] [1794931640.974464312] [controller_manager]: Loading controller 'joint_state_broadcaster'
+[gazebo-1] [INFO] [1794931640.978835907] [controller_manager]: Controller 'joint_state_broadcaster' node arguments: --ros-args --params-file /ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/config/assembly_controllers.yaml -p use_sim_time:=true --params-file /tmp/launch_params_occxkc2t --param use_sim_time:=true 
+[spawner-5] [INFO] [1794931640.994212686] [spawner_joint_state_broadcaster]: Loaded joint_state_broadcaster
+[gazebo-1] [INFO] [1794931640.995200305] [controller_manager]: Configuring controller: 'joint_state_broadcaster'
+[gazebo-1] [INFO] [1794931640.995413348] [joint_state_broadcaster]: 'joints' or 'interfaces' parameter is empty. All available state interfaces will be published
+[gazebo-1] [INFO] [1794931641.002994756] [controller_manager]: Activating controllers: [ joint_state_broadcaster ]
+[gazebo-1] [WARN] [1794931642.950443001] [gz_ros_control]:  Desired controller update period (0.004 s) is slower than the gazebo simulation period (0.001 s).
+[gazebo-1] [INFO] [1794931642.954394781] [controller_manager]: Successfully switched controllers!
+[spawner-5] [INFO] [1794931642.959032865] [spawner_joint_state_broadcaster]: Configured and activated joint_state_broadcaster
+[INFO] [spawner-5]: process has finished cleanly [pid 102]
+[INFO] [spawner-7]: process started with pid [172]
+[INFO] [spawner-8]: process started with pid [173]
+[spawner-8] [INFO] [1794931643.437022530] [spawner_LL_gripper_controller]: Setting controller param "params_file" to "['/tmp/launch_params_zj_ungu4']" for LL_gripper_controller
+[gazebo-1] [INFO] [1794931643.439057781] [controller_manager]: Loading controller : 'LL_gripper_controller' of type 'joint_trajectory_controller/JointTrajectoryController'
+[gazebo-1] [INFO] [1794931643.439149795] [controller_manager]: Loading controller 'LL_gripper_controller'
+[gazebo-1] [INFO] [1794931643.444347107] [controller_manager]: Controller 'LL_gripper_controller' node arguments: --ros-args --params-file /ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/config/assembly_controllers.yaml -p use_sim_time:=true --params-file /tmp/launch_params_zj_ungu4 --param use_sim_time:=true 
+[spawner-8] [INFO] [1794931643.463496653] [spawner_LL_gripper_controller]: Loaded LL_gripper_controller
+[gazebo-1] [INFO] [1794931643.465206291] [controller_manager]: Configuring controller: 'LL_gripper_controller'
+[gazebo-1] [INFO] [1794931643.465498922] [LL_gripper_controller]: No specific joint names are used for command interfaces. Using 'joints' parameter.
+[gazebo-1] [INFO] [1794931643.465564947] [LL_gripper_controller]: Command interfaces are [position] and state interfaces are [position velocity].
+[gazebo-1] [INFO] [1794931643.465610088] [LL_gripper_controller]: Using 'splines' interpolation method.
+[gazebo-1] [INFO] [1794931643.478823174] [LL_gripper_controller]: Action status changes will be monitored at 20.00 Hz.
+[gazebo-1] [INFO] [1794931643.484686404] [LL_gripper_controller]: Setting initial scaling factor to 1.000000
+[gazebo-1] [INFO] [1794931643.484725363] [LL_gripper_controller]: No scaling interface set. This controller will not read speed scaling from the hardware.
+[gazebo-1] [INFO] [1794931643.486735185] [controller_manager]: Activating controllers: [ LL_gripper_controller ]
+[gazebo-1] [INFO] [1794931643.489262148] [controller_manager]: Successfully switched controllers!
+[spawner-8] [INFO] [1794931643.493989787] [spawner_LL_gripper_controller]: Configured and activated LL_gripper_controller
+[INFO] [spawner-8]: process has finished cleanly [pid 173]
+[spawner-7] [INFO] [1794931643.886347483] [spawner_LL_manipulator_controller]: Setting controller param "params_file" to "['/tmp/launch_params_s04vlle2']" for LL_manipulator_controller
+[gazebo-1] [INFO] [1794931643.888019443] [controller_manager]: Loading controller : 'LL_manipulator_controller' of type 'joint_trajectory_controller/JointTrajectoryController'
+[gazebo-1] [INFO] [1794931643.888061113] [controller_manager]: Loading controller 'LL_manipulator_controller'
+[gazebo-1] [INFO] [1794931643.888295846] [controller_manager]: Controller 'LL_manipulator_controller' node arguments: --ros-args --params-file /ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/config/assembly_controllers.yaml -p use_sim_time:=true --params-file /tmp/launch_params_s04vlle2 --param use_sim_time:=true 
+[spawner-7] [INFO] [1794931643.916013979] [spawner_LL_manipulator_controller]: Loaded LL_manipulator_controller
+[gazebo-1] [INFO] [1794931643.916980690] [controller_manager]: Configuring controller: 'LL_manipulator_controller'
+[gazebo-1] [INFO] [1794931643.917283518] [LL_manipulator_controller]: No specific joint names are used for command interfaces. Using 'joints' parameter.
+[gazebo-1] [INFO] [1794931643.917428120] [LL_manipulator_controller]: Command interfaces are [position] and state interfaces are [position velocity].
+[gazebo-1] [INFO] [1794931643.917443413] [LL_manipulator_controller]: Using 'splines' interpolation method.
+[gazebo-1] [INFO] [1794931643.918293758] [LL_manipulator_controller]: Action status changes will be monitored at 20.00 Hz.
+[gazebo-1] [INFO] [1794931643.920417799] [LL_manipulator_controller]: Setting initial scaling factor to 1.000000
+[gazebo-1] [INFO] [1794931643.920437449] [LL_manipulator_controller]: No scaling interface set. This controller will not read speed scaling from the hardware.
+[gazebo-1] [INFO] [1794931643.934128001] [controller_manager]: Activating controllers: [ LL_manipulator_controller ]
+[gazebo-1] [INFO] [1794931643.935140816] [controller_manager]: Successfully switched controllers!
+[spawner-7] [INFO] [1794931643.939702024] [spawner_LL_manipulator_controller]: Configured and activated LL_manipulator_controller
+[INFO] [spawner-7]: process has finished cleanly [pid 172]
+[spawn_pickup_grid-6] spawned 50 pickup bricks
+[INFO] [spawn_pickup_grid-6]: process has finished cleanly [pid 103]
+[gazebo-1] [INFO] [1794931668.202980776] [LL_gripper_controller]: Received new action goal
+[gazebo-1] [INFO] [1794931668.203072268] [LL_gripper_controller]: Accepted new action goal
+[gazebo-1] [INFO] [1794931672.299363875] [LL_gripper_controller]: Goal reached, success!
+[gazebo-1] [INFO] [1794931672.306975044] [LL_manipulator_controller]: Received new action goal
+[gazebo-1] [INFO] [1794931672.307080853] [LL_manipulator_controller]: Accepted new action goal
+[gazebo-1] [INFO] [1794931699.087940574] [LL_manipulator_controller]: Goal reached, success!
+[gazebo-1] [INFO] [1794931699.356925147] [LL_manipulator_controller]: Received new action goal
+[gazebo-1] [INFO] [1794931699.356968304] [LL_manipulator_controller]: Accepted new action goal
+[gazebo-1] [INFO] [1794931712.953388459] [LL_manipulator_controller]: Goal reached, success!
+[gazebo-1] [INFO] [1794931713.174278395] [LL_manipulator_controller]: Received new action goal
+[gazebo-1] [INFO] [1794931713.174354043] [LL_manipulator_controller]: Accepted new action goal
+[gazebo-1] [INFO] [1794931728.439405238] [LL_manipulator_controller]: Goal reached, success!
+[gazebo-1] [INFO] [1794931730.714701949] [LL_gripper_controller]: Received new action goal
+[gazebo-1] [INFO] [1794931730.714794132] [LL_gripper_controller]: Accepted new action goal
+[gazebo-1] [INFO] [1794931736.668418651] [LL_gripper_controller]: Goal reached, success!
+[gazebo-1] [INFO] [1794931738.868711217] [LL_manipulator_controller]: Received new action goal
+[gazebo-1] [INFO] [1794931738.868787433] [LL_manipulator_controller]: Accepted new action goal
+[gazebo-1] [INFO] [1794931753.526493970] [LL_manipulator_controller]: Goal reached, success!
+[gazebo-1] [INFO] [1794931753.854276960] [LL_manipulator_controller]: Received new action goal
+[gazebo-1] [INFO] [1794931753.854352636] [LL_manipulator_controller]: Accepted new action goal
+[gazebo-1] [INFO] [1794931766.662894550] [LL_manipulator_controller]: Goal reached, success!
+[gazebo-1] [INFO] [1794931766.964024666] [LL_manipulator_controller]: Received new action goal
+[gazebo-1] [INFO] [1794931766.964098052] [LL_manipulator_controller]: Accepted new action goal
+[gazebo-1] [INFO] [1794931775.843135054] [LL_manipulator_controller]: Goal reached, success!
+[gazebo-1] [INFO] [1794931776.072842762] [LL_manipulator_controller]: Received new action goal
+[gazebo-1] [INFO] [1794931776.072896225] [LL_manipulator_controller]: Accepted new action goal
+[gazebo-1] [INFO] [1794931790.510226937] [LL_manipulator_controller]: Goal reached, success!
+[gazebo-1] [INFO] [1794931793.828528364] [LL_gripper_controller]: Received new action goal
+[gazebo-1] [INFO] [1794931793.828598969] [LL_gripper_controller]: Accepted new action goal
+[gazebo-1] [INFO] [1794931799.373420250] [LL_gripper_controller]: Goal reached, success!
+[gazebo-1] [INFO] [1794931801.335489791] [LL_manipulator_controller]: Received new action goal
+[gazebo-1] [INFO] [1794931801.335562494] [LL_manipulator_controller]: Accepted new action goal
+[gazebo-1] [INFO] [1794931816.576167154] [LL_manipulator_controller]: Goal reached, success!
+[gazebo-1] [INFO] [1794931816.844964988] [LL_manipulator_controller]: Received new action goal
+[gazebo-1] [INFO] [1794931816.845039492] [LL_manipulator_controller]: Accepted new action goal
+[gazebo-1] [INFO] [1794931827.125556528] [LL_manipulator_controller]: Goal reached, success!

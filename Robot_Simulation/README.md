@@ -1,35 +1,13 @@
 # GH-derived IRB4600 brick assembly
+## Runinng Commands 
+
+docker compose exec robot-sim bash -lc "source /opt/ros/jazzy/setup.bash; source /ros2_ws/install/setup.bash; ros2 run abb_irb4600_gazebo execute_wall"
 
 ## Active contract
 
 Only numeric [x, y, z, yaw] JSON rows are used, in metres/radians, relative to
 MT_base at the milling table top. Full bricks are 190 x 90 x 57 mm: X is length,
-Y is width. LL moves. The default assembly workcell contains LL, its track and
-gripper, MT, the pickup platform, ground and bricks.
-
-## Smaller workcell
-
-`simulation.launch.py` now passes `abb_irb4600_assembly.gazebo.xacro` by default.
-It reuses the full workcell's calibrated transforms and detailed LL robot,
-track and gripper geometry. The RR robot/track, MHS, saw, tool stations and
-decorative IRB7600 are omitted. Nine control joints remain: track, six arm
-joints and both gripper fingers. `assembly_controllers.yaml` keeps the same LL
-controller settings; `assembly_initial_positions.yaml` contains only those
-nine joints.
-
-Only the MT visual uses a reduced mesh (145,232 -> 6,000 triangles). Its
-original collision geometry and top surface are unchanged. The source CAD
-mesh is retained; `meshes/optimized/fixtures/MT_base.validation.json` records
-the reduction and geometry checks. Robot and track meshes are not simplified.
-Physics timestep, gravity, contact settings and GH motion timing are unchanged.
-
-The full scene remains available with
-`xacro_file:=/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/urdf/abb_irb4600_workcell.gazebo.xacro`.
-Rebuild and recreate the container to load the new default scene. Recreating
-starts a fresh world; it does not resume a failed assembly.
-
-Performance claims below from 2026-11-17 describe the earlier full workcell.
-The smaller scene needs its own runtime benchmark.
+Y is width. LL moves; RR stays visible and passive.
 
 The original GH archive and extracted Python/RAPID references are preserved.
 config/gh_motion_profile.json records its SHA-256 and recovered values:
@@ -109,7 +87,7 @@ The inactive IRB120 workflow, competing loaders and duplicate converter were
 removed, along with the obsolete diagnostic that required an active RR
 controller. GH/RAPID reference sources remain unchanged.
 
-## Full-workcell execution verification — 2026-11-17
+## Execution verification — 2026-11-17
 
 The six agreed corrections are implemented:
 
@@ -154,3 +132,147 @@ The entire 221-brick physical execution has **not** been run. Its route
 preflight and mocked refill scheduling passed; neither proves all-wall contact
 behavior or stability. The one-brick live test provides the execution evidence
 for the corrected pipeline. No files were committed or pushed.
+
+## Attachment correction and internal verification — 2026-11-17
+
+The later wall run stopped while attaching `pickup_brick_010` (brick 11).
+The adapter previously relied on a one-shot `attached` notification and a
+15-real-second wait. It now reads Gazebo's actual DetachableJoint component
+from `/world/irb4600_workcell/state`, matching the parent and child link IDs.
+Notifications remain diagnostic. Attach/release requests can be retried
+without loading a duplicate plugin. The joint wait permits 10 simulation
+seconds and separately rejects a clock stalled for 30 real seconds.
+The 15-real-second RPC transport bound remains a separate service-response
+limit, not an attachment-completion deadline.
+
+Fixed track origin/direction, reference-base basis and brick-to-flange mapping
+are cached once per executor run. Rail displacement is still applied for every
+target; measured TCP feedback remains live. Placement frames are transformed
+once before planning. GH speeds, tool geometry and the physics timestep are
+unchanged by this correction.
+
+Evidence directory: `outputs/attachment_verification_2026-11-17/`.
+The rebuilt image passes 36 tests. A live stress test passed 60 attach/release
+cycles across 49 distinct bricks, including reattachment, with all attachment
+state notifications deliberately suppressed. Every operation was confirmed by
+actual component readback; the detailed record is `attachment_stress.jsonl`.
+These are protocol tests, not a complete wall build.
+
+The current 221-brick execution test uses the default smaller assembly scene,
+the original numeric input, full bricks, 0.001 s physics steps, target real-time
+factor 1.0, collisions and gravity, with the GUI disabled. Its full route
+preflight passed. The full execution attempt completed nine brick cycles,
+then stopped on brick 10's placement descent: controller success was followed
+by a measured TCP miss greater than 3 mm. Brick 10's attachment and transport
+had passed. This run is **not a successful 221-brick execution**.
+
+### Remaining blocker: overlapping placement geometry
+
+Using only the numeric input and the active 190 x 90 x 57 mm Gazebo box model,
+targets 9 and 10 intersect at the same height. In the preserved failed scene,
+brick 10 still had a physical attachment joint and the TCP eventually reached
+the target, but brick 9 had been pushed approximately 266 mm from its target.
+
+A clearance replay of the same endpoint passed. For a controlled contact
+replay, all first-nine brick target poses were restored in the isolated test
+world and their positions verified within 0.001 mm before descent. That
+reproduced the problem: after controller success, TCP error was 48.09 mm
+initially, 47.68 mm after 0.20 simulation seconds, and 44.40 mm after 2.00
+simulation seconds. Joint 2 error was about 0.0365 rad, within the controller's
+existing 0.1 rad goal tolerance. Thus the controller's success criterion and
+the stricter TCP check differ; in this contact case the TCP check correctly
+prevented continuing with a missed pose. It must not be weakened to disguise
+the interference.
+
+See `wall_execution.log`, `wall_observations.jsonl`,
+`stopped_wall_diagnostics.json`, `clearance_completion_trace.json`,
+`collision_baseline.json`, `collision_completion_trace.json` and
+`placement_collision_diagnosis.png` in the evidence directory. Supplemental
+replays changed test-world poses only; the input JSON, model sizes, controller
+tolerances, TCP and motion speeds were not changed.
+
+The pose-only demo/numeric files cannot identify a half brick or establish
+the intended dimensions of an overlapping brick. Matching original wall
+geometry or per-brick dimensions are needed before correcting model selection
+and certifying a complete wall execution. No `physics_check` logic was used
+for this diagnosis. The attachment/caching corrections are tested and built;
+the complete wall remains blocked by the geometry issue.
+
+## Start at brick 11 with a prefilled prefix
+
+`execute_wall --start-brick 11` first places source rows 1-10 directly at
+their MT-relative targets, then executes the original pickup/placement routes
+from row 11 onward. It relocates the existing startup models rather than
+creating duplicate bricks. Row 11 remains `pickup_brick_010`, using its
+original pickup slot; later batches still begin at rows 51, 101, 151 and 201.
+Use a fresh world. The initial pickup batch is checked before relocation.
+
+Earlier rows are logged as `PREFILLED`, separately from robot-executed `PLACED`
+rows, with measured poses and displacement. Full-brick dimensions, gravity,
+collisions, GH speeds and TCP tolerances remain active. This mode bypasses
+the first ten robot cycles; it does not repair their overlapping geometry or
+provide a valid half-brick mapping. Prefilled bricks may move under physics.
+
+From the Windows CMD terminal in `Robot_Simulation\docker`, after rebuilding:
+
+```cmd
+docker compose up -d --force-recreate
+docker compose exec robot-sim bash -lc "source /ros2_ws/install/setup.bash && ros2 run abb_irb4600_gazebo execute_wall --start-brick 11"
+```
+
+Wait for startup to report `spawned 50 pickup bricks` before the executor.
+For a one-cycle diagnostic, append `--max-bricks 11`; the limit caps the input
+row number, so start 11 / max 11 executes only row 11. `--preflight-only`
+checks the remaining robot routes without preplacing any models.
+
+Internal test of this mode: all 42 unit/configuration tests passed in the final
+image. A fresh Gazebo run prefilled rows 1-10 and reached brick 11's ATTACHED
+and TRANSPORTING states. Its physical attachment was confirmed with no state
+notification received. It then stopped at the placement descent's existing
+3 mm TCP check; release and cycle completion did not occur. A later readback
+found the tool and carried brick at the target, with the attachment still
+present. This later convergence does not establish the error at the instant
+of the failed check or prove its cause. Prefilled bricks 9 and 10 had moved
+about 32 mm and 14 mm respectively. The next failure is therefore not an
+attachment timeout, and prefill does not make the wall physically correct.
+Evidence: `outputs/prefill_verification_2026-11-17/brick_11_execution.log`,
+`assembly_observations.jsonl`, `stopped_brick_11_readback.json` and the two
+unit-test logs. No successful brick-11 or complete-wall execution is claimed.
+
+## Measured tool-arrival correction
+
+The executor now replaces the single check after 0.2 simulation seconds with
+a bounded measured-arrival wait. Following controller success, fresh TCP
+feedback must remain within 3 mm and 2 degrees for 0.1 simulation seconds.
+The arrival budget is 10 simulation seconds; a clock stopped for 30 real
+seconds or a reset aborts the wait. Slow but advancing simulation clocks do
+not consume the simulation-time budget faster. Controller tolerances, GH
+motion speeds, collision geometry and physics settings are unchanged.
+
+Each arm endpoint records the measured error over time and ARRIVED/FAILED
+outcome in `outputs/assembly_observations_tcp_arrival.jsonl`. A timeout
+reports the final position/orientation error. The next instruction and
+planned execution state advance only after measured arrival. This is a ROS
+execution adapter check, not an extracted GH structural-stability test.
+
+The final source passes 50 unit/configuration tests, including late arrival,
+position/orientation limits, stale feedback, slow/stopped/reset clocks and
+preserving the previous execution state on failure. Live-test evidence is
+under `outputs/tcp_arrival_verification_2026-11-17/`; the earlier failed
+prefill test above remains historical evidence from before this correction.
+
+The corrected fresh-world test completed brick 11's full physical cycle:
+ATTACHED, TRANSPORTING, RELEASED, PLACED and return home. Final log:
+`ASSEMBLY COMPLETE: 1 robot-placed bricks; 10 PREFILLED`. The final installed
+image also passed all 50 tests. At the previously failing placement descent,
+measured position error was 11.288 mm after 0.185 simulation seconds, then
+0.185 mm with 0.0083 degrees error when stable arrival was confirmed after
+0.341 simulation seconds. Release was confirmed by Gazebo component readback.
+The measured completion wait therefore resolves this brick-11 premature
+abort without relaxing the 3 mm / 2 degree thresholds. This verifies that
+cycle, not a complete 221-brick wall or structural stability. The missing
+per-brick size mapping and the prefilled geometry overlap remain unresolved.
+
+The updated local image is already built. Start a fresh Compose world, wait
+for `spawned 50 pickup bricks`, then use the CMD command in the preceding
+start-at-brick-11 section without `--max-bricks` to attempt the remaining wall.

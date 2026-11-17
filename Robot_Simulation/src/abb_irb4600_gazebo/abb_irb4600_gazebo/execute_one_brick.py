@@ -17,7 +17,7 @@ from control_msgs.action import FollowJointTrajectory
 from geometry_msgs.msg import TransformStamped
 from rclpy.action import ActionClient
 from rclpy.node import Node
-from tf2_ros import Buffer, TransformListener
+from tf2_ros import Buffer, TransformListener, TransformException
 from trajectory_msgs.msg import JointTrajectoryPoint
 from sensor_msgs.msg import JointState
 from rosgraph_msgs.msg import Clock
@@ -68,11 +68,18 @@ def _transform_pose(pose: Pose, tf: TransformStamped) -> Pose:
     return Pose((rotated[0]+t.x, rotated[1]+t.y, rotated[2]+t.z), _qmul(q, pose.orientation_xyzw))
 
 
+def _compose_pose(parent: Pose, child: Pose) -> Pose:
+    rotated = _qrot(parent.orientation_xyzw, child.position)
+    return Pose(tuple(a+b for a,b in zip(parent.position, rotated)),
+                _qmul(parent.orientation_xyzw, child.orientation_xyzw))
+
+
 class OneBrickExecutor(Node):
     def __init__(self, placement_file: Path, pickup_file: Path, sdf_path: Path,
                  count: int | None = 1, placement_frame: str = "MT_base",
                  preflight_only: bool = False,
-                 observations: Path = Path('/ros2_ws/outputs/assembly_observations.jsonl')) -> None:
+                 observations: Path = Path('/ros2_ws/outputs/assembly_observations.jsonl'),
+                 start_brick: int = 1) -> None:
         super().__init__("execute_one_brick")
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
@@ -81,8 +88,12 @@ class OneBrickExecutor(Node):
         self.placements = load_placements(placement_file)
         if not self.placements:
             raise ValueError("placement file is empty")
+        self.input_count = len(self.placements)
         if count is not None:
             self.placements = self.placements[:count]
+        if not 1 <= start_brick <= len(self.placements):
+            raise ValueError("--start-brick must be within the selected placement rows")
+        self.start_index = start_brick - 1
         self.pickups = load_pickup_layout(pickup_file)
         self.placement_frame = placement_frame
         self.preflight_only = preflight_only
@@ -132,6 +143,7 @@ class OneBrickExecutor(Node):
         # Observation is not a structural acceptance gate or a stability claim.
         record = {'brick': name, 'state': 'PLACED', 'target_position': target.position,
                   'target_orientation_xyzw': target.orientation_xyzw}
+        record['release_verification'] = getattr(self.world, 'attachment_checks', {}).get(name)
         try:
             actual, sequence, stamp = self.world.observation(name)
             record.update(actual_position=actual.position, actual_orientation_xyzw=actual.orientation_xyzw,
@@ -230,6 +242,7 @@ class OneBrickExecutor(Node):
         )
         self.reference_rail = self.joints[ARM_JOINTS[0]]
         self.last_rail = self.reference_rail
+        self._cache_fixed_transforms()
         placement_tf = self.tf_buffer.lookup_transform("workcell_base", self.placement_frame, rclpy.time.Time())
         placements = [_transform_pose(item.pose, placement_tf) for item in self.placements]
         self.seed = tuple(self.joints[j] for j in ARM_JOINTS[1:])
@@ -240,7 +253,9 @@ class OneBrickExecutor(Node):
         planned_start = self.last_target
         planned_seed = self.seed
         planned_rail = self.reference_rail
-        for index, placement in enumerate(placements):
+        start_index = getattr(self, 'start_index', 0)
+        for index in range(start_index, len(placements)):
+            placement = placements[index]
             targets = BrickMotionTargets(str(index), self.pickups[index % len(self.pickups)], placement)
             for step in build_pick_place_steps(targets, self.profile['retract_m'], self.profile['wait_s'], self.home):
                 if step.target is None:
@@ -253,18 +268,21 @@ class OneBrickExecutor(Node):
                     failures.append(f'brick {index+1} {step.kind.value}: {exc}')
         if failures:
             raise RuntimeError(f"preflight failed for {len(failures)} endpoints:\n" + "\n".join(failures[:15]))
-        self.get_logger().info(f"GH motion preflight passed: {len(placements)} bricks in {self.placement_frame}; home, rail offset, MoveJ and MoveL included")
+        self.get_logger().info(f"GH motion preflight passed: bricks {start_index+1}..{len(placements)} in {self.placement_frame}; home, rail offset, MoveJ and MoveL included")
         if self.preflight_only:
             return
+        if start_index:
+            self._prefill_placements(placements)
         plans = [BrickPlan(f"pickup_brick_{i:03d}", self.pickups[i % len(self.pickups)], p)
-                 for i, p in enumerate(placements)]
+                 for i, p in enumerate(placements) if i >= start_index]
         self.lifecycle = BrickLifecycle(self.world, plans)
-        for index, placement in enumerate(placements):
-            plan = plans[index]
+        for index in range(start_index, len(placements)):
+            placement = placements[index]
+            plan = plans[index - start_index]
             self.current_plan = plan
             # Initial startup names are 000..049; every later batch gets new
             # names, so placed bricks remain in the scene and under physics.
-            if index and index % len(self.pickups) == 0:
+            if index > start_index and index % len(self.pickups) == 0:
                 for j in range(index, min(index + len(self.pickups), len(placements))):
                     self.world.spawn(f"pickup_brick_{j:03d}", self.pickups[j % len(self.pickups)])
                 self._spin_for(2.0)
@@ -294,40 +312,90 @@ class OneBrickExecutor(Node):
                     travel = self.tool_cfg["finger_travel"]
                     self.send(self.gripper, GRIPPER_JOINTS, [travel, travel], 3)
                     self.lifecycle.attach(plan)
-                    self.get_logger().info(f"{name} ATTACHED")
+                    self.get_logger().info(f"{name} ATTACHED; {getattr(self.world, 'attachment_checks', {}).get(name)}")
                 elif step.kind is MotionKind.GRIPPER_OPEN:
                     self.lifecycle.release(plan)
                     self.send(self.gripper, GRIPPER_JOINTS, [0.0, 0.0], 3)
-                    self.get_logger().info(f"{name} RELEASED")
+                    self.get_logger().info(f"{name} RELEASED; {getattr(self.world, 'attachment_checks', {}).get(name)}")
             # PLACED means GH's placement/release instruction completed.
             # Physics observations are recorded separately, never used to rewrite
             # the JSON or stop the task because a structure moves after release.
             self.lifecycle.mark_placed(plan)
             self._record_placement(name, placement)
-        self.get_logger().info(f"ASSEMBLY COMPLETE: {len(placements)} bricks")
+        self.get_logger().info(f"ASSEMBLY COMPLETE: {len(plans)} robot-placed bricks; {start_index} PREFILLED")
 
-    def _solve(self, target, seed):
+    def _prefill_placements(self, placements):
+        """Preplace the skipped prefix in a fresh world; retain absolute IDs/slots."""
+        models = self.world.models()
+        initial_count = min(len(self.pickups), getattr(self, 'input_count', len(placements)))
+        # Validate the entire startup batch before any relocation. Re-running in
+        # an already used scene must not teleport an attached or placed brick.
+        for index in range(initial_count):
+            name = f'pickup_brick_{index:03d}'
+            if name not in models:
+                raise RuntimeError(f'{name} missing from startup batch; use a fresh world')
+            actual = self.world.pose(name)
+            if math.dist(actual.position[:2], self.pickups[index].position[:2]) > 0.005:
+                raise RuntimeError(f'{name} is away from its pickup slot; use a fresh world')
+        if any(name.startswith('pickup_brick_') and name not in
+               {f'pickup_brick_{i:03d}' for i in range(initial_count)} for name in models):
+            raise RuntimeError('later pickup batches already exist; use a fresh world')
+        self.get_logger().warning(
+            f'PREFILL: placing bricks 1..{self.start_index} directly, then executing brick {self.start_index+1}; '
+            'full-brick geometry, gravity and collisions remain enabled. Overlapping targets may move.')
+        for index, placement in enumerate(placements[:self.start_index]):
+            name = f'pickup_brick_{index:03d}'
+            if name in models:
+                self.world.set_pose(name, placement)
+            else:
+                self.world.spawn(name, placement)
+        # A start in a later batch also needs that batch's unused pickup slots.
+        batch_start = self.start_index // len(self.pickups) * len(self.pickups)
+        for index in range(self.start_index, min(batch_start + len(self.pickups), len(placements))):
+            name = f'pickup_brick_{index:03d}'
+            if name not in models:
+                self.world.spawn(name, self.pickups[index % len(self.pickups)])
+        self._spin_for(2.0)
+        self.observations.parent.mkdir(parents=True, exist_ok=True)
+        with self.observations.open('a', encoding='utf-8') as stream:
+            for index, placement in enumerate(placements[:self.start_index]):
+                name = f'pickup_brick_{index:03d}'
+                actual, sequence, stamp = self.world.observation(name)
+                displacement = math.dist(actual.position, placement.position)
+                stream.write(json.dumps({
+                    'brick': name, 'state': 'PREFILLED', 'target_position': placement.position,
+                    'target_orientation_xyzw': placement.orientation_xyzw,
+                    'actual_position': actual.position, 'actual_orientation_xyzw': actual.orientation_xyzw,
+                    'pose_sequence': sequence, 'simulation_stamp': stamp,
+                    'displacement_m': displacement}) + '\n')
+                self.get_logger().info(f'{name} PREFILLED; measured displacement={displacement:.6f} m')
+
+    def _cache_fixed_transforms(self):
+        """Cache fixed bases and tool mapping; retain rail translation per target."""
         track_tf = self.tf_buffer.lookup_transform("workcell_base", "LL_track", rclpy.time.Time())
         tq = (track_tf.transform.rotation.x, track_tf.transform.rotation.y,
               track_tf.transform.rotation.z, track_tf.transform.rotation.w)
-        origin = (track_tf.transform.translation.x, track_tf.transform.translation.y,
-                  track_tf.transform.translation.z)
-        direction = _qrot(tq, (1.0, 0.0, 0.0))
-        # Match the GH behavior: clamp the external axis, then solve the arm
-        # pose against the robot root translated by that same rail position.
-        rail = rail_position(target, origin, direction, offset_m=self.profile['track_offset_m'], limits_m=(0.0, 3.89))
+        self.track_origin = (track_tf.transform.translation.x, track_tf.transform.translation.y,
+                             track_tf.transform.translation.z)
+        self.track_direction = _qrot(tq, (1.0, 0.0, 0.0))
         tf = self.base_tf
-        root_target = _transform_pose(target, tf)
         base_q = (tf.transform.rotation.x, tf.transform.rotation.y,
                   tf.transform.rotation.z, tf.transform.rotation.w)
-        # Positive rail travel moves the carriage along the live track axis.
-        # Express that world displacement in the current LL base frame and
-        # subtract it from the target, equivalent to GH moving robot_root.
-        displacement_local = _qrot(base_q,
-                                   tuple(v * (self.reference_rail - rail) for v in direction))
+        t = tf.transform.translation
+        self.reference_base_pose = Pose((t.x, t.y, t.z), base_q)
+        self.rail_direction_base = _qrot(base_q, self.track_direction)
+        identity = Pose((0, 0, 0), (0, 0, 0, 1))
+        self.brick_flange = flange_target_from_tcp(tcp_target_from_brick(identity), self.flange_tcp)
+
+    def _solve(self, target, seed):
+        rail = rail_position(target, self.track_origin, self.track_direction,
+                             offset_m=self.profile['track_offset_m'], limits_m=(0.0, 3.89))
+        root_target = _compose_pose(self.reference_base_pose, target)
+        # The cached base is the pose at reference_rail, not a frozen carriage.
+        displacement_local = tuple(v * (self.reference_rail - rail) for v in self.rail_direction_base)
         root_target = Pose(tuple(root_target.position[i] + displacement_local[i] for i in range(3)),
                            root_target.orientation_xyzw)
-        flange_target = flange_target_from_tcp(tcp_target_from_brick(root_target), self.flange_tcp)
+        flange_target = _compose_pose(root_target, self.brick_flange)
         joints = solve_base_target(flange_target, self.limits, seed, cfx=self.profile['cfx'])
         return rail, joints
 
@@ -370,21 +438,85 @@ class OneBrickExecutor(Node):
             points.append(p)
         return points, duration, tuple(trajectory[-1][1:])
 
+    def _wait_for_tcp(self, target: Pose, timeout_sim: float = 10.0) -> None:
+        """Wait for fresh measured arrival; controller success alone is insufficient."""
+        expected = tcp_target_from_brick(target)
+        start_wall = last_progress_wall = time.monotonic()
+        start_sim = last_sim = self.sim_time
+        inside_since = None
+        samples = []
+        last_recorded_stamp = None
+        position_error = orientation_error = None
+        status = 'TF unavailable'
+        outcome = 'FAILED'
+        try:
+            while rclpy.ok():
+                rclpy.spin_once(self, timeout_sec=0.05)
+                now = time.monotonic()
+                sim_now = self.sim_time
+                if sim_now is not None:
+                    if start_sim is None:
+                        start_sim = sim_now
+                    if last_sim is not None and sim_now < last_sim - 0.001:
+                        raise RuntimeError('Gazebo clock reset during tool arrival')
+                    if last_sim is None or sim_now > last_sim + 1e-9:
+                        last_progress_wall = now
+                    last_sim = sim_now
+                if now - last_progress_wall > 30.0:
+                    raise RuntimeError('Gazebo clock stopped or unavailable for 30 real seconds during tool arrival')
+                if start_sim is None:
+                    continue
+                try:
+                    actual_tf = self.tf_buffer.lookup_transform('workcell_base', 'LL_schunk_tcp', rclpy.time.Time())
+                    stamp = actual_tf.header.stamp.sec + actual_tf.header.stamp.nanosec * 1e-9
+                    t, q = actual_tf.transform.translation, actual_tf.transform.rotation
+                    position_error = math.dist((t.x, t.y, t.z), expected.position)
+                    match = abs(sum(a*b for a,b in zip((q.x,q.y,q.z,q.w), expected.orientation_xyzw)))
+                    orientation_error = math.degrees(2 * math.acos(min(1.0, match)))
+                    fresh = stamp >= start_sim - 1e-6 and -0.1 <= sim_now - stamp <= 0.25
+                    status = 'fresh TF' if fresh else 'stale TF'
+                    inside = fresh and position_error <= 0.003 and orientation_error <= 2.0
+                    if not inside:
+                        inside_since = None
+                    elif inside_since is None:
+                        inside_since = stamp
+                    arrived = inside_since is not None and stamp - inside_since >= 0.1 - 1e-9
+                    if last_recorded_stamp is None or stamp - last_recorded_stamp >= 0.1 - 1e-9 or arrived:
+                        samples.append({'elapsed_sim_s': sim_now-start_sim, 'elapsed_real_s': now-start_wall,
+                                        'tf_stamp': stamp, 'position_error_m': position_error,
+                                        'orientation_error_deg': orientation_error, 'fresh': fresh})
+                        last_recorded_stamp = stamp
+                    if arrived:
+                        outcome = 'ARRIVED'
+                        self.get_logger().info(
+                            f'TCP ARRIVED after {sim_now-start_sim:.3f} sim s: '
+                            f'{position_error*1000:.3f} mm, {orientation_error:.3f} deg')
+                        return
+                except TransformException as exc:
+                    status = f'TF unavailable: {exc}'
+                    inside_since = None
+                if sim_now - start_sim >= timeout_sim:
+                    raise RuntimeError(
+                        f'tool arrival timed out after {timeout_sim:g} simulation seconds; '
+                        f'position_error_m={position_error}, orientation_error_deg={orientation_error}; {status}')
+            raise RuntimeError('ROS stopped during tool arrival')
+        finally:
+            self.observations.parent.mkdir(parents=True, exist_ok=True)
+            trace = self.observations.with_name(self.observations.stem + '_tcp_arrival.jsonl')
+            with trace.open('a', encoding='utf-8') as stream:
+                stream.write(json.dumps({'brick': getattr(getattr(self, 'current_plan', None), 'name', None),
+                                         'outcome': outcome, 'target_position': expected.position,
+                                         'target_orientation_xyzw': expected.orientation_xyzw,
+                                         'timeout_sim_s': timeout_sim, 'status': status,
+                                         'samples': samples}) + '\n')
+
     def _move_target(self, target: Pose, flange_tcp: Pose, kind: MotionKind) -> None:
         self.get_logger().info(f"executing {kind.value}: {target.position}")
         samples, duration, joints = self._plan_motion(self.last_target, target, kind, self.seed)
         if math.dist(self.last_target.position,target.position) < 1e-7 and abs(sum(a*b for a,b in zip(self.last_target.orientation_xyzw,target.orientation_xyzw))) > 0.999999:
             return
         self.send(self.arm, ARM_JOINTS, samples[-1].positions, duration, samples=samples)
-        self._spin_for(0.2)
-        actual_tf = self.tf_buffer.lookup_transform("workcell_base", "LL_schunk_tcp", rclpy.time.Time())
-        actual = actual_tf.transform.translation
-        if math.dist((actual.x, actual.y, actual.z), target.position) > 0.003:
-            raise RuntimeError("controller finished but measured TCP missed target by more than 3 mm")
-        q = actual_tf.transform.rotation
-        expected = tcp_target_from_brick(target).orientation_xyzw
-        if abs(sum(a*b for a,b in zip((q.x,q.y,q.z,q.w), expected))) < math.cos(math.radians(2)/2):
-            raise RuntimeError("controller finished but TCP orientation missed target by more than 2 degrees")
+        self._wait_for_tcp(target)
         self.seed = joints
         self.last_rail = samples[-1].positions[0]
         self.last_target = target
@@ -400,12 +532,17 @@ def main(wall=False) -> None:
     parser.add_argument("--placement-frame", default="MT_base")
     parser.add_argument("--preflight-only", action="store_true")
     parser.add_argument("--max-bricks", type=int, default=None if wall else 1)
+    parser.add_argument("--start-brick", type=int, default=1,
+                        help="1-based first row to execute; earlier rows are preplaced in a fresh world")
     parser.add_argument('--observations',type=Path,default=Path('/ros2_ws/outputs/assembly_observations.jsonl'))
     args, _ = parser.parse_known_args()
     if args.max_bricks is not None and args.max_bricks < 1:
         parser.error("--max-bricks must be positive")
+    if args.start_brick < 1:
+        parser.error("--start-brick must be positive")
     rclpy.init(); node = OneBrickExecutor(Path(args.placement_file), Path(args.pickup_file), Path(args.sdf),
-                                       args.max_bricks, args.placement_frame, args.preflight_only, args.observations)
+                                       args.max_bricks, args.placement_frame, args.preflight_only, args.observations,
+                                       args.start_brick)
     try: node.run()
     except Exception:
         if node.current_plan is not None and hasattr(node,'lifecycle'):

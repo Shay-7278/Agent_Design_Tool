@@ -1,0 +1,161 @@
+[INFO] [1794926671.564818394] [execute_one_brick]: GH motion preflight passed: 221 bricks in MT_base; home, rail offset, MoveJ and MoveL included
+[INFO] [1794926671.566383556] [execute_one_brick]: brick 1/221 AVAILABLE: pickup_brick_000
+[INFO] [1794926676.835259937] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794926691.841749837] [execute_one_brick]: trajectory in progress: 5.09/14.12 sim s; 15 real s; simulation speed=0.339x
+[INFO] [1794926706.843538187] [execute_one_brick]: trajectory in progress: 10.46/14.12 sim s; 30 real s; simulation speed=0.349x
+[INFO] [1794926717.110056807] [execute_one_brick]: executing move_j: (-0.43448000000000014, 1.8510299999999993, 0.2724992281596427)
+[INFO] [1794926732.113936547] [execute_one_brick]: trajectory in progress: 5.97/7.46 sim s; 15 real s; simulation speed=0.398x
+[INFO] [1794926736.436876300] [execute_one_brick]: executing move_l: (-0.43448000000000014, 1.8510299999999993, 0.07249922815964271)
+[INFO] [1794926751.450030503] [execute_one_brick]: trajectory in progress: 6.30/7.50 sim s; 15 real s; simulation speed=0.420x
+[INFO] [1794926765.978135578] [execute_one_brick]: pickup_brick_000 ATTACHED; {'state': 'attached', 'joint_entity': 259, 'parent_link': 38, 'child_link': 60, 'simulation_stamp': 47.701, 'verification': 'Gazebo ECM readback', 'notification': 'attached'}
+[INFO] [1794926767.421435005] [execute_one_brick]: executing move_l: (-0.43448000000000014, 1.8510299999999993, 0.2724992281596427)
+[INFO] [1794926782.446090069] [execute_one_brick]: trajectory in progress: 6.02/7.50 sim s; 15 real s; simulation speed=0.401x
+[INFO] [1794926786.623665220] [execute_one_brick]: pickup_brick_000 TRANSPORTING
+[INFO] [1794926786.624362688] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794926801.630294644] [execute_one_brick]: trajectory in progress: 7.00/7.46 sim s; 15 real s; simulation speed=0.467x
+[INFO] [1794926802.730538247] [execute_one_brick]: executing move_j: (-0.34466117093611004, 4.608863163438927, 0.599954666)
+[INFO] [1794926812.223892373] [execute_one_brick]: executing move_l: (-0.34466117093611004, 4.608863163438927, 0.399954666)
+[INFO] [1794926832.256089955] [execute_one_brick]: pickup_brick_000 RELEASED; {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 60, 'simulation_stamp': 78.69, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}
+[INFO] [1794926833.813177738] [execute_one_brick]: executing move_l: (-0.34466117093611004, 4.608863163438927, 0.599954666)
+[INFO] [1794926846.081000918] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794926855.349738008] [execute_one_brick]: pickup_brick_000 PLACED (command complete); observation={'brick': 'pickup_brick_000', 'state': 'PLACED', 'target_position': (-0.34466117093611004, 4.608863163438927, 0.399954666), 'target_orientation_xyzw': (0.0, 0.0, -0.37553458627632413, 0.9268083806862506), 'release_verification': {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 60, 'simulation_stamp': 78.69, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}, 'actual_position': (-0.34466117093661425, 4.6088631634380945, 0.3999537920693609), 'actual_orientation_xyzw': (-5.27091602861475e-14, -5.7776994356426164e-15, -0.37553458627632663, 0.9268083806862496), 'pose_sequence': 11019, 'simulation_stamp': 96.295, 'displacement_m': 8.739306391341993e-07}
+[INFO] [1794926855.350333656] [execute_one_brick]: brick 2/221 AVAILABLE: pickup_brick_001
+[INFO] [1794926858.602137418] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794926858.603082067] [execute_one_brick]: executing move_j: (-0.43376249999999994, 2.0712899999999985, 0.2724992281596427)
+[INFO] [1794926870.724552739] [execute_one_brick]: executing move_l: (-0.43376249999999994, 2.0712899999999985, 0.07249922815964271)
+[INFO] [1794926890.830481864] [execute_one_brick]: pickup_brick_001 ATTACHED; {'state': 'attached', 'joint_entity': 260, 'parent_link': 38, 'child_link': 64, 'simulation_stamp': 117.499, 'verification': 'Gazebo ECM readback', 'notification': 'attached'}
+[INFO] [1794926891.570742770] [execute_one_brick]: executing move_l: (-0.43376249999999994, 2.0712899999999985, 0.2724992281596427)
+[INFO] [1794926905.047346328] [execute_one_brick]: pickup_brick_001 TRANSPORTING
+[INFO] [1794926905.048043670] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794926916.741132849] [execute_one_brick]: executing move_j: (-0.15329965537439327, 4.516937159325225, 0.599954666)
+[INFO] [1794926925.295351661] [execute_one_brick]: executing move_l: (-0.15329965537439327, 4.516937159325225, 0.399954666)
+[INFO] [1794926948.260580833] [execute_one_brick]: pickup_brick_001 RELEASED; {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 64, 'simulation_stamp': 147.028, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}
+[INFO] [1794926950.215926661] [execute_one_brick]: executing move_l: (-0.15329965537439327, 4.516937159325225, 0.599954666)
+[INFO] [1794926963.659353453] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794926972.223841067] [execute_one_brick]: pickup_brick_001 PLACED (command complete); observation={'brick': 'pickup_brick_001', 'state': 'PLACED', 'target_position': (-0.15329965537439327, 4.516937159325225, 0.399954666), 'target_orientation_xyzw': (0.0, 0.0, -0.08410089543085576, 0.9964572441343023), 'release_verification': {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 64, 'simulation_stamp': 147.028, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}, 'actual_position': (-0.15329965537461443, 4.516937159323955, 0.3999537920693474), 'actual_orientation_xyzw': (-7.033821774266124e-14, -6.428046018185599e-15, -0.08410089543086488, 0.9964572441343015), 'pose_sequence': 17656, 'simulation_stamp': 163.955, 'displacement_m': 8.739306526238183e-07}
+[INFO] [1794926972.224528339] [execute_one_brick]: brick 3/221 AVAILABLE: pickup_brick_002
+[INFO] [1794926975.626282234] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794926975.627353345] [execute_one_brick]: executing move_j: (-0.4330450000000002, 2.2915499999999995, 0.2724992281596427)
+[INFO] [1794926986.599431420] [execute_one_brick]: executing move_l: (-0.4330450000000002, 2.2915499999999995, 0.07249922815964271)
+[INFO] [1794927008.893745968] [execute_one_brick]: pickup_brick_002 ATTACHED; {'state': 'attached', 'joint_entity': 261, 'parent_link': 38, 'child_link': 68, 'simulation_stamp': 184.56, 'verification': 'Gazebo ECM readback', 'notification': 'attached'}
+[INFO] [1794927009.774092308] [execute_one_brick]: executing move_l: (-0.4330450000000002, 2.2915499999999995, 0.2724992281596427)
+[INFO] [1794927022.380273154] [execute_one_brick]: pickup_brick_002 TRANSPORTING
+[INFO] [1794927022.380545330] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927032.638931082] [execute_one_brick]: executing move_j: (0.0706392399064022, 4.532468264845528, 0.599954666)
+[INFO] [1794927040.525303649] [execute_one_brick]: executing move_l: (0.0706392399064022, 4.532468264845528, 0.399954666)
+[INFO] [1794927061.483023384] [execute_one_brick]: pickup_brick_002 RELEASED; {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 68, 'simulation_stamp': 213.155, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}
+[INFO] [1794927063.148915354] [execute_one_brick]: executing move_l: (0.0706392399064022, 4.532468264845528, 0.599954666)
+[INFO] [1794927076.085374589] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927083.916090215] [execute_one_brick]: pickup_brick_002 PLACED (command complete); observation={'brick': 'pickup_brick_002', 'state': 'PLACED', 'target_position': (0.0706392399064022, 4.532468264845528, 0.399954666), 'target_orientation_xyzw': (0.0, 0.0, 0.1400950383289241, 0.9901380611993548), 'release_verification': {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 68, 'simulation_stamp': 213.155, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}, 'actual_position': (0.07063923990649534, 4.532468264844046, 0.3999537920693287), 'actual_orientation_xyzw': (-8.131803982124178e-14, -4.03485734088579e-15, 0.14009503832890238, 0.9901380611993579), 'pose_sequence': 24008, 'simulation_stamp': 229.826, 'displacement_m': 8.739306713313875e-07}
+[INFO] [1794927083.916972864] [execute_one_brick]: brick 4/221 AVAILABLE: pickup_brick_003
+[INFO] [1794927087.118655773] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927087.119419249] [execute_one_brick]: executing move_j: (-0.4323275, 2.51181, 0.2724992281596427)
+[INFO] [1794927096.731454907] [execute_one_brick]: executing move_l: (-0.4323275, 2.51181, 0.07249922815964271)
+[INFO] [1794927116.512847508] [execute_one_brick]: pickup_brick_003 ATTACHED; {'state': 'attached', 'joint_entity': 262, 'parent_link': 38, 'child_link': 72, 'simulation_stamp': 249.846, 'verification': 'Gazebo ECM readback', 'notification': 'attached'}
+[INFO] [1794927117.295325545] [execute_one_brick]: executing move_l: (-0.4323275, 2.51181, 0.2724992281596427)
+[INFO] [1794927129.917111641] [execute_one_brick]: pickup_brick_003 TRANSPORTING
+[INFO] [1794927129.917365420] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927139.485604689] [execute_one_brick]: executing move_j: (0.2719745291676021, 4.633502477136375, 0.599954666)
+[INFO] [1794927148.016653264] [execute_one_brick]: executing move_l: (0.2719745291676021, 4.633502477136375, 0.399954666)
+[INFO] [1794927167.768977347] [execute_one_brick]: pickup_brick_003 RELEASED; {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 72, 'simulation_stamp': 278.101, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}
+[INFO] [1794927169.343082143] [execute_one_brick]: executing move_l: (0.2719745291676021, 4.633502477136375, 0.599954666)
+[INFO] [1794927181.913069477] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927190.275955766] [execute_one_brick]: pickup_brick_003 PLACED (command complete); observation={'brick': 'pickup_brick_003', 'state': 'PLACED', 'target_position': (0.2719745291676021, 4.633502477136375, 0.399954666), 'target_orientation_xyzw': (0.0, 0.0, 0.29128518325172054, 0.9566362642185439), 'release_verification': {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 72, 'simulation_stamp': 278.101, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}, 'actual_position': (0.2719745291678805, 4.633502477134809, 0.39995379206930753), 'actual_orientation_xyzw': (-8.818576048975486e-14, 1.992410147845709e-15, 0.2912851832516895, 0.9566362642185533), 'pose_sequence': 30065, 'simulation_stamp': 294.875, 'displacement_m': 8.739306924813211e-07}
+[INFO] [1794927190.278713495] [execute_one_brick]: brick 5/221 AVAILABLE: pickup_brick_004
+[INFO] [1794927193.530614002] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927193.531722066] [execute_one_brick]: executing move_j: (-0.43161000000000027, 2.7320699999999998, 0.2724992281596427)
+[INFO] [1794927202.190687379] [execute_one_brick]: executing move_l: (-0.43161000000000027, 2.7320699999999998, 0.07249922815964271)
+[INFO] [1794927222.080134914] [execute_one_brick]: pickup_brick_004 ATTACHED; {'state': 'attached', 'joint_entity': 263, 'parent_link': 38, 'child_link': 76, 'simulation_stamp': 314.481, 'verification': 'Gazebo ECM readback', 'notification': 'attached'}
+[INFO] [1794927222.847292250] [execute_one_brick]: executing move_l: (-0.43161000000000027, 2.7320699999999998, 0.2724992281596427)
+[INFO] [1794927235.221816596] [execute_one_brick]: pickup_brick_004 TRANSPORTING
+[INFO] [1794927235.222077015] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927244.436245748] [execute_one_brick]: executing move_j: (0.4561449078132578, 4.7649489319757485, 0.599954666)
+[INFO] [1794927253.459003937] [execute_one_brick]: executing move_l: (0.4561449078132578, 4.7649489319757485, 0.399954666)
+[INFO] [1794927273.753382644] [execute_one_brick]: pickup_brick_004 RELEASED; {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 76, 'simulation_stamp': 342.623, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}
+[INFO] [1794927275.362195334] [execute_one_brick]: executing move_l: (0.4561449078132578, 4.7649489319757485, 0.599954666)
+[INFO] [1794927287.846199667] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927296.972193777] [execute_one_brick]: pickup_brick_004 PLACED (command complete); observation={'brick': 'pickup_brick_004', 'state': 'PLACED', 'target_position': (0.4561449078132578, 4.7649489319757485, 0.399954666), 'target_orientation_xyzw': (0.0, 0.0, 0.2777474336329802, 0.9606541329272952), 'release_verification': {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 76, 'simulation_stamp': 342.623, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}, 'actual_position': (0.4561449078170828, 4.764948930233066, 0.39995379535389664), 'actual_orientation_xyzw': (2.936198238801839e-08, -8.421344187767271e-09, 0.27774743363294774, 0.9606541329273041), 'pose_sequence': 36142, 'simulation_stamp': 359.785, 'displacement_m': 8.706478474596131e-07}
+[INFO] [1794927296.972717490] [execute_one_brick]: brick 6/221 AVAILABLE: pickup_brick_005
+[INFO] [1794927300.676519119] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927300.678361156] [execute_one_brick]: executing move_j: (-0.2145466666666672, 1.8510011111111109, 0.2724992281596427)
+[INFO] [1794927313.544721958] [execute_one_brick]: executing move_l: (-0.2145466666666672, 1.8510011111111109, 0.07249922815964271)
+[INFO] [1794927334.088798118] [execute_one_brick]: pickup_brick_005 ATTACHED; {'state': 'attached', 'joint_entity': 264, 'parent_link': 38, 'child_link': 80, 'simulation_stamp': 381.302, 'verification': 'Gazebo ECM readback', 'notification': 'attached'}
+[INFO] [1794927334.842424806] [execute_one_brick]: executing move_l: (-0.2145466666666672, 1.8510011111111109, 0.2724992281596427)
+[INFO] [1794927348.087992494] [execute_one_brick]: pickup_brick_005 TRANSPORTING
+[INFO] [1794927348.088251434] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927360.058390078] [execute_one_brick]: executing move_j: (0.663735901941787, 4.850154336780699, 0.599954666)
+[INFO] [1794927370.067891474] [execute_one_brick]: executing move_l: (0.663735901941787, 4.850154336780699, 0.399954666)
+[INFO] [1794927391.211802807] [execute_one_brick]: pickup_brick_005 RELEASED; {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 80, 'simulation_stamp': 411.707, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}
+[INFO] [1794927392.804113020] [execute_one_brick]: executing move_l: (0.663735901941787, 4.850154336780699, 0.599954666)
+[INFO] [1794927405.449404496] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927415.145326549] [execute_one_brick]: pickup_brick_005 PLACED (command complete); observation={'brick': 'pickup_brick_005', 'state': 'PLACED', 'target_position': (0.663735901941787, 4.850154336780699, 0.399954666), 'target_orientation_xyzw': (0.0, 0.0, 0.07252948967470707, 0.9973662682924095), 'release_verification': {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 80, 'simulation_stamp': 411.707, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}, 'actual_position': (0.6637359025595325, 4.85015433855617, 0.3999537954115291), 'actual_orientation_xyzw': (-3.030915819128035e-08, 1.3069569268798511e-08, 0.07252948967470564, 0.997366268292409), 'pose_sequence': 42857, 'simulation_stamp': 429.19, 'displacement_m': 8.705905005293777e-07}
+[INFO] [1794927415.148019631] [execute_one_brick]: brick 7/221 AVAILABLE: pickup_brick_006
+[INFO] [1794927418.449905324] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927418.450589352] [execute_one_brick]: executing move_j: (-0.21381666666666718, 2.071258055555554, 0.2724992281596427)
+[INFO] [1794927429.819877682] [execute_one_brick]: executing move_l: (-0.21381666666666718, 2.071258055555554, 0.07249922815964271)
+[INFO] [1794927452.391730580] [execute_one_brick]: pickup_brick_006 ATTACHED; {'state': 'attached', 'joint_entity': 265, 'parent_link': 38, 'child_link': 84, 'simulation_stamp': 450.004, 'verification': 'Gazebo ECM readback', 'notification': 'attached'}
+[INFO] [1794927453.211467356] [execute_one_brick]: executing move_l: (-0.21381666666666718, 2.071258055555554, 0.2724992281596427)
+[INFO] [1794927467.120551315] [execute_one_brick]: pickup_brick_006 TRANSPORTING
+[INFO] [1794927467.121092099] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927480.777713977] [execute_one_brick]: executing move_j: (0.8869601946901873, 4.828014044167417, 0.599954666)
+[INFO] [1794927492.342789163] [execute_one_brick]: executing move_l: (0.8869601946901873, 4.828014044167417, 0.399954666)
+[INFO] [1794927513.743902824] [execute_one_brick]: pickup_brick_006 RELEASED; {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 84, 'simulation_stamp': 479.812, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}
+[INFO] [1794927515.354735433] [execute_one_brick]: executing move_l: (0.8869601946901873, 4.828014044167417, 0.599954666)
+[INFO] [1794927528.508449325] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927538.485065448] [execute_one_brick]: pickup_brick_006 PLACED (command complete); observation={'brick': 'pickup_brick_006', 'state': 'PLACED', 'target_position': (0.8869601946901873, 4.828014044167417, 0.399954666), 'target_orientation_xyzw': (0.0, 0.0, -0.16195648267145019, 0.9867979011533681), 'release_verification': {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 84, 'simulation_stamp': 479.812, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}, 'actual_position': (0.8869601946898102, 4.828014044166181, 0.3999537920693248), 'actual_orientation_xyzw': (-7.298514568421034e-14, -5.597470883025946e-15, -0.1619564826714613, 0.9867979011533662), 'pose_sequence': 49835, 'simulation_stamp': 497.4, 'displacement_m': 8.739306752168606e-07}
+[INFO] [1794927538.485558973] [execute_one_brick]: brick 8/221 AVAILABLE: pickup_brick_007
+[INFO] [1794927541.887250902] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927541.887964034] [execute_one_brick]: executing move_j: (-0.21308666666666717, 2.291514999999999, 0.2724992281596427)
+[INFO] [1794927551.808261191] [execute_one_brick]: executing move_l: (-0.21308666666666717, 2.291514999999999, 0.07249922815964271)
+[INFO] [1794927572.899791272] [execute_one_brick]: pickup_brick_007 ATTACHED; {'state': 'attached', 'joint_entity': 266, 'parent_link': 38, 'child_link': 88, 'simulation_stamp': 517.545, 'verification': 'Gazebo ECM readback', 'notification': 'attached'}
+[INFO] [1794927573.699277600] [execute_one_brick]: executing move_l: (-0.21308666666666717, 2.291514999999999, 0.2724992281596427)
+[INFO] [1794927588.708897843] [execute_one_brick]: trajectory in progress: 7.43/7.50 sim s; 15 real s; simulation speed=0.495x
+[INFO] [1794927589.402670782] [execute_one_brick]: pickup_brick_007 TRANSPORTING
+[INFO] [1794927589.403228498] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927601.768831550] [execute_one_brick]: executing move_j: (1.0677666684952831, 4.714750966047781, 0.599954666)
+[INFO] [1794927612.023960954] [execute_one_brick]: executing move_l: (1.0677666684952831, 4.714750966047781, 0.399954666)
+[INFO] [1794927627.035042894] [execute_one_brick]: trajectory in progress: 6.74/7.50 sim s; 15 real s; simulation speed=0.449x
+[INFO] [1794927637.266719359] [execute_one_brick]: pickup_brick_007 RELEASED; {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 88, 'simulation_stamp': 546.512, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}
+[INFO] [1794927639.015616633] [execute_one_brick]: executing move_l: (1.0677666684952831, 4.714750966047781, 0.599954666)
+[INFO] [1794927653.781539575] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927663.484509660] [execute_one_brick]: pickup_brick_007 PLACED (command complete); observation={'brick': 'pickup_brick_007', 'state': 'PLACED', 'target_position': (1.0677666684952831, 4.714750966047781, 0.399954666), 'target_orientation_xyzw': (0.0, 0.0, -0.4098535042339519, 0.9121513608317152), 'release_verification': {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 88, 'simulation_stamp': 546.512, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}, 'actual_position': (1.0677666684947515, 4.714750966047149, 0.3999537920693158), 'actual_orientation_xyzw': (-4.416619616325744e-14, -5.3985759110357864e-15, -0.4098535042339745, 0.9121513608317051), 'pose_sequence': 56884, 'simulation_stamp': 563.929, 'displacement_m': 8.739306842091023e-07}
+[INFO] [1794927663.485263050] [execute_one_brick]: brick 9/221 AVAILABLE: pickup_brick_008
+[INFO] [1794927667.137331019] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927667.138103053] [execute_one_brick]: executing move_j: (-0.21235666666666714, 2.511771944444444, 0.2724992281596427)
+[INFO] [1794927676.855530542] [execute_one_brick]: executing move_l: (-0.21235666666666714, 2.511771944444444, 0.07249922815964271)
+[INFO] [1794927698.368192490] [execute_one_brick]: pickup_brick_008 ATTACHED; {'state': 'attached', 'joint_entity': 267, 'parent_link': 38, 'child_link': 92, 'simulation_stamp': 583.469, 'verification': 'Gazebo ECM readback', 'notification': 'attached'}
+[INFO] [1794927699.212086290] [execute_one_brick]: executing move_l: (-0.21235666666666714, 2.511771944444444, 0.2724992281596427)
+[INFO] [1794927712.341861367] [execute_one_brick]: pickup_brick_008 TRANSPORTING
+[INFO] [1794927712.342126809] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927721.380037791] [execute_one_brick]: executing move_j: (-0.3689624387645589, 4.644172205967361, 0.6569546660000001)
+[INFO] [1794927731.437383509] [execute_one_brick]: executing move_l: (-0.3689624387645589, 4.644172205967361, 0.456954666)
+[INFO] [1794927752.148903412] [execute_one_brick]: pickup_brick_008 RELEASED; {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 92, 'simulation_stamp': 612.138, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}
+[INFO] [1794927753.899957367] [execute_one_brick]: executing move_l: (-0.3689624387645589, 4.644172205967361, 0.6569546660000001)
+[INFO] [1794927767.036768693] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927776.971115918] [execute_one_brick]: pickup_brick_008 PLACED (command complete); observation={'brick': 'pickup_brick_008', 'state': 'PLACED', 'target_position': (-0.3689624387645589, 4.644172205967361, 0.456954666), 'target_orientation_xyzw': (0.0, 0.0, -0.45242450356113, 0.8918027072046065), 'release_verification': {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 92, 'simulation_stamp': 612.138, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}, 'actual_position': (-0.3689624404663486, 4.644172215775073, 0.4569537605988252), 'actual_orientation_xyzw': (-6.990011448193181e-08, -6.241920970274725e-08, -0.4524245035611485, 0.8918027072045922), 'pose_sequence': 63320, 'simulation_stamp': 629.843, 'displacement_m': 9.054558932667651e-07}
+[INFO] [1794927776.971642809] [execute_one_brick]: brick 10/221 AVAILABLE: pickup_brick_009
+[INFO] [1794927780.274013079] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927780.274971036] [execute_one_brick]: executing move_j: (-0.21162666666666713, 2.732028888888888, 0.2724992281596427)
+[INFO] [1794927788.609794621] [execute_one_brick]: executing move_l: (-0.21162666666666713, 2.732028888888888, 0.07249922815964271)
+[INFO] [1794927809.659678373] [execute_one_brick]: pickup_brick_009 ATTACHED; {'state': 'attached', 'joint_entity': 268, 'parent_link': 38, 'child_link': 96, 'simulation_stamp': 648.853, 'verification': 'Gazebo ECM readback', 'notification': 'attached'}
+[INFO] [1794927810.517540308] [execute_one_brick]: executing move_l: (-0.21162666666666713, 2.732028888888888, 0.2724992281596427)
+[INFO] [1794927823.760902941] [execute_one_brick]: pickup_brick_009 TRANSPORTING
+[INFO] [1794927823.761212448] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794927832.130631298] [execute_one_brick]: executing move_j: (-0.24276996946765717, 4.540242844544112, 0.6569546660000001)
+[INFO] [1794927841.193341460] [execute_one_brick]: executing move_l: (-0.24276996946765717, 4.540242844544112, 0.456954666)
+[ERROR] [1794927854.914036251] [execute_one_brick]: pickup_brick_009 FAILED
+Traceback (most recent call last):
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/abb_irb4600_gazebo/execute_wall", line 33, in <module>
+    sys.exit(load_entry_point('abb-irb4600-gazebo==0.1.0', 'console_scripts', 'execute_wall')())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 431, in wall_main
+    main(wall=True)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 421, in main
+    try: node.run()
+         ^^^^^^^^^^
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 289, in run
+    self._move_target(step.target, self.flange_tcp, step.kind)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 395, in _move_target
+    raise RuntimeError("controller finished but measured TCP missed target by more than 3 mm")
+RuntimeError: controller finished but measured TCP missed target by more than 3 mm
+[ros2run]: Process exited with failure 1
