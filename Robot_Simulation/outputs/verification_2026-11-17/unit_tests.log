@@ -1,0 +1,30 @@
+test_221_bricks_replenish_only_after_each_50_are_placed (test_assembly_executor.BatchTests.test_221_bricks_replenish_only_after_each_50_are_placed) ... ok
+test_lifecycle_requires_ordered_transitions (test_brick_lifecycle.BrickLifecycleTests.test_lifecycle_requires_ordered_transitions) ... ok
+test_runtime_placement_file_is_variable (test_brick_lifecycle.BrickLifecycleTests.test_runtime_placement_file_is_variable) ... ok
+test_full_brick_physical_parameters (test_configuration.ConfigurationTests.test_full_brick_physical_parameters) ... ok
+test_installed_controller_and_urdf_agree (test_configuration.ConfigurationTests.test_installed_controller_and_urdf_agree) ... ok
+test_cad_pad_midpoint_and_mating_plane_match_urdf_tcp (test_gripper_frames.GripperFramesTests.test_cad_pad_midpoint_and_mating_plane_match_urdf_tcp) ... ok
+test_downward_pickup_and_tcp_pivot_roundtrip (test_gripper_frames.GripperFramesTests.test_downward_pickup_and_tcp_pivot_roundtrip) ... ok
+test_base_to_dh_conversion_reproduces_pickup_target (test_irb4600_kinematics.IRB4600KinematicsTests.test_base_to_dh_conversion_reproduces_pickup_target) ... ok
+test_fk_returns_homogeneous_transform (test_irb4600_kinematics.IRB4600KinematicsTests.test_fk_returns_homogeneous_transform) ... ok
+test_joint_vector_validation (test_irb4600_kinematics.IRB4600KinematicsTests.test_joint_vector_validation) ... ok
+test_gh_to_urdf_adapter_matches_independent_link_chain_all_axes (test_kinematic_transfer.KinematicTransferTests.test_gh_to_urdf_adapter_matches_independent_link_chain_all_axes) ... ok
+test_tcp_targets_roundtrip_through_actual_urdf (test_kinematic_transfer.KinematicTransferTests.test_tcp_targets_roundtrip_through_actual_urdf) ... ok
+test_verified_gh_home_and_speed_profile (test_kinematic_transfer.KinematicTransferTests.test_verified_gh_home_and_speed_profile) ... ok
+test_gh_home_is_present_at_start_between_pick_place_and_end (test_motion_framework.MotionFrameworkTests.test_gh_home_is_present_at_start_between_pick_place_and_end) ... ok
+test_pose_rejects_zero_quaternion (test_motion_framework.MotionFrameworkTests.test_pose_rejects_zero_quaternion) ... ok
+test_reachability_is_separate_from_motion_generation (test_motion_framework.MotionFrameworkTests.test_reachability_is_separate_from_motion_generation) ... ok
+test_sequence_matches_recovered_grasshopper_flow (test_motion_framework.MotionFrameworkTests.test_sequence_matches_recovered_grasshopper_flow) ... ok
+test_track_projection_is_si_and_clamped (test_motion_framework.MotionFrameworkTests.test_track_projection_is_si_and_clamped) ... ok
+test_clock_reset_is_detected (test_trajectory_wait.TrajectoryWaitTests.test_clock_reset_is_detected) ... ok
+test_lost_feedback_with_advancing_clock_cancels (test_trajectory_wait.TrajectoryWaitTests.test_lost_feedback_with_advancing_clock_cancels) ... ok
+test_missing_result_budget_is_measured_in_simulation_seconds (test_trajectory_wait.TrajectoryWaitTests.test_missing_result_budget_is_measured_in_simulation_seconds) ... ok
+test_slow_progressing_goal_can_finish_after_90_real_seconds (test_trajectory_wait.TrajectoryWaitTests.test_slow_progressing_goal_can_finish_after_90_real_seconds) ... ok
+test_stopped_clock_cancels_and_waits_for_acknowledgment (test_trajectory_wait.TrajectoryWaitTests.test_stopped_clock_cancels_and_waits_for_acknowledgment) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.801s
+
+OK
+brick model OK: size=(0.19, 0.09, 0.057), mass=0.68229 kg, mu=0.84
+PASS: generated URDF has unique joints, 16 exact control mappings, and the Gazebo control plugin

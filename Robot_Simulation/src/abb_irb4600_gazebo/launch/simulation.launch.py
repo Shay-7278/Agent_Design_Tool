@@ -22,7 +22,7 @@ def generate_launch_description():
     ros_gz_sim_share = get_package_share_directory("ros_gz_sim")
 
     default_xacro = os.path.join(
-        gazebo_share, "urdf", "abb_irb4600_workcell.gazebo.xacro"
+        gazebo_share, "urdf", "abb_irb4600_assembly.gazebo.xacro"
     )
     default_world = os.path.join(
         gazebo_share, "worlds", "irb4600_workcell.sdf"
@@ -164,7 +164,7 @@ def generate_launch_description():
             DeclareLaunchArgument(
                 "xacro_file",
                 default_value=default_xacro,
-                description="Absolute path to the controlled workcell Xacro",
+                description="Controlled workcell Xacro (default: LL assembly cell)",
             ),
             DeclareLaunchArgument(
                 "world_file",
@@ -185,7 +185,7 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "placement_file",
-                default_value="/ros2_ws/inputs/brick_frames.json",
+                default_value="/ros2_ws/inputs/brick_frames_numeric.json",
             ),
             SetEnvironmentVariable("GZ_SIM_RESOURCE_PATH", resource_path),
             gazebo_server,

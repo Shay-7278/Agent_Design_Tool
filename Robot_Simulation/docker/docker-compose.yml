@@ -13,6 +13,7 @@ services:
       - ../inputs:/ros2_ws/inputs
       - ../outputs:/ros2_ws/outputs
     environment:
+      SIM_GUI: ${SIM_GUI:-true}
       SIM_WORLD_FILE: /ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/worlds/irb4600_workcell.sdf
       DISPLAY: :1
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp

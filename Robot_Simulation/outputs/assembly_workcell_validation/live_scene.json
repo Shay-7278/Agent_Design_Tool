@@ -1,0 +1,49 @@
+{
+  "scene": "abb_irb4600_assembly.gazebo.xacro",
+  "links": [
+    "world",
+    "workcell_base",
+    "LL_track_mount",
+    "LL_track",
+    "LL_carriage",
+    "LL_carriage_mount",
+    "LL_base_mount",
+    "LL_base_link",
+    "LL_link_1",
+    "LL_link_2",
+    "LL_link_3",
+    "LL_link_4",
+    "LL_link_5",
+    "LL_link_6",
+    "LL_flange",
+    "LL_tool0",
+    "LL_schunk_gripper_body",
+    "LL_schunk_left_finger",
+    "LL_schunk_right_finger",
+    "LL_schunk_tcp",
+    "platform",
+    "MT_base"
+  ],
+  "controlled_joints": [
+    "joint_LL_ext_1",
+    "joint_LL_1",
+    "joint_LL_2",
+    "joint_LL_3",
+    "joint_LL_4",
+    "joint_LL_5",
+    "joint_LL_6",
+    "LL_schunk_left_finger_joint",
+    "LL_schunk_right_finger_joint"
+  ],
+  "table_visual": "package://abb_irb4600_workcell_description/meshes/optimized/fixtures/MT_base.stl",
+  "tests_passed": 28,
+  "preflight_placements": 221,
+  "physics_step_s": 0.001,
+  "measurement": "fresh scene, GUI enabled, robot idle; not a full assembly benchmark",
+  "real_time_factor": {
+    "samples": 25,
+    "median": 0.5163971589893901,
+    "min": 0.272607697078327,
+    "max": 0.6205275476999526
+  }
+}

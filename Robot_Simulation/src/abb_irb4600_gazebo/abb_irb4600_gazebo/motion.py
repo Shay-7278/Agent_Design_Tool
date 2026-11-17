@@ -159,6 +159,8 @@ def build_pick_place_steps(
         MotionStep(MotionKind.MOVE_L, pickup_lead),
     ]
     if home is not None:
+        steps.insert(0, MotionStep(MotionKind.MOVE_J, home))
+    if home is not None:
         steps.append(MotionStep(MotionKind.MOVE_J, home))
     steps.extend(
         [
@@ -170,6 +172,8 @@ def build_pick_place_steps(
             MotionStep(MotionKind.MOVE_L, placement_lead),
         ]
     )
+    if home is not None:
+        steps.append(MotionStep(MotionKind.MOVE_J, home))
     return tuple(steps)
 
 

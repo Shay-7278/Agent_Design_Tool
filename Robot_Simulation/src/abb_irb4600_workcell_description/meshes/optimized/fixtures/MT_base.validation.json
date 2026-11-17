@@ -1,0 +1,21 @@
+{
+  "source": "meshes/visual/fixtures/MT_base.stl",
+  "source_sha256": "9f4bc1f2c6a74071290a162721f1c4c33f1b49093c420ae627014cbd28a433f2",
+  "original_triangles": 145232,
+  "triangles": 6000,
+  "bounds_error_m": 1.6575780960037534e-06,
+  "sampled_surface_error_m": 0.0017280235650398133,
+  "bounds_m": [
+    [
+      0.0,
+      0.0,
+      -0.7540081029859634
+    ],
+    [
+      2.4384000301361084,
+      1.2192000150680542,
+      0.0
+    ]
+  ],
+  "collision_mesh": "meshes/collision/fixtures/MT_base.stl (unchanged)"
+}

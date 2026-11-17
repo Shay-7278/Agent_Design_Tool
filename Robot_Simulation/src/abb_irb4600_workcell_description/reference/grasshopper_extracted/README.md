@@ -105,7 +105,12 @@ The reusable semantics inside the same file are:
 Gazebo replaces the mesh-preview portion. A ROS task executor retains the
 instruction and state-transition portion.
 
-## Physics checks before joining task logic to Gazebo
+## Historical extraction checklist (not the current runtime contract)
+
+The list below records the original extraction stage. The current runtime uses
+direct mounting without TC_master; see Robot_Simulation/README.md and
+config/gh_motion_profile.json for the active workflow. Embedded source and RAPID
+syntax are preserved as historical references, not imported as runtime modules.
 
 1. Confirm SI conversion: Rhino/STL millimetres to URDF metres.
 2. Confirm LL track zero, positive direction, and 0-4 m range against the GH

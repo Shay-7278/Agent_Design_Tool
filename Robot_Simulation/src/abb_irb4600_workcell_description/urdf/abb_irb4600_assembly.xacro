@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="abb_irb4600_workcell" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/abb_irb4600_workcell_macro.xacro"/>
+  <link name="world"/>
+  <!-- Reuse the calibrated LL, tool, MT and pickup-platform transforms. -->
+  <xacro:abb_irb4600_workcell parent="world" tool_ll="schunk_pgf_100" assembly_only="${True}"/>
+</robot>

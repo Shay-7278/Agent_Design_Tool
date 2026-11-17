@@ -11,7 +11,7 @@
       <AllowMulticast>true</AllowMulticast>
     </General>
     <Tracing>
-      <Verbosity>config</Verbosity>
+      <Verbosity>warning</Verbosity>
       <OutputFile>stderr</OutputFile>
     </Tracing>
   </Domain>

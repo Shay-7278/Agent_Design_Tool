@@ -12,6 +12,7 @@ from math import atan2, cos, isfinite, pi, sin, sqrt
 from typing import Sequence
 
 from .motion import Pose
+from .target_motion import quaternion_multiply
 
 
 DH_THETA = (0.0, 0.0, -pi / 2.0, 0.0, 0.0, 0.0, 0.0)
@@ -156,6 +157,53 @@ def forward_kinematics_partial(joints_rad: Sequence[float]) -> Matrix4:
 
 def _column3(matrix: Matrix4, index: int) -> tuple[float, float, float]:
     return (matrix[0][index], matrix[1][index], matrix[2][index])
+
+
+def solve_base_target(target: Pose, limits: Sequence[tuple[float, float]],
+                      seed: Sequence[float] | None = None, cfx: int = 0) -> tuple[float, ...]:
+    """Translate a URDF flange target to GH coordinates; retain GH's cfx branch.
+
+    The 495 mm base offset is retained in FK and the robot URDF.
+    """
+    dh_target = Pose((target.position[0], target.position[1],
+                      target.position[2] - DH_D[0]),
+                     quaternion_multiply(target.orientation_xyzw, (0.0, 0.0, 1.0, 0.0)))
+    desired = _rotation_columns(target)
+    candidates = []
+    for branch in (cfx,):
+        try:
+            raw = inverse_kinematics(dh_target, branch)
+        except ValueError:
+            continue
+        adjusted = []
+        for i, (value, (lower, upper)) in enumerate(zip(raw, limits)):
+            equivalents = [value + turns * 2 * pi for turns in range(-2, 3)
+                           if lower <= value + turns * 2 * pi <= upper]
+            if not equivalents:
+                break
+            adjusted.append(min(equivalents, key=lambda v: abs(v - (seed[i] if seed else 0))))
+        if len(adjusted) != 6:
+            continue
+        fk = forward_kinematics_urdf(adjusted)
+        position_error = sqrt(sum((fk[i][3] - target.position[i]) ** 2 for i in range(3)))
+        rotation_error = max(abs(fk[i][j] - desired[i][j]) for i in range(3) for j in range(3))
+        if position_error < 1e-6 and rotation_error < 1e-6:
+            candidates.append(tuple(adjusted))
+    if not candidates:
+        raise ValueError(f"no joint-limit-valid IK solution for base target {target.position}")
+    return min(candidates, key=lambda q: sum((v - (seed[i] if seed else 0)) ** 2
+                                           for i, v in enumerate(q)))
+
+
+def forward_kinematics_urdf(joints_rad: Sequence[float]) -> Matrix4:
+    """GH DH endpoint -> URDF flange. Both origins coincide; X/Y reverse.
+
+    This fixed convention change is independent of the measured tool TCP.
+    The original GH FK remains unchanged for reference and RAPID work.
+    """
+    gh = forward_kinematics(joints_rad)
+    return tuple(tuple(-gh[i][j] if j < 2 else gh[i][j] for j in range(4))
+                 for i in range(4))
 
 
 @dataclass(frozen=True)

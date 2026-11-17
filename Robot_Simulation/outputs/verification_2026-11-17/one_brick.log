@@ -1,0 +1,42 @@
+[INFO] [1794916280.456871885] [execute_one_brick]: GH motion preflight passed: 1 bricks in MT_base; home, rail offset, MoveJ and MoveL included
+[INFO] [1794916280.460902328] [execute_one_brick]: brick 1/1 AVAILABLE: pickup_brick_000
+[INFO] [1794916292.817075661] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794916307.838807282] [execute_one_brick]: trajectory in progress: 2.62/14.12 sim s; 15 real s; simulation speed=0.175x
+[INFO] [1794916322.834187018] [execute_one_brick]: trajectory in progress: 4.99/14.12 sim s; 30 real s; simulation speed=0.166x
+[INFO] [1794916337.838151230] [execute_one_brick]: trajectory in progress: 7.20/14.12 sim s; 45 real s; simulation speed=0.160x
+[INFO] [1794916352.839955214] [execute_one_brick]: trajectory in progress: 9.62/14.12 sim s; 60 real s; simulation speed=0.160x
+[INFO] [1794916367.848356178] [execute_one_brick]: trajectory in progress: 12.30/14.12 sim s; 75 real s; simulation speed=0.164x
+[INFO] [1794916379.146984741] [execute_one_brick]: executing move_j: (-0.43448000000000014, 1.8510299999999993, 0.2724992281596427)
+[INFO] [1794916394.155262011] [execute_one_brick]: trajectory in progress: 2.69/7.46 sim s; 15 real s; simulation speed=0.180x
+[INFO] [1794916409.164929516] [execute_one_brick]: trajectory in progress: 5.27/7.46 sim s; 30 real s; simulation speed=0.176x
+[INFO] [1794916424.944877683] [execute_one_brick]: executing move_l: (-0.43448000000000014, 1.8510299999999993, 0.07249922815964271)
+[INFO] [1794916439.967704466] [execute_one_brick]: trajectory in progress: 2.70/7.50 sim s; 15 real s; simulation speed=0.180x
+[INFO] [1794916454.971294154] [execute_one_brick]: trajectory in progress: 5.16/7.50 sim s; 30 real s; simulation speed=0.172x
+[INFO] [1794916469.975135121] [execute_one_brick]: trajectory in progress: 7.49/7.50 sim s; 45 real s; simulation speed=0.166x
+[INFO] [1794916491.957536806] [execute_one_brick]: trajectory in progress: 2.68/3.00 sim s; 15 real s; simulation speed=0.178x
+[INFO] [1794916495.093292692] [execute_one_brick]: pickup_brick_000 ATTACHED
+[INFO] [1794916499.678443997] [execute_one_brick]: executing move_l: (-0.43448000000000014, 1.8510299999999993, 0.2724992281596427)
+[INFO] [1794916514.694478282] [execute_one_brick]: trajectory in progress: 2.58/7.50 sim s; 15 real s; simulation speed=0.172x
+[INFO] [1794916529.705590001] [execute_one_brick]: trajectory in progress: 5.39/7.50 sim s; 30 real s; simulation speed=0.180x
+[INFO] [1794916543.431362433] [execute_one_brick]: pickup_brick_000 TRANSPORTING
+[INFO] [1794916543.431864188] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794916558.437178329] [execute_one_brick]: trajectory in progress: 2.80/7.46 sim s; 15 real s; simulation speed=0.187x
+[INFO] [1794916573.437127444] [execute_one_brick]: trajectory in progress: 5.32/7.46 sim s; 30 real s; simulation speed=0.177x
+[INFO] [1794916587.316697443] [execute_one_brick]: executing move_j: (-0.34466117093611004, 4.608863163438927, 0.599954666)
+[INFO] [1794916602.320764310] [execute_one_brick]: trajectory in progress: 2.77/5.58 sim s; 15 real s; simulation speed=0.185x
+[INFO] [1794916617.321432771] [execute_one_brick]: trajectory in progress: 5.15/5.58 sim s; 30 real s; simulation speed=0.172x
+[INFO] [1794916621.263311385] [execute_one_brick]: executing move_l: (-0.34466117093611004, 4.608863163438927, 0.399954666)
+[INFO] [1794916636.295934162] [execute_one_brick]: trajectory in progress: 2.32/7.50 sim s; 15 real s; simulation speed=0.155x
+[INFO] [1794916651.300665398] [execute_one_brick]: trajectory in progress: 4.54/7.50 sim s; 30 real s; simulation speed=0.151x
+[INFO] [1794916666.305732083] [execute_one_brick]: trajectory in progress: 6.80/7.50 sim s; 45 real s; simulation speed=0.151x
+[INFO] [1794916694.538516285] [execute_one_brick]: trajectory in progress: 2.72/3.00 sim s; 15 real s; simulation speed=0.182x
+[INFO] [1794916696.437943671] [execute_one_brick]: pickup_brick_000 RELEASED
+[INFO] [1794916703.012438056] [execute_one_brick]: executing move_l: (-0.34466117093611004, 4.608863163438927, 0.599954666)
+[INFO] [1794916718.032973300] [execute_one_brick]: trajectory in progress: 2.63/7.50 sim s; 15 real s; simulation speed=0.175x
+[INFO] [1794916733.034072927] [execute_one_brick]: trajectory in progress: 5.03/7.50 sim s; 30 real s; simulation speed=0.168x
+[INFO] [1794916748.051165808] [execute_one_brick]: trajectory in progress: 7.25/7.50 sim s; 45 real s; simulation speed=0.161x
+[INFO] [1794916751.158651858] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794916766.167993980] [execute_one_brick]: trajectory in progress: 2.18/5.58 sim s; 15 real s; simulation speed=0.145x
+[INFO] [1794916781.180555491] [execute_one_brick]: trajectory in progress: 4.42/5.58 sim s; 30 real s; simulation speed=0.147x
+[INFO] [1794916790.652411923] [execute_one_brick]: pickup_brick_000 PLACED (command complete); observation={'brick': 'pickup_brick_000', 'state': 'PLACED', 'target_position': (-0.34466117093611004, 4.608863163438927, 0.399954666), 'target_orientation_xyzw': (0.0, 0.0, -0.37553458627632413, 0.9268083806862506), 'actual_position': (-0.3446611427580847, 4.608863145638635, 0.39995379303306094), 'actual_orientation_xyzw': (1.1141396404801243e-09, -4.449375511344316e-09, -0.375532220561984, 0.9268093392493332), 'pose_sequence': 25677, 'simulation_stamp': 88.616, 'displacement_m': 8.73602957992551e-07}
+[INFO] [1794916790.654016519] [execute_one_brick]: ASSEMBLY COMPLETE: 1 bricks

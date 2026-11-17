@@ -24,6 +24,8 @@ setup(
         # Meshes — end-effectors
         (os.path.join("share", package_name, "meshes", "collision", "end_effectors"), glob("meshes/collision/end_effectors/*")),
         (os.path.join("share", package_name, "meshes", "visual", "end_effectors"), glob("meshes/visual/end_effectors/*")),
+        (os.path.join("share", package_name, "meshes", "optimized", "end_effectors"), glob("meshes/optimized/end_effectors/*")),
+        (os.path.join("share", package_name, "meshes", "optimized", "fixtures"), glob("meshes/optimized/fixtures/*")),
         # Launch files
         (os.path.join("share", package_name, "launch"), glob("launch/*.launch.py")),
         # # RViz config

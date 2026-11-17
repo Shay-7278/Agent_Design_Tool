@@ -17,7 +17,7 @@
   <!-- End-effector macros -->
   <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/end_effectors/schunk_pgf_100_gripper_macro.xacro"/>
 
-  <xacro:macro name="abb_irb4600_workcell" params="parent:=world tool_ll:=schunk_pgf_100">
+  <xacro:macro name="abb_irb4600_workcell" params="parent:=world tool_ll:=schunk_pgf_100 assembly_only:=${False}">
 
     <!-- Load fixture calibration config (poses + named frames). -->
     <xacro:property name="fixtures_cfg"
@@ -31,12 +31,14 @@
     </joint>
 
     <!-- Robots (poses kept in macro — these are surveyed positions, not fixture configs) -->
-    <xacro:abb_irb4600_irbt4004
-      prefix="RR_"
-      parent="workcell_base"
-      xyz="0 0 0"
-      rpy="0 0 0"
-    />
+    <xacro:unless value="${assembly_only}">
+      <xacro:abb_irb4600_irbt4004
+        prefix="RR_"
+        parent="workcell_base"
+        xyz="0 0 0"
+        rpy="0 0 0"
+      />
+    </xacro:unless>
     <xacro:abb_irb4600_irbt4004
       prefix="LL_"
       parent="workcell_base"
@@ -62,6 +64,7 @@
       pos_z="${plat['pose']['xyz'][2]}"
     />
 
+    <xacro:unless value="${assembly_only}">
     <!-- Material Handling Station -->
     <xacro:property name="mhs"   value="${fixtures_cfg['material_handling_station']}"/>
     <xacro:property name="mhs_p" value="${mhs['pose']}"/>
@@ -81,6 +84,7 @@
       xyz="${ss_p['xyz'][0]} ${ss_p['xyz'][1]} ${ss_p['xyz'][2]}"
       rpy="${ss_p['rpy'][0]} ${ss_p['rpy'][1]} ${ss_p['rpy'][2]}"
     />
+    </xacro:unless>
 
     <!-- Milling Table -->
     <xacro:property name="mt"   value="${fixtures_cfg['milling_table']}"/>
@@ -90,8 +94,10 @@
       parent="workcell_base"
       xyz="${mt_p['xyz'][0]} ${mt_p['xyz'][1]} ${mt_p['xyz'][2]}"
       rpy="${mt_p['rpy'][0]} ${mt_p['rpy'][1]} ${mt_p['rpy'][2]}"
+      visual_mesh="${'meshes/optimized/fixtures/MT_base.stl' if assembly_only else 'meshes/visual/fixtures/MT_base.stl'}"
     />
 
+    <xacro:unless value="${assembly_only}">
     <!-- Tool Changing Station — RR -->
     <xacro:property name="tcs_rr"   value="${fixtures_cfg['tool_changing_station_rr']}"/>
     <xacro:property name="tcs_rr_p" value="${tcs_rr['pose']}"/>
@@ -121,6 +127,7 @@
       xyz="${irb7600_p['xyz'][0]} ${irb7600_p['xyz'][1]} ${irb7600_p['xyz'][2]}"
       rpy="${irb7600_p['rpy'][0]} ${irb7600_p['rpy'][1]} ${irb7600_p['rpy'][2]}"
     />
+    </xacro:unless>
 
   </xacro:macro>
 

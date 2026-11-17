@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 from .motion import Pose
+from .brick_lifecycle import load_placements
 
 
 def _spawn(world: str, name: str, sdf: Path, pose: Pose) -> None:
@@ -36,19 +37,14 @@ def main() -> None:
     args, _ros_args = parser.parse_known_args()
     time.sleep(args.startup_delay)
     pickup = json.loads(Path(args.pickup_file).read_text(encoding="utf-8"))["pickup_bricks"]
-    placement_doc = json.loads(Path(args.placement_file).read_text(encoding="utf-8"))
-    lengths = placement_doc.get("lengths", [])
-    if not lengths and isinstance(placement_doc.get("frames"), list):
-        lengths = [190.0] * len(placement_doc["frames"])
     if len(pickup) == 0:
         raise ValueError("pickup layout contains no slots")
     model_dir = Path(args.model_dir)
-    for index, item in enumerate(pickup):
+    count = min(len(pickup), len(load_placements(args.placement_file)))
+    for index, item in enumerate(pickup[:count]):
         pose = _pose(item)
-        length = float(lengths[index]) if index < len(lengths) else 190.0
-        variant = "brick_half" if abs(length - 95.0) < 1e-6 else "brick"
-        _spawn(args.world, f"pickup_brick_{index:03d}", model_dir / variant / "model.sdf", pose)
-    print(f"spawned {len(pickup)} pickup bricks")
+        _spawn(args.world, f"pickup_brick_{index:03d}", model_dir / "brick" / "model.sdf", pose)
+    print(f"spawned {count} pickup bricks")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="irb4600_control_joint" params="joint_name positions">
+    <joint name="${joint_name}">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${positions[joint_name]}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="abb_irb4600_gazebo_control" params="initial_positions_file controllers_file include_rr:=${True}">
+    <xacro:property name="positions" value="${xacro.load_yaml(initial_positions_file)['initial_positions']}"/>
+    <ros2_control name="${'DualIRB4600GazeboSystem' if include_rr else 'LLIRB4600GazeboSystem'}" type="system">
+      <hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware>
+      <xacro:irb4600_control_joint joint_name="joint_LL_ext_1" positions="${positions}"/>
+      <xacro:irb4600_control_joint joint_name="joint_LL_1" positions="${positions}"/>
+      <xacro:irb4600_control_joint joint_name="joint_LL_2" positions="${positions}"/>
+      <xacro:irb4600_control_joint joint_name="joint_LL_3" positions="${positions}"/>
+      <xacro:irb4600_control_joint joint_name="joint_LL_4" positions="${positions}"/>
+      <xacro:irb4600_control_joint joint_name="joint_LL_5" positions="${positions}"/>
+      <xacro:irb4600_control_joint joint_name="joint_LL_6" positions="${positions}"/>
+      <xacro:irb4600_control_joint joint_name="LL_schunk_left_finger_joint" positions="${positions}"/>
+      <xacro:irb4600_control_joint joint_name="LL_schunk_right_finger_joint" positions="${positions}"/>
+      <xacro:if value="${include_rr}">
+        <xacro:irb4600_control_joint joint_name="joint_RR_ext_1" positions="${positions}"/>
+        <xacro:irb4600_control_joint joint_name="joint_RR_1" positions="${positions}"/>
+        <xacro:irb4600_control_joint joint_name="joint_RR_2" positions="${positions}"/>
+        <xacro:irb4600_control_joint joint_name="joint_RR_3" positions="${positions}"/>
+        <xacro:irb4600_control_joint joint_name="joint_RR_4" positions="${positions}"/>
+        <xacro:irb4600_control_joint joint_name="joint_RR_5" positions="${positions}"/>
+        <xacro:irb4600_control_joint joint_name="joint_RR_6" positions="${positions}"/>
+      </xacro:if>
+    </ros2_control>
+    <gazebo>
+      <plugin filename="libgz_ros2_control-system.so" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>${controllers_file}</parameters>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+</robot>

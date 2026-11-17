@@ -1,0 +1,165 @@
+1794817029.724356 [0] execute_on: config: Domain/General/MulticastRecvNetworkInterfaceAddresses/#text: preferred {}
+1794817029.725086 [0] execute_on: config: Domain/General/Interfaces/NetworkInterface[@autodetermine]: true {2}
+1794817029.725577 [0] execute_on: config: Domain/General/Interfaces/NetworkInterface[@name]:  {}
+1794817029.726200 [0] execute_on: config: Domain/General/Interfaces/NetworkInterface[@address]:  {}
+1794817029.726617 [0] execute_on: config: Domain/General/Interfaces/NetworkInterface[@priority]: default {}
+1794817029.741572 [0] execute_on: config: Domain/General/Interfaces/NetworkInterface[@prefer_multicast]: false {}
+1794817029.742013 [0] execute_on: config: Domain/General/Interfaces/NetworkInterface[@presence_required]: true {}
+1794817029.742402 [0] execute_on: config: Domain/General/Interfaces/NetworkInterface[@multicast]: default {2}
+1794817029.742779 [0] execute_on: config: Domain/General/ExternalNetworkAddress/#text: auto {}
+1794817029.743269 [0] execute_on: config: Domain/General/ExternalNetworkMask/#text: 0.0.0.0 {}
+1794817029.743746 [0] execute_on: config: Domain/General/AllowMulticast/#text: true {2}
+1794817029.744188 [0] execute_on: config: Domain/General/MulticastTimeToLive/#text: 32 {}
+1794817029.744718 [0] execute_on: config: Domain/General/DontRoute/#text: false {}
+1794817029.745201 [0] execute_on: config: Domain/General/Transport/#text: udp {}
+1794817029.745669 [0] execute_on: config: Domain/General/EnableMulticastLoopback/#text: true {}
+1794817029.746231 [0] execute_on: config: Domain/General/MaxMessageSize/#text: 14720 B {}
+1794817029.746698 [0] execute_on: config: Domain/General/MaxRexmitMessageSize/#text: 1456 B {}
+1794817029.747236 [0] execute_on: config: Domain/General/FragmentSize/#text: 1344 B {}
+1794817029.747701 [0] execute_on: config: Domain/General/RedundantNetworking/#text: false {}
+1794817029.748139 [0] execute_on: config: Domain/General/EntityAutoNaming/#text: empty {}
+1794817029.748814 [0] execute_on: config: Domain/General/EntityAutoNaming[@seed]: 153586877 3333889654 1888130940 2858369994 603998904 2190020950 732758787 2183089772 {}
+1794817029.749328 [0] execute_on: config: Domain/Sizing/ReceiveBufferSize/#text: 1 MiB {}
+1794817029.749861 [0] execute_on: config: Domain/Sizing/ReceiveBufferChunkSize/#text: 128 KiB {}
+1794817029.750369 [0] execute_on: config: Domain/Compatibility/StandardsConformance/#text: lax {}
+1794817029.750795 [0] execute_on: config: Domain/Compatibility/ExplicitlyPublishQosSetToDefault/#text: false {}
+1794817029.751248 [0] execute_on: config: Domain/Compatibility/ManySocketsMode/#text: single {}
+1794817029.751745 [0] execute_on: config: Domain/Compatibility/AssumeRtiHasPmdEndpoints/#text: false {}
+1794817029.752208 [0] execute_on: config: Domain/Discovery/Tag/#text:  {}
+1794817029.752607 [0] execute_on: config: Domain/Discovery/ExternalDomainId/#text: 0 {}
+1794817029.753129 [0] execute_on: config: Domain/Discovery/DSGracePeriod/#text: 30 s {}
+1794817029.753616 [0] execute_on: config: Domain/Discovery/ParticipantIndex/#text: auto {0}
+1794817029.754061 [0] execute_on: config: Domain/Discovery/MaxAutoParticipantIndex/#text: 32 {0}
+1794817029.754502 [0] execute_on: config: Domain/Discovery/SPDPMulticastAddress/#text: 239.255.0.1 {}
+1794817029.754858 [0] execute_on: config: Domain/Discovery/SPDPInterval/#text: 30 s {}
+1794817029.755215 [0] execute_on: config: Domain/Discovery/DefaultMulticastAddress/#text: auto {}
+1794817029.755636 [0] execute_on: config: Domain/Discovery/Ports/Base/#text: 7400 {}
+1794817029.756066 [0] execute_on: config: Domain/Discovery/Ports/DomainGain/#text: 250 {}
+1794817029.756569 [0] execute_on: config: Domain/Discovery/Ports/ParticipantGain/#text: 2 {}
+1794817029.757079 [0] execute_on: config: Domain/Discovery/Ports/MulticastMetaOffset/#text: 0 {}
+1794817029.757585 [0] execute_on: config: Domain/Discovery/Ports/UnicastMetaOffset/#text: 10 {}
+1794817029.758215 [0] execute_on: config: Domain/Discovery/Ports/MulticastDataOffset/#text: 1 {}
+1794817029.758718 [0] execute_on: config: Domain/Discovery/Ports/UnicastDataOffset/#text: 11 {}
+1794817029.759222 [0] execute_on: config: Domain/Discovery/EnableTopicDiscoveryEndpoints/#text: false {}
+1794817029.759652 [0] execute_on: config: Domain/Discovery/LeaseDuration/#text: 10 s {}
+1794817029.760051 [0] execute_on: config: Domain/Tracing/Category/#text: fatal,error,warning,info,config {2}
+1794817029.760369 [0] execute_on: config: Domain/Tracing/OutputFile/#text: stderr {2}
+1794817029.760735 [0] execute_on: config: Domain/Tracing/AppendToFile/#text: false {}
+1794817029.761098 [0] execute_on: config: Domain/Tracing/PacketCaptureFile/#text:  {}
+1794817029.761552 [0] execute_on: config: Domain/Internal/DeliveryQueueMaxSamples/#text: 256 {}
+1794817029.761987 [0] execute_on: config: Domain/Internal/PrimaryReorderMaxSamples/#text: 128 {}
+1794817029.762433 [0] execute_on: config: Domain/Internal/SecondaryReorderMaxSamples/#text: 128 {}
+1794817029.762913 [0] execute_on: config: Domain/Internal/DefragUnreliableMaxSamples/#text: 4 {}
+1794817029.763376 [0] execute_on: config: Domain/Internal/DefragReliableMaxSamples/#text: 16 {}
+1794817029.764357 [0] execute_on: config: Domain/Internal/BuiltinEndpointSet/#text: writers {}
+1794817029.764986 [0] execute_on: config: Domain/Internal/MeasureHbToAckLatency/#text: false {}
+1794817029.765563 [0] execute_on: config: Domain/Internal/UnicastResponseToSPDPMessages/#text: true {}
+1794817029.766189 [0] execute_on: config: Domain/Internal/SynchronousDeliveryPriorityThreshold/#text: 0 {}
+1794817029.767058 [0] execute_on: config: Domain/Internal/SynchronousDeliveryLatencyBound/#text: inf {}
+1794817029.767592 [0] execute_on: config: Domain/Internal/MaxParticipants/#text: 0 {}
+1794817029.768002 [0] execute_on: config: Domain/Internal/AccelerateRexmitBlockSize/#text: 0 {}
+1794817029.768433 [0] execute_on: config: Domain/Internal/RetransmitMerging/#text: never {}
+1794817029.768893 [0] execute_on: config: Domain/Internal/RetransmitMergingPeriod/#text: 5 ms {}
+1794817029.769295 [0] execute_on: config: Domain/Internal/HeartbeatInterval/#text: 100 ms {}
+1794817029.769781 [0] execute_on: config: Domain/Internal/HeartbeatInterval[@min]: 5 ms {}
+1794817029.770142 [0] execute_on: config: Domain/Internal/HeartbeatInterval[@minsched]: 20 ms {}
+1794817029.770605 [0] execute_on: config: Domain/Internal/HeartbeatInterval[@max]: 8 s {}
+1794817029.771795 [0] execute_on: config: Domain/Internal/MaxQueuedRexmitBytes/#text: 512 KiB {}
+1794817029.772220 [0] execute_on: config: Domain/Internal/MaxQueuedRexmitMessages/#text: 200 {}
+1794817029.772680 [0] execute_on: config: Domain/Internal/WriterLingerDuration/#text: 1 s {}
+1794817029.773059 [0] execute_on: config: Domain/Internal/SocketReceiveBufferSize[@min]: default {}
+1794817029.773510 [0] execute_on: config: Domain/Internal/SocketReceiveBufferSize[@max]: default {}
+1794817029.773898 [0] execute_on: config: Domain/Internal/SocketSendBufferSize[@min]: 64 KiB {}
+1794817029.774274 [0] execute_on: config: Domain/Internal/SocketSendBufferSize[@max]: default {}
+1794817029.774630 [0] execute_on: config: Domain/Internal/NackDelay/#text: 100 ms {}
+1794817029.775110 [0] execute_on: config: Domain/Internal/AckDelay/#text: 10 ms {}
+1794817029.775417 [0] execute_on: config: Domain/Internal/AutoReschedNackDelay/#text: 3 s {}
+1794817029.775880 [0] execute_on: config: Domain/Internal/PreEmptiveAckDelay/#text: 10 ms {}
+1794817029.776337 [0] execute_on: config: Domain/Internal/ScheduleTimeRounding/#text: 0 s {}
+1794817029.776685 [0] execute_on: config: Domain/Internal/DDSI2DirectMaxThreads/#text: 1 {}
+1794817029.777025 [0] execute_on: config: Domain/Internal/SquashParticipants/#text: false {}
+1794817029.777433 [0] execute_on: config: Domain/Internal/SPDPResponseMaxDelay/#text: 0 s {}
+1794817029.777794 [0] execute_on: config: Domain/Internal/LateAckMode/#text: false {}
+1794817029.778210 [0] execute_on: config: Domain/Internal/RetryOnRejectBestEffort/#text: false {}
+1794817029.778638 [0] execute_on: config: Domain/Internal/GenerateKeyhash/#text: false {}
+1794817029.784347 [0] execute_on: config: Domain/Internal/MaxSampleSize/#text: 2147483647 B {}
+1794817029.785277 [0] execute_on: config: Domain/Internal/LivelinessMonitoring/#text: false {}
+1794817029.786018 [0] execute_on: config: Domain/Internal/LivelinessMonitoring[@StackTraces]: true {}
+1794817029.786426 [0] execute_on: config: Domain/Internal/LivelinessMonitoring[@Interval]: 1 s {}
+1794817029.786850 [0] execute_on: config: Domain/Internal/MonitorPort/#text: -1 {}
+1794817029.787198 [0] execute_on: config: Domain/Internal/PrioritizeRetransmit/#text: true {}
+1794817029.787621 [0] execute_on: config: Domain/Internal/UseMulticastIfMreqn/#text: 0 {}
+1794817029.788209 [0] execute_on: config: Domain/Internal/RediscoveryBlacklistDuration/#text: 0 s {}
+1794817029.788614 [0] execute_on: config: Domain/Internal/RediscoveryBlacklistDuration[@enforce]: false {}
+1794817029.789200 [0] execute_on: config: Domain/Internal/MultipleReceiveThreads/#text: default {}
+1794817029.789659 [0] execute_on: config: Domain/Internal/MultipleReceiveThreads[@maxretries]: 4294967295 {}
+1794817029.790144 [0] execute_on: config: Domain/Internal/Test/XmitLossiness/#text: 0 {}
+1794817029.790579 [0] execute_on: config: Domain/Internal/Watermarks/WhcLow/#text: 1 KiB {}
+1794817029.791104 [0] execute_on: config: Domain/Internal/Watermarks/WhcHigh/#text: 500 KiB {}
+1794817029.791553 [0] execute_on: config: Domain/Internal/Watermarks/WhcHighInit/#text: 30 KiB {}
+1794817029.792001 [0] execute_on: config: Domain/Internal/Watermarks/WhcAdaptive/#text: true {}
+1794817029.792482 [0] execute_on: config: Domain/Internal/BurstSize/MaxRexmit/#text: 1 MiB {}
+1794817029.792936 [0] execute_on: config: Domain/Internal/BurstSize/MaxInitTransmit/#text: 4294967295 {}
+1794817029.793410 [0] execute_on: config: Domain/Internal/EnableExpensiveChecks/#text:  {}
+1794817029.794031 [0] execute_on: config: Domain/TCP/NoDelay/#text: true {}
+1794817029.794544 [0] execute_on: config: Domain/TCP/Port/#text: -1 {}
+1794817029.795113 [0] execute_on: config: Domain/TCP/ReadTimeout/#text: 2 s {}
+1794817029.795546 [0] execute_on: config: Domain/TCP/WriteTimeout/#text: 2 s {}
+1794817029.796203 [0] execute_on: config: Domain/TCP/AlwaysUsePeeraddrForUnicast/#text: false {}
+1794817029.796761 [0] execute_on: config: Domain/SSL/Enable/#text: false {}
+1794817029.797446 [0] execute_on: config: Domain/SSL/CertificateVerification/#text: true {}
+1794817029.798374 [0] execute_on: config: Domain/SSL/VerifyClient/#text: true {}
+1794817029.798892 [0] execute_on: config: Domain/SSL/SelfSignedCertificates/#text: false {}
+1794817029.799389 [0] execute_on: config: Domain/SSL/KeystoreFile/#text: keystore {}
+1794817029.799821 [0] execute_on: config: Domain/SSL/KeyPassphrase/#text: secret {}
+1794817029.800243 [0] execute_on: config: Domain/SSL/Ciphers/#text: ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH {}
+1794817029.800726 [0] execute_on: config: Domain/SSL/EntropyFile/#text:  {}
+1794817029.801240 [0] execute_on: config: Domain/SSL/MinimumTLSVersion/#text: 1.3 {}
+1794817029.801607 [0] execute_on: config: Domain/SharedMemory/Enable/#text: false {}
+1794817029.802088 [0] execute_on: config: Domain/SharedMemory/Locator/#text:  {}
+1794817029.802396 [0] execute_on: config: Domain/SharedMemory/Prefix/#text: DDS_CYCLONE {}
+1794817029.802750 [0] execute_on: config: Domain/SharedMemory/LogLevel/#text: info {}
+1794817029.803140 [0] execute_on: config: Domain[@Id]: 0 {2}
+1794817029.803552 [0] execute_on: started at 1794817029.06803521 -- 2026-11-16 08:17:09+00:00
+1794817029.803840 [0] execute_on: udp initialized
+1794817029.804596 [0] execute_on: interfaces: lo udp/127.0.0.1(q1) eth0 udp/172.18.0.2(q9)
+1794817029.804990 [0] execute_on: determined eth0 (udp/172.18.0.2) as highest quality interface, selected for automatic interface.
+1794817029.805329 [0] execute_on: selected interfaces: eth0 (index 2 priority 0)
+1794817029.805628 [0] execute_on: ownip: udp/172.18.0.2
+1794817029.805908 [0] execute_on: extmask: invalid/0 (not applicable)
+1794817029.806292 [0] execute_on: SPDP MC: udp/239.255.0.1
+1794817029.806615 [0] execute_on: default MC: udp/239.255.0.1
+1794817029.806936 [0] execute_on: SSM support included
+1794817029.807516 [0] execute_on: rtps_init: trying to find a free participant index
+1794817029.807998 [0] execute_on: failed to increase socket receive buffer size to 1048576 bytes, continuing with 425984 bytes
+1794817029.808414 [0] execute_on: failed to increase socket receive buffer size to 1048576 bytes, continuing with 425984 bytes
+1794817029.808875 [0] execute_on: failed to increase socket receive buffer size to 1048576 bytes, continuing with 425984 bytes
+1794817029.809243 [0] execute_on: rtps_init: uc ports: disc 7412 data 7413
+1794817029.809551 [0] execute_on: rtps_init: domainid 0 participantid 2
+1794817029.809863 [0] execute_on: Unicast Ports: discovery 7412 data 7413
+1794817029.810279 [0] execute_on: failed to increase socket receive buffer size to 1048576 bytes, continuing with 425984 bytes
+1794817029.810715 [0] execute_on: failed to increase socket receive buffer size to 1048576 bytes, continuing with 425984 bytes
+1794817029.811047 [0] execute_on: Multicast Ports: discovery 7400 data 7401 
+1794817029.811344 [0] execute_on: failed to increase socket receive buffer size to 1048576 bytes, continuing with 425984 bytes
+1794817029.811596 [0] execute_on: interface eth0: transmit port 37271
+[INFO] [1794817030.605755626] [execute_one_brick]: moving to pickup
+[INFO] [1794817030.607199605] [execute_one_brick]: track origin=(3.6993,3.4510,0.0176) direction=(-1.0000,0.0001,0.0013)
+[INFO] [1794817030.608573743] [execute_one_brick]: rail target: 3.890000 m
+[INFO] [1794817030.610583656] [execute_one_brick]: root target=(1.6016,-0.2436,0.0639) flange target=(1.6018,-0.2439,0.3016)
+Traceback (most recent call last):
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/abb_irb4600_gazebo/execute_one_brick", line 33, in <module>
+    sys.exit(load_entry_point('abb-irb4600-gazebo==0.1.0', 'console_scripts', 'execute_one_brick')())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 140, in main
+    try: node.run()
+         ^^^^^^^^^^
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 85, in run
+    self._move_target(self.pickup, flange_tcp)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 130, in _move_target
+    self.send(self.arm, ARM_JOINTS, [rail, *joints], 15.0)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 75, in send
+    raise RuntimeError(f"trajectory failed: {result.error_string}")
+RuntimeError: trajectory failed: Aborted due to path tolerance violation
+1794817063.579209 [0] execute_on: udp finalized
+1794817063.579921 [0] execute_on: Finis.
+[ros2run]: Process exited with failure 1

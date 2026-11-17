@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="abb_irb4600_workcell" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="initial_positions_file" default="$(find abb_irb4600_gazebo)/config/assembly_initial_positions.yaml"/>
+  <xacro:arg name="controllers_file" default="$(find abb_irb4600_gazebo)/config/assembly_controllers.yaml"/>
+  <xacro:include filename="$(find abb_irb4600_workcell_description)/urdf/abb_irb4600_workcell_macro.xacro"/>
+  <xacro:include filename="$(find abb_irb4600_gazebo)/urdf/abb_irb4600_control_macro.xacro"/>
+  <link name="world"/>
+  <xacro:abb_irb4600_workcell parent="world" tool_ll="schunk_pgf_100" assembly_only="${True}"/>
+  <xacro:abb_irb4600_gazebo_control
+    initial_positions_file="$(arg initial_positions_file)"
+    controllers_file="$(arg controllers_file)"
+    include_rr="${False}"/>
+</robot>

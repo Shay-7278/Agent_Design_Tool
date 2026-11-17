@@ -7,8 +7,8 @@ from abb_irb4600_gazebo.brick_lifecycle import (
     BrickLifecycle,
     BrickState,
     Placement,
+    BrickPlan,
     load_placements,
-    pair_pickups_with_placements,
 )
 from abb_irb4600_gazebo.motion import Pose
 
@@ -35,7 +35,7 @@ class BrickLifecycleTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "placements.json"
             path.write_text(
-                json.dumps({"placements": [{"position": [1, 2, 3], "orientation": [0, 0, 0, 1]}]}),
+                json.dumps([[1,2,3,0]]),
                 encoding="utf-8",
             )
             placements = load_placements(path)
@@ -43,7 +43,7 @@ class BrickLifecycleTests(unittest.TestCase):
 
     def test_lifecycle_requires_ordered_transitions(self):
         pose = Pose((0, 0, 0), (0, 0, 0, 1))
-        plan = pair_pickups_with_placements([pose], [Placement(0, pose)])[0]
+        plan = BrickPlan('pickup_brick_000', pose, pose)
         world = FakeWorld()
         lifecycle = BrickLifecycle(world, [plan])
         lifecycle.spawn_available(plan)

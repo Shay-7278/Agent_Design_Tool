@@ -6,11 +6,9 @@ The local X-axis half-turn is the explicit operation recovered from GH scripts
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from math import cos, isfinite, sin, sqrt
-from typing import Callable, Sequence
+from math import acos, cos, pi, sin, sqrt
 
-from .motion import MotionKind, MotionStep, Pose, Vector3
+from .motion import Pose, Vector3
 
 Quaternion = tuple[float, float, float, float]
 JointVector = tuple[float, float, float, float, float, float]
@@ -57,73 +55,45 @@ RX_PI: Quaternion = (1.0, 0.0, 0.0, 0.0)
 
 
 def tcp_target_from_brick(brick_pose: Pose) -> Pose:
-    """Apply the original GH local Rx(pi) to a brick frame."""
+    """PGF jaws span brick width (+Y); retain GH's downward tool Z."""
 
     return Pose(
         brick_pose.position,
-        quaternion_multiply(brick_pose.orientation_xyzw, RX_PI),
+        quaternion_multiply(brick_pose.orientation_xyzw,
+                            quaternion_multiply(rpy_to_quaternion(0, 0, pi / 2), RX_PI)),
     )
 
 
 def flange_target_from_tcp(tcp_pose: Pose, flange_tcp: Pose) -> Pose:
     """Compute flange pose from world TCP pose and flange-relative TCP pose."""
 
-    tool_translation_world = quaternion_rotate(
-        tcp_pose.orientation_xyzw, flange_tcp.position
-    )
+    flange_orientation = quaternion_multiply(
+        tcp_pose.orientation_xyzw, quaternion_inverse(flange_tcp.orientation_xyzw))
+    tool_translation_world = quaternion_rotate(flange_orientation, flange_tcp.position)
     flange_position = tuple(
         tcp_pose.position[index] - tool_translation_world[index]
         for index in range(3)
     )
-    flange_orientation = quaternion_multiply(
-        tcp_pose.orientation_xyzw,
-        quaternion_inverse(flange_tcp.orientation_xyzw),
-    )
     return Pose(flange_position, flange_orientation)
 
 
-@dataclass(frozen=True)
-class LLTrajectoryPoint:
-    track_m: float
-    joints_rad: JointVector
-    source_kind: MotionKind
+def brick_frame_from_tcp(tcp_pose: Pose) -> Pose:
+    """Inverse of the single brick-to-PGF frame mapping (used for GH home)."""
+    grasp = tcp_target_from_brick(Pose((0, 0, 0), (0, 0, 0, 1)))
+    return Pose(tcp_pose.position, quaternion_multiply(
+        tcp_pose.orientation_xyzw, quaternion_inverse(grasp.orientation_xyzw)))
 
 
-IKSolver = Callable[[Pose], Sequence[float]]
-
-
-def convert_motion_steps_to_ll(
-    steps: Sequence[MotionStep],
-    flange_tcp: Pose,
-    ik_solver: IKSolver,
-    rail_origin_m: Vector3,
-    rail_direction: Vector3,
-    rail_limits_m: tuple[float, float] = (0.0, 4.0),
-) -> tuple[LLTrajectoryPoint, ...]:
-    """Convert move steps to LL track + six-joint targets.
-
-    The IK implementation is injected deliberately: this function will not
-    claim a target is valid until the IRB4600 solver is supplied and checked.
-    Non-move steps remain executor events and are not emitted as trajectory
-    points.
-    """
-
-    from .motion import rail_position
-
-    output: list[LLTrajectoryPoint] = []
-    for step in steps:
-        if step.kind not in (MotionKind.MOVE_J, MotionKind.MOVE_L):
-            continue
-        assert step.target is not None
-        tcp_target = tcp_target_from_brick(step.target)
-        flange_target = flange_target_from_tcp(tcp_target, flange_tcp)
-        joints = tuple(float(value) for value in ik_solver(flange_target))
-        if len(joints) != 6 or not all(isfinite(value) for value in joints):
-            raise ValueError("IK solver must return six finite joint values")
-        output.append(
-            LLTrajectoryPoint(
-                rail_position(tcp_target, rail_origin_m, rail_direction, limits_m=rail_limits_m),
-                joints, step.kind,
-            )
-        )
-    return tuple(output)
+def quaternion_slerp(a: Quaternion, b: Quaternion, t: float) -> Quaternion:
+    """Shortest quaternion interpolation, as in the GH MoveL visualizer."""
+    dot = sum(x*y for x,y in zip(a,b))
+    if dot < 0:
+        b = tuple(-v for v in b)
+        dot = -dot
+    dot = min(1.0, max(-1.0, dot))
+    if dot > 0.9995:
+        q = tuple(x + t*(y-x) for x,y in zip(a,b))
+        norm = sqrt(sum(v*v for v in q))
+        return tuple(v/norm for v in q)
+    theta = acos(dot)
+    return tuple((sin((1-t)*theta)*x + sin(t*theta)*y)/sin(theta) for x,y in zip(a,b))

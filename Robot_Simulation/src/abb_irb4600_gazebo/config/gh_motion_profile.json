@@ -1,0 +1,25 @@
+{
+  "source": "ARC574_F26_RoboticBrickAssembly_IRB4600_Rhino8_Template.gh",
+  "source_sha256": "6d60ac19947af78708bfb8f8baf4cbd6bd1ec16509c0c57306bc768b598184f7",
+  "home_tcp": {
+    "orientation_xyzw": [
+      0.7071067811865476,
+      0.7071067811865475,
+      0,
+      0
+    ],
+    "position": [
+      0.5,
+      3.4510300000000003,
+      1
+    ]
+  },
+  "retract_m": 0.2,
+  "track_offset_m": -1,
+  "move_j_speed_m_s": 0.5,
+  "move_l_speed_m_s": 0.05,
+  "orientation_speed_rad_s": 8.726646259971647,
+  "rail_speed_m_s": 5,
+  "wait_s": 1,
+  "cfx": 0
+}

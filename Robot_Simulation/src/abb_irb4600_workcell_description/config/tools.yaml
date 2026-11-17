@@ -6,18 +6,15 @@ tools:
   schunk_pgf_100:
     description: "SCHUNK PGF 100 brick gripper in its open CAD configuration"
     finger_travel: 0.008875
-    # Full flange -> TCP transform embedded in the supplied Grasshopper graph.
+    # Supplied CAD verification: direct coupling-plane mount, no QC master.
+    # Pad midpoint is CAD (0, 0, -201.35 mm); coupling face is z=41.78 mm.
     flange_tcp:
-      xyz: [0.0, 0.0, 0.237712205505538]
-      rpy: [0.0, 0.0, 1.5707963267948966]
-    # TC-master tool attachment -> TCP, with the TC-master transform removed.
-    attachment_tcp:
-      xyz: [-0.000002062, -0.000001646, 0.161867805505538]
-      rpy: [0.0, 0.0, 1.3963166127948966]
+      xyz: [0.0, 0.0, 0.24313]
+      rpy: [0.0, 0.0, 0.0]
     meshes:
-      visual_body: "meshes/visual/end_effectors/brickgripper_body.stl"
-      visual_left_finger: "meshes/visual/end_effectors/brickgripper_leftfinger.stl"
-      visual_right_finger: "meshes/visual/end_effectors/brickgripper_rightfinger.stl"
-      collision_body: "meshes/collision/end_effectors/collision boundary_body.stl"
-      collision_left_finger: "meshes/collision/end_effectors/collision boundary_leftfinger.stl"
-      collision_right_finger: "meshes/collision/end_effectors/collision boundary_rightfinger.stl"
+      visual_body: "meshes/optimized/end_effectors/visual_body.stl"
+      visual_left_finger: "meshes/optimized/end_effectors/visual_leftfinger.stl"
+      visual_right_finger: "meshes/optimized/end_effectors/visual_rightfinger.stl"
+      collision_body: "meshes/optimized/end_effectors/collision_body.stl"
+      collision_left_finger: "meshes/optimized/end_effectors/collision_leftfinger.stl"
+      collision_right_finger: "meshes/optimized/end_effectors/collision_rightfinger.stl"

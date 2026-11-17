@@ -37,12 +37,14 @@
         <inertia ixx="939.576" iyy="16002.884" izz="16775.440" ixy="-311.548" ixz="-33.801" iyz="51.091"/>
       </inertial>
       <visual>
+        <origin xyz="0 0 0.376" rpy="0 0 0"/>
         <geometry>
           <mesh filename="package://abb_irb4600_irbt4004_description/meshes/visual/track.stl"/>
         </geometry>
         <xacro:material_abb_dark_gray_track />
       </visual>
       <collision>
+        <origin xyz="0 0 0.376" rpy="0 0 0"/>
         <geometry>
           <mesh filename="package://abb_irb4600_irbt4004_description/meshes/collision/track.stl"/>
         </geometry>
@@ -56,12 +58,14 @@
         <inertia ixx="121.893" iyy="314.924" izz="400.431" ixy="-67.212" ixz="15.829" iyz="8.772"/>
       </inertial>
       <visual>
+        <origin xyz="0 0 0.376" rpy="0 0 0"/>
         <geometry>
           <mesh filename="package://abb_irb4600_irbt4004_description/meshes/visual/carriage.stl"/>
         </geometry>
         <xacro:material_abb_graphite_white_track />
       </visual>
       <collision>
+        <origin xyz="0 0 0.376" rpy="0 0 0"/>
         <geometry>
           <mesh filename="package://abb_irb4600_irbt4004_description/meshes/collision/carriage.stl"/>
         </geometry>

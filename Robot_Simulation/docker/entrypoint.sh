@@ -26,10 +26,14 @@ WORLD_FILE="${SIM_WORLD_FILE:-irb4600_workcell.sdf}"
 ros2 launch abb_irb4600_gazebo simulation.launch.py "world_file:=${WORLD_FILE}" &
 SIM_PID=$!
 
-sleep 15
-echo "[5/5] Starting Gazebo GUI..."
-gz sim -g &
-echo "Gazebo/RViz desktop: http://localhost:6080/vnc.html"
+if [ "${SIM_GUI:-true}" = "true" ]; then
+    sleep 15
+    echo "[5/5] Starting Gazebo GUI..."
+    gz sim -g &
+else
+    echo "[5/5] Headless physics server; GUI disabled."
+fi
+echo "Gazebo desktop: http://localhost:6080/vnc.html"
 echo "Run the builder with: docker compose -f docker/docker-compose.yml exec robot-sim bash"
 
 wait "$SIM_PID"

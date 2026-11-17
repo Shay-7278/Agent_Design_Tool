@@ -9,6 +9,7 @@ tested without starting Gazebo.
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -34,7 +35,7 @@ class Placement:
     pose: Pose
 
 
-def _pose(raw: object, index: int) -> Pose:
+def _pickup_pose(raw: object, index: int) -> Pose:
     if not isinstance(raw, dict):
         raise ValueError(f"placement {index} must be an object")
     try:
@@ -48,40 +49,20 @@ def _pose(raw: object, index: int) -> Pose:
 
 
 def load_placements(path: str | Path) -> tuple[Placement, ...]:
-    """Load any user-supplied placement JSON file."""
+    """Only the agreed numeric [x, y, z, yaw] format, metres/radians."""
 
     source = Path(path)
     with source.open("r", encoding="utf-8") as stream:
         document = json.load(stream)
-    if not isinstance(document, dict):
-        raise ValueError("placement JSON must contain an object")
-    # ``placements`` is the preferred name; ``brick_frames`` is accepted for
-    # the existing GH/Rhino export convention.
-    placements = document.get("placements", document.get("brick_frames"))
-    # Native physics-check export: each frame is [origin, x_axis, y_axis] in mm.
-    if placements is None and isinstance(document.get("frames"), list):
-        placements = []
-        for frame in document["frames"]:
-            if not isinstance(frame, list) or len(frame) != 3:
-                raise ValueError("each exported frame must contain origin, x-axis, and y-axis")
-            origin, x_axis, y_axis = frame
-            x = tuple(float(v) for v in x_axis)
-            y = tuple(float(v) for v in y_axis)
-            z = (x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0])
-            trace = x[0] + y[1] + z[2]
-            if trace > 0:
-                s = (trace + 1.0) ** 0.5 * 2
-                q = ((y[2] - z[1]) / s, (z[0] - x[2]) / s, (x[1] - y[0]) / s, 0.25 * s)
-            else:
-                raise ValueError("exported frame rotation is not supported")
-            units = document.get("units", "mm")
-            scale = 0.001 if units == "mm" else 1.0
-            placements.append({"position": [float(v) * scale for v in origin], "orientation": q})
-    if not isinstance(placements, list) or not placements:
-        raise ValueError(
-            'placement JSON requires a non-empty "placements" or "brick_frames" array'
-        )
-    return tuple(Placement(index, _pose(item, index)) for index, item in enumerate(placements))
+    if not isinstance(document, list) or not document:
+        raise ValueError("placement file must be a non-empty array of [x,y,z,yaw] rows")
+    result = []
+    for index, row in enumerate(document):
+        if not isinstance(row, list) or len(row) != 4 or any(isinstance(v, bool) or not isinstance(v, (int, float)) for v in row):
+            raise ValueError(f"placement {index} must contain exactly four numbers [x,y,z,yaw]")
+        x, y, z, yaw = (float(v) for v in row)
+        result.append(Placement(index, Pose((x,y,z), (0,0,math.sin(yaw/2),math.cos(yaw/2)))))
+    return tuple(result)
 
 
 def load_pickup_layout(path: str | Path) -> tuple[Pose, ...]:
@@ -95,7 +76,7 @@ def load_pickup_layout(path: str | Path) -> tuple[Pose, ...]:
     bricks = document.get("pickup_bricks")
     if not isinstance(bricks, list) or not bricks:
         raise ValueError('pickup layout requires a non-empty "pickup_bricks" array')
-    return tuple(_pose(item, index) for index, item in enumerate(bricks))
+    return tuple(_pickup_pose(item, index) for index, item in enumerate(bricks))
 
 
 @dataclass(frozen=True)
@@ -104,23 +85,6 @@ class BrickPlan:
     pickup: Pose
     placement: Pose
     state: BrickState = BrickState.AVAILABLE
-
-
-def pair_pickups_with_placements(
-    pickup_layout: Sequence[Pose], placements: Sequence[Placement]
-) -> tuple[BrickPlan, ...]:
-    if not pickup_layout:
-        raise ValueError("pickup layout must contain at least one supply slot")
-    # Pickup slots are reusable supply locations, not a wall-size limit.  A
-    # later executor may replenish a slot after its brick is consumed.
-    return tuple(
-        BrickPlan(
-            f"assembly_brick_{item.index:03d}",
-            pickup_layout[item.index % len(pickup_layout)],
-            item.pose,
-        )
-        for item in placements
-    )
 
 
 class BrickWorld(Protocol):
@@ -161,8 +125,12 @@ class BrickLifecycle:
         self._states[plan.name] = BrickState.SETTLING
 
     def mark_placed(self, plan: BrickPlan) -> None:
-        self._require(plan.name, BrickState.SETTLING)
+        if self.state(plan) not in (BrickState.RELEASED, BrickState.SETTLING):
+            raise RuntimeError(f'{plan.name} must be released before completing placement')
         self._states[plan.name] = BrickState.PLACED
+
+    def fail(self, plan: BrickPlan) -> None:
+        self._states[plan.name] = BrickState.FAILED
 
     def cleanup(self, plan: BrickPlan) -> None:
         if self._states[plan.name] is BrickState.CLEANED:

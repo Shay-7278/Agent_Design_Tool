@@ -1,0 +1,56 @@
+[
+  {
+    "source": "visual/end_effectors/brickgripper_leftfinger.stl",
+    "output": "visual_leftfinger.stl",
+    "original_triangles": 65376,
+    "triangles": 5000,
+    "bounds_error_mm": 9.856407896791097e-05,
+    "sampled_surface_error_mm": 0.0699743868561898,
+    "pad_error_mm": 4.062499670000496e-09
+  },
+  {
+    "source": "visual/end_effectors/brickgripper_body.stl",
+    "output": "visual_body.stl",
+    "original_triangles": 395294,
+    "triangles": 60000,
+    "bounds_error_mm": 0.0305794361956373,
+    "sampled_surface_error_mm": 0.04947578827083996,
+    "pad_error_mm": 0.0
+  },
+  {
+    "source": "visual/end_effectors/brickgripper_rightfinger.stl",
+    "output": "visual_rightfinger.stl",
+    "original_triangles": 65420,
+    "triangles": 5000,
+    "bounds_error_mm": 9.856407898922726e-05,
+    "sampled_surface_error_mm": 0.03031409664158511,
+    "pad_error_mm": 4.726572910840332e-09
+  },
+  {
+    "source": "collision/end_effectors/collision boundary_body.stl",
+    "output": "collision_body.stl",
+    "original_triangles": 44754,
+    "triangles": 2842,
+    "bounds_error_mm": 2.842170943040401e-14,
+    "sampled_surface_error_mm": 0.1376085405932281,
+    "pad_error_mm": 0.0
+  },
+  {
+    "source": "collision/end_effectors/collision boundary_leftfinger.stl",
+    "output": "collision_leftfinger.stl",
+    "original_triangles": 49340,
+    "triangles": 2000,
+    "bounds_error_mm": 2.0609263252424626e-05,
+    "sampled_surface_error_mm": 0.032209591543327996,
+    "pad_error_mm": 4.062499669999331e-09
+  },
+  {
+    "source": "collision/end_effectors/collision boundary_rightfinger.stl",
+    "output": "collision_rightfinger.stl",
+    "original_triangles": 49336,
+    "triangles": 2000,
+    "bounds_error_mm": 2.0609263273740908e-05,
+    "sampled_surface_error_mm": 0.031173213667051936,
+    "pad_error_mm": 4.726565805413309e-09
+  }
+]

@@ -54,6 +54,12 @@ class MotionFrameworkTests(unittest.TestCase):
             rail_position(self.targets.placement, (0, 0, 0), (0, 1, 0)), 4.0
         )
 
+    def test_gh_home_is_present_at_start_between_pick_place_and_end(self):
+        home = Pose((.5,3.45103,1), IDENTITY)
+        steps = build_pick_place_steps(self.targets,.2,home=home)
+        homes = [i for i,s in enumerate(steps) if s.target == home]
+        self.assertEqual(homes,[0,7,14])
+
     def test_reachability_is_separate_from_motion_generation(self) -> None:
         def below_limit(pose: Pose) -> tuple[bool, str | None]:
             valid = pose.position[0] < 2.0

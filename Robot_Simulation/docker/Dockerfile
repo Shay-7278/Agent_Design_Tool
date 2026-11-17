@@ -38,8 +38,6 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages scipy
 FROM ros_base AS workspace
 WORKDIR /ros2_ws
 COPY src/ /ros2_ws/src/
-COPY scripts/ /ros2_ws/scripts/
-COPY tests/ /ros2_ws/tests/
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     rosdep install --from-paths src --ignore-src -r -y \
       --skip-keys='warehouse_ros_mongo ament_python joint_state_publisher joint_state_publisher_gui' && \
