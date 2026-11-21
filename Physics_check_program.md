@@ -82,6 +82,7 @@ What matters in the clone:
 | `physics_check/pc/` | Solver package: `fit`, `wall`, `l0`, `l0qp`, `cra`, `l1`, `stages`, `loop`, `params` |
 | `physics_check/export_frames_json.py` | Optional component: export brick frames to JSON |
 | `physics_check/physics_check_workflow.md` | The method, step by step |
+| `gui/surface_editor/` | Surface editor GUI: edit the surface and run the check without Rhino (see [section 7](#7-run-without-rhino-the-surface-editor-gui)) |
 
 ## 3. Set up the Python environment
 
@@ -338,6 +339,84 @@ most of them. On the optionA test wall (rbe, `f_t = 0`), no stage needs a held b
 brick 13/0 had to be held at stage 13), and the largest move from the fitted position dropped
 from 31.5 mm to 2.1 mm. Set `end_overrun = 0` and `end_support = False` to get the previous
 layout.
+
+## 7. Run without Rhino: the surface editor GUI
+
+`gui/surface_editor` edits the wall surface and runs the same check without Rhino or
+Grasshopper. It opens the .3dm with `rhino3dm` and shows it in a PyVista window. You reshape
+the surface by dragging its control points. One key cuts the course sections in Python (the same
+steps as `physics_check_gh.py`), runs `physics_check.py` and draws the fitted brick wall,
+coloured by status.
+
+`uv sync` (section 3) already installs `pyvista` and `rhino3dm`; nothing else is needed.
+
+### Start it
+
+From the `gui` folder:
+
+```powershell
+cd <REPO>\gui
+uv run --project .. python -m surface_editor
+```
+
+With no arguments it opens `<REPO>\Reference Surface_1.3dm`; if that file is missing, it opens the
+first `.3dm` found in `<REPO>`. To open a different surface, or show the wall from a particular
+result:
+
+```powershell
+uv run --project .. python -m surface_editor "C:\path\to\surface.3dm"
+uv run --project .. python -m surface_editor "C:\path\to\surface.3dm" -r "C:\path\to\result.json"
+```
+
+The surface must be a single-face Brep. Close Rhino first if it has the file open, or saving
+(`s`) can fail because Rhino locks the file.
+
+### Edit the surface
+
+- **Drag an orange sphere** to move that control point. Only the nearby part of the surface
+  changes.
+- **Sliders** (right side): `scale X`, `scale Y`, `scale Z` scale the whole surface about its
+  centre (0.5–1.5); `soft pull` makes a drag also pull the neighbouring control points, falling
+  off with distance (0 = move only the dragged point).
+
+| Key | Action |
+|---|---|
+| `x` / `y` / `z` | Lock drags to that axis |
+| `g` | Free drag (no axis lock) |
+| `u` | Undo (up to 64 steps) |
+| `b` | Reset all edits back to the loaded surface |
+| `a` | Run the check on the current surface (see below) |
+| `v` | Show / hide the brick wall |
+| `s` | Save: overwrites the .3dm (a one-time backup `<name>.3dm.orig` is written first) |
+| `r` | Reset the camera |
+| `q` | Quit |
+
+You don't need to save before pressing `a`; it uses the surface as it is on screen. Save only to
+keep the edit.
+
+### Run the check (`a`)
+
+1. Press `a`. The status line shows progress. Cutting the sections takes under a second; the
+   solve takes about 20–90 s and the window stays usable meanwhile.
+2. When it finishes, the wall is redrawn on the new surface, coloured by status (`passed`,
+   `moved`, `flagged`, `failed`; tensioned interfaces are marked in red), and the status line
+   shows the brick count and `PASS` / `FAIL`.
+
+Files are written to `<REPO>\results\`: `gui_refit_job.json` and `gui_refit_result.json`
+(overwritten on each run). To read the full report, run the job by hand as in
+[Troubleshooting](#troubleshooting).
+
+**Parameters.** The GUI has no inputs for brick size, density and so on. `a` copies them from the
+result of the wall currently shown (or the newest `*_result.json` in `results\`). With no earlier
+result, it uses the solver defaults from `physics_check/pc/params.py`. To run with other
+parameters, write a result with them first (for example by running a job with your `"params"`
+from the command line, section 3), then open the GUI with `-r` pointing at that result. `a`
+always runs L1 (CRA); the L1 solver follows the `solver` parameter (`rbe` is much faster for
+iterating).
+
+**Limits compared with Grasshopper.** Sections are cut by sampling the surface, so a course end
+can be off by up to about 11 mm from Rhino's exact contour on heavily trimmed courses. Use the
+Grasshopper component for the final check.
 
 ## Troubleshooting
 
