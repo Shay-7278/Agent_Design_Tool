@@ -8,9 +8,9 @@ checks and repairs the wall:
   limit. Bricks that can't be given enough contact anywhere are dropped (up to `max_drop`).
 - **L1 (statics):** a compas_cra solve with course 0 fixed, plus mortar tension
   `sigma_t = M/Z - P/A` against `f_t / SF`. The `solver` input picks the solve:
-  `cra_penalty` (default, the full CRA penalty formulation) or `rbe` (rigid block equilibrium,
-  much faster, but it ignores block kinematics and can pass walls that `cra_penalty` fails;
-  use it for quick iterations and `cra_penalty` for the final check).
+  `rbe` (default, rigid block equilibrium: much faster, but it ignores block kinematics and can
+  pass walls that `cra_penalty` fails) or `cra_penalty` (the full CRA penalty formulation).
+  Use `rbe` for quick iterations and set `solver` to `cra_penalty` for the final check.
 - **Construction stages:** the partial wall (courses 0..K) is solved again after each course
   is laid, with no mortar tension (wet mortar has none). The report lists which bricks a robot
   arm has to hold at each stage and when each can be released. See
@@ -158,7 +158,7 @@ code is 0 on pass and 1 on fail; a fail still writes `result.json`.
    | `min_contact` | float | 0.25 | Min total bed overlap as a fraction of the brick's own bed area (half bricks: brickL/2·brickW) |
    | `min_balance` | float | 10 | Min distance of a brick's centre inside its contact region with the course below, along the course and across the wall [mm]. A brick resting on the end of a single brick fails; one bridging a joint passes |
    | `use_cra` | bool | True | Run L1 (and the stage check); False = fit + L0 only |
-   | `solver` | str | `cra_penalty` | L1 solver: `cra_penalty` or `rbe` (see the top of this file) |
+   | `solver` | str | `rbe` | L1 solver: `rbe` or `cra_penalty` (see the top of this file) |
    | `end_overrun` | float | 1 | Bond layout: an end-fill piece (full brick or half bat) may run past the surface edge by up to this [mm]; 0 = never past the edge |
    | `end_support` | bool | True | Bond layout: an end-fill piece is placed only if it bears on the course below by itself (`min_contact`, `min_balance`); otherwise the fill is cut back from the edge. False = the old fill |
    | `max_iter` | int | 10 | Outer-loop iterations |
@@ -411,8 +411,8 @@ result of the wall currently shown (or the newest `*_result.json` in `results\`)
 result, it uses the solver defaults from `physics_check/pc/params.py`. To run with other
 parameters, write a result with them first (for example by running a job with your `"params"`
 from the command line, section 3), then open the GUI with `-r` pointing at that result. `a`
-always runs L1 (CRA); the L1 solver follows the `solver` parameter (`rbe` is much faster for
-iterating).
+always runs L1; the L1 solver follows the `solver` parameter, which is `rbe` unless that
+result used `cra_penalty`.
 
 **Limits compared with Grasshopper.** Sections are cut by sampling the surface, so a course end
 can be off by up to about 11 mm from Rhino's exact contour on heavily trimmed courses. Use the

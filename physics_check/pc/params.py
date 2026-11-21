@@ -34,7 +34,7 @@ DEFAULTS = {
     "tmax": 1e-5,              # CRA interface flatness tolerance [m]
     "amin": 1e-4,              # CRA minimum interface area [m2]
     "cra_timeout": 300.0,      # time limit per CRA solve [s]; 0 = no limit
-    "solver": "cra_penalty",   # L1 solver: "cra_penalty" (Eq. 14) or "rbe" (Eq. 6, faster)
+    "solver": "rbe",           # L1 solver: "rbe" (Eq. 6, faster) or "cra_penalty" (Eq. 14)
     "qp_trust": 20.0,          # QP L0 repair: starting largest move per round [mm]
                                # (grows up to 4x after good rounds, halves after bad ones)
     "qp_max_iter": 50,         # QP L0 repair: rounds per call

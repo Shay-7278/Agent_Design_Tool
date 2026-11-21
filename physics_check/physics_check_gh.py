@@ -83,11 +83,11 @@ Component inputs (GhPython):
     use_cra:         Boolean - run the CRA (L1) check, default True.  False =
                      fit + L0 only (fast; the result then reports L1 as
                      skipped)
-    solver:          L1 solver, default "cra_penalty".  "rbe" = rigid block
+    solver:          L1 solver, default "rbe".  "rbe" = rigid block
                      equilibrium: a convex QP over the contact forces only,
                      much faster, but it ignores block kinematics and can
                      pass walls that the CRA penalty solve fails - use it for
-                     quick iterations, cra_penalty for the final check
+                     quick iterations, "cra_penalty" for the final check
     (The solver tuning keys in ``pc/params.py`` DEFAULTS - qp_trust,
     qp_max_iter, max_rotation (largest brick rotation in plan from the
     course direction [deg], default 30; 0 = none), qp_smooth (weight that
