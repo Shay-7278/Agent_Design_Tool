@@ -1,0 +1,37 @@
+[INFO] [1794943754.518761810] [execute_one_brick]: Brick sizes: 199 full, 22 half; half-brick source rows: [9, 17, 26, 34, 43, 51, 60, 68, 78, 87, 97, 107, 118, 128, 140, 151, 163, 173, 184, 193, 203, 212]
+[INFO] [1794943754.534580305] [execute_one_brick]: Motion speed scale: 2x; URDF velocity limits remain active; GH waits and gripper timing are unchanged
+[INFO] [1794943754.759332282] [execute_one_brick]: GH motion preflight passed: bricks 221..221 in MT_base; home, rail offset, MoveJ and MoveL included
+TEST FIXTURE: reused verified 220-link static prefix; all robot operations use production executor
+[INFO] [1794943776.640750729] [execute_one_brick]: brick 221/221 AVAILABLE: pickup_brick_220
+[INFO] [1794943785.041079006] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794943800.072779078] [execute_one_brick]: trajectory in progress: 3.95/7.06 sim s; 15 real s; simulation speed=0.263x
+[INFO] [1794943812.080665656] [execute_one_brick]: TCP ARRIVED after 0.096 sim s: 0.009 mm, 0.000 deg
+[INFO] [1794943812.140405654] [execute_one_brick]: executing move_j: (0.445253333333333, 1.850914444444444, 0.27249620379138495)
+[INFO] [1794943827.181138955] [execute_one_brick]: trajectory in progress: 3.00/3.30 sim s; 15 real s; simulation speed=0.200x
+[INFO] [1794943829.142699510] [execute_one_brick]: TCP ARRIVED after 0.144 sim s: 0.009 mm, 0.000 deg
+[INFO] [1794943829.176309806] [execute_one_brick]: executing move_l: (0.445253333333333, 1.850914444444444, 0.07249620379138495)
+[INFO] [1794943844.241072824] [execute_one_brick]: trajectory in progress: 3.19/3.75 sim s; 15 real s; simulation speed=0.213x
+[INFO] [1794943847.513450064] [execute_one_brick]: TCP ARRIVED after 0.174 sim s: 0.002 mm, 0.000 deg
+[INFO] [1794943879.077121834] [execute_one_brick]: pickup_brick_220 ATTACHED; {'state': 'attached', 'joint_entity': 928, 'parent_link': 38, 'child_link': 925, 'simulation_stamp': 130.412, 'verification': 'Gazebo ECM readback', 'notification': 'attached'}
+[INFO] [1794943882.942794907] [execute_one_brick]: executing move_l: (0.445253333333333, 1.850914444444444, 0.27249620379138495)
+[INFO] [1794943898.367295364] [execute_one_brick]: trajectory in progress: 3.85/3.75 sim s; 15 real s; simulation speed=0.257x
+[INFO] [1794943898.964785155] [execute_one_brick]: TCP ARRIVED after 0.123 sim s: 0.001 mm, 0.000 deg
+[INFO] [1794943898.985012860] [execute_one_brick]: pickup_brick_220 TRANSPORTING
+[INFO] [1794943898.987039263] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794943913.103285391] [execute_one_brick]: TCP ARRIVED after 0.104 sim s: 0.013 mm, 0.000 deg
+[INFO] [1794943913.112218037] [execute_one_brick]: executing move_j: (1.064535481470761, 4.717331880855297, 1.853954666)
+[INFO] [1794943928.134826054] [execute_one_brick]: trajectory in progress: 2.50/3.05 sim s; 15 real s; simulation speed=0.167x
+[INFO] [1794943931.376098345] [execute_one_brick]: TCP ARRIVED after 0.117 sim s: 0.006 mm, 0.000 deg
+[INFO] [1794943931.396662162] [execute_one_brick]: executing move_l: (1.064535481470761, 4.717331880855297, 1.653954666)
+[INFO] [1794943946.521588424] [execute_one_brick]: trajectory in progress: 2.85/3.75 sim s; 15 real s; simulation speed=0.190x
+[INFO] [1794943950.786580313] [execute_one_brick]: TCP ARRIVED after 0.101 sim s: 0.001 mm, 0.000 deg
+[INFO] [1794944003.596295507] [execute_one_brick]: trajectory in progress: 1.46/3.00 sim s; 15 real s; simulation speed=0.098x
+[INFO] [1794944012.042000874] [execute_one_brick]: pickup_brick_220 RELEASED and consolidated into static wall; {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 925, 'simulation_stamp': 148.479, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}
+[INFO] [1794944015.539206238] [execute_one_brick]: executing move_l: (1.064535481470761, 4.717331880855297, 1.853954666)
+[INFO] [1794944030.595747848] [execute_one_brick]: trajectory in progress: 3.70/3.75 sim s; 15 real s; simulation speed=0.246x
+[INFO] [1794944031.650805873] [execute_one_brick]: TCP ARRIVED after 0.102 sim s: 0.001 mm, 0.000 deg
+[INFO] [1794944031.731962876] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794944046.858049941] [execute_one_brick]: trajectory in progress: 2.85/3.05 sim s; 15 real s; simulation speed=0.190x
+[INFO] [1794944050.430047675] [execute_one_brick]: TCP ARRIVED after 0.121 sim s: 0.011 mm, 0.000 deg
+[INFO] [1794944050.569746841] [execute_one_brick]: pickup_brick_220 PLACED (command complete); observation={'brick': 'pickup_brick_220', 'state': 'PLACED', 'mode': 'assembly_visualization', 'target_position': (1.064535481470761, 4.717331880855297, 1.653954666), 'target_orientation_xyzw': (0.0, 0.0, -0.40183446483390867, 0.9157123253902648), 'release_verification': {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 925, 'simulation_stamp': 148.479, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}, 'actual_position': (1.0645354818182884, 4.717331880984274, 1.6539537536263176), 'actual_orientation_xyzw': (-4.530322780542207e-09, 4.6936404545247525e-09, -0.4018344648339321, 0.9157123253902545), 'pose_sequence': 6540, 'simulation_stamp': 148.953, 'displacement_m': 9.12373757686117e-07, 'observation_source': 'physical post-release, before static consolidation'}
+[INFO] [1794944050.639736140] [execute_one_brick]: ASSEMBLY COMPLETE: 1 robot-placed bricks; 220 PREFILLED

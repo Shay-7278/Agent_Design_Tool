@@ -1,0 +1,7 @@
+PASS 1000 alternating scene/state requests, one persistent PID 952 seconds 13.066
+PASS create confirmed after discarded reply
+PASS remove+dynamic activation confirmed after discarded replies
+PASS same-ID fresh pose confirmed after discarded reply
+PASS attach exact joint after discarded plugin reply, no duplicate plugin; detach/remove confirmed pickup_brick_900
+PASS attach exact joint after discarded plugin reply, no duplicate plugin; detach/remove confirmed pickup_brick_025
+PASS all mutation fault cases; single helper PID retained; sends= {"create": 3, "remove/blocking": 4, "set_pose": 1, "entity/system/add": 2}

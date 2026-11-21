@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import threading
 import time
-import subprocess
+import copy
+import math
+import xml.etree.ElementTree as ET
+import os
+import tempfile
 from pathlib import Path
-from google.protobuf import text_format
+from functools import wraps
 
-from gz.transport13 import Node
+from gz.transport13 import Node, SubscribeOptions
 from gz.msgs10.boolean_pb2 import Boolean
 from gz.msgs10.empty_pb2 import Empty
 from gz.msgs10.entity_pb2 import Entity
@@ -19,13 +23,38 @@ from gz.msgs10.pose_pb2 import Pose as GazeboPose
 from gz.msgs10.scene_pb2 import Scene
 from gz.msgs10.stringmsg_pb2 import StringMsg
 from gz.msgs10.clock_pb2 import Clock
+from gz.msgs10.geometry_pb2 import Geometry
 from gz.msgs10.serialized_map_pb2 import SerializedStepMap
 
 from .motion import Pose
+from .brick_models import pickup_pose_on_platform
 
 
 class GazeboCommandError(RuntimeError):
     pass
+
+
+class GazeboRequestTimeout(GazeboCommandError):
+    """The request outcome is unknown because its reply was not received."""
+
+
+def bounded_operation(seconds=60.0):
+    """One budget includes mutation submission and every verification read."""
+    def decorate(method):
+        @wraps(method)
+        def bounded(self, *args, **kwargs):
+            previous = getattr(self, '_operation_deadline', None)
+            previous_clock = getattr(self, '_operation_start_clock', None)
+            self._operation_deadline = min(previous or float('inf'), time.monotonic() + seconds)
+            self._operation_start_clock = (previous_clock if previous is not None
+                                           else getattr(self, '_sim_time', None))
+            try:
+                return method(self, *args, **kwargs)
+            finally:
+                self._operation_deadline = previous
+                self._operation_start_clock = previous_clock
+        return bounded
+    return decorate
 
 
 def _component_id(name: str) -> int:
@@ -37,6 +66,10 @@ def _component_id(name: str) -> int:
 
 
 DETACHABLE_JOINT_TYPE = _component_id('gz_sim_components.DetachableJoint')
+STATIC_COMPONENT_TYPE = _component_id('gz_sim_components.Static')
+GEOMETRY_COMPONENT_TYPE = _component_id('gz_sim_components.Geometry')
+COLLISION_COMPONENT_TYPE = _component_id('gz_sim_components.Collision')
+PARENT_ENTITY_COMPONENT_TYPE = _component_id('gz_sim_components.ParentEntity')
 
 
 def detachable_joints(snapshot):
@@ -61,26 +94,61 @@ class GazeboBrickWorld:
         brick_sdf: str | Path,
         parent_model: str = "abb_irb4600_workcell",
         parent_link: str = "LL_link_6",
+        brick_models: dict[str, str | Path] | None = None,
+        static_supply: bool = False,
     ) -> None:
         self.world_name = world_name
         self.brick_sdf = str(Path(brick_sdf).resolve())
+        self.brick_models = dict(brick_models or {})
+        self.static_supply = static_supply
         self.parent_model = parent_model
         self.parent_link = parent_link
         self.node = Node()
         self._poses = {}
         self._pose_sequence = {}
         self._pose_time = {}
+        self._pose_ids = {}
         self._states = {}
         self._notifications = {}
         self._plugins = set()
         self._publishers = {}
         self._link_ids = {}
         self.attachment_checks = {}
+        self.placed = {}
+        self.static_model_name = None
+        self._static_generation = 0
+        self._brick_geometry_cache = {}
         self._sim_time = None
         self._clock_progress_wall = time.monotonic()
         self._condition = threading.Condition()
-        self.node.subscribe(Pose_V, f"/world/{world_name}/pose/info", self._on_poses)
-        self.node.subscribe(Clock, f"/world/{world_name}/clock", self._on_clock)
+        # Static wall links enlarge Pose_V considerably. Bound callback traffic
+        # without changing the physics timestep or the controller update rate.
+        self._pose_options = SubscribeOptions()
+        self._pose_options.msgs_per_sec = 60
+        self._clock_options = SubscribeOptions()
+        self._clock_options.msgs_per_sec = 100
+        self.node.subscribe(Pose_V, f"/world/{world_name}/pose/info", self._on_poses,
+                            self._pose_options)
+        self.node.subscribe(Clock, f"/world/{world_name}/clock", self._on_clock,
+                            self._clock_options)
+
+    def close(self):
+        """Stop native callbacks before Python/ROS interpreter teardown."""
+        client = getattr(self, '_service_client', None)
+        if client is not None:
+            client.close()
+            self._service_client = None
+        node = getattr(self, 'node', None)
+        if node is None:
+            return
+        for topic in node.subscribed_topics():
+            node.unsubscribe(topic)
+        self._publishers.clear()
+        self.node = None
+        del node
+        # Native transport callbacks already in flight must leave Python while
+        # the interpreter is still alive, rather than during finalization.
+        time.sleep(0.25)
 
     def _on_clock(self, message):
         with self._condition:
@@ -98,37 +166,128 @@ class GazeboBrickWorld:
                 self._pose_sequence[p.name] = self._pose_sequence.get(p.name, 0) + 1
                 self._pose_time[p.name] = (message.header.stamp.sec + message.header.stamp.nsec * 1e-9,
                                            time.monotonic())
+                self._pose_ids[p.name] = p.id
             self._condition.notify_all()
 
     def _wait(self, predicate, description, timeout=15.0):
-        deadline = time.monotonic() + timeout
+        deadline = min(time.monotonic() + timeout, getattr(self, '_operation_deadline', None) or float('inf'))
         with self._condition:
             while not predicate():
+                self._check_operation()
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
                     raise GazeboCommandError(f"timed out waiting for {description}")
                 self._condition.wait(min(remaining, 0.2))
+            self._check_operation()
 
     def _request(self, service, request, response_type=Boolean):
+        # Readbacks are idempotent. A short-lived CLI client's reply can be
+        # lost during scene updates; retry a read, never repeat a mutation.
+        read_only = service in ('scene/info', 'state')
+        attempt = 0
+        while True:
+            attempt += 1
+            try:
+                return self._request_once(service, request, response_type)
+            except GazeboRequestTimeout:
+                if not read_only or (getattr(self, '_operation_deadline', None) is None and attempt >= 2):
+                    raise
+                self._check_operation()
+                time.sleep(.02)
+
+    def _request_once(self, service, request, response_type=Boolean):
+        from .persistent_service import PersistentServiceClient, ServiceTimeout, ServiceRejected, ServiceClientError
+        self._check_operation()
+        client = getattr(self, '_service_client', None)
+        if client is not None and not client.healthy:
+            client.close()
+            client = None
+        if client is None:
+            client = self._service_client = PersistentServiceClient()
+        remaining = (getattr(self, '_operation_deadline', None) or time.monotonic() + 10) - time.monotonic()
         try:
-            result = subprocess.run([
-                "gz", "service", "-s", f"/world/{self.world_name}/{service}",
-                "--reqtype", request.DESCRIPTOR.full_name,
-                "--reptype", response_type.DESCRIPTOR.full_name,
-                "--timeout", "10000", "--req", text_format.MessageToString(request),
-            ], capture_output=True, text=True, timeout=15)
-        except subprocess.TimeoutExpired as exc:
-            raise GazeboCommandError(f'Gazebo {service} RPC did not respond within 15 real seconds') from exc
-        reply = response_type()
-        if result.returncode or not result.stdout.strip():
-            raise GazeboCommandError(f"Gazebo {service}: {result.stderr or result.stdout}")
-        text_format.Parse(result.stdout, reply)
+            reply = client.request(f'/world/{self.world_name}/{service}', request, response_type,
+                                   timeout_ms=max(1, min(10000, int(remaining * 1000))))
+        except ServiceTimeout as exc:
+            raise GazeboRequestTimeout(f'Gazebo {service}: {exc}') from exc
+        except ServiceRejected as exc:
+            raise GazeboCommandError(f'Gazebo {service}: {exc}') from exc
+        except ServiceClientError as exc:
+            # Local framing/connection failure can occur after a mutation was
+            # sent. Reconcile state; never infer that it did not execute.
+            raise GazeboRequestTimeout(f'Gazebo {service}: {exc}') from exc
         if response_type is Boolean and not reply.data:
             raise GazeboCommandError(f"Gazebo {service} returned false")
+        self._check_operation()
         return reply
+
+    def _check_operation(self):
+        deadline = getattr(self, '_operation_deadline', None)
+        if deadline is not None and time.monotonic() >= deadline:
+            raise GazeboCommandError('Gazebo operation deadline expired; state remains unconfirmed')
+        initial = getattr(self, '_operation_start_clock', None)
+        current = getattr(self, '_sim_time', None)
+        if initial is not None and current is not None and current < initial - .001:
+            raise GazeboCommandError('Gazebo world/clock reset during operation')
+
+    def _confirm(self, predicate, description, timeout=30.0):
+        deadline = min(time.monotonic() + timeout,
+                       getattr(self, '_operation_deadline', None) or float('inf'))
+        last_error = None
+        while time.monotonic() < deadline:
+            self._check_operation()
+            try:
+                result = predicate()
+                self._check_operation()
+                if result:
+                    return result
+            except GazeboRequestTimeout as exc:
+                last_error = str(exc)
+            time.sleep(.02)
+        raise GazeboCommandError(f'timed out confirming {description}; last readback={last_error}')
+
+    def _send_once(self, service, request):
+        """Never repeat an uncertain mutation; caller must confirm its result."""
+        try:
+            self._request(service, request)
+        except GazeboRequestTimeout as exc:
+            return exc
+        return None
+
+    @bounded_operation()
+    def _remove_confirmed(self, name, entity_id=None):
+        if entity_id is None:
+            entity_id = self.models().get(name)
+        if entity_id is None:
+            return
+        self._send_once('remove/blocking', Entity(id=entity_id, type=Entity.MODEL))
+        self._confirm(lambda: entity_id not in self.models().values(), f'removal of {name} entity {entity_id}')
 
     def models(self):
         return {model.name: model.id for model in self._request("scene/info", Empty(), Scene).model}
+
+    def _static_flag(self, entity_id, snapshot=None):
+        """Return the explicit physics flag, or None when it is unavailable."""
+        if snapshot is None:
+            snapshot = self._request('state', Empty(), SerializedStepMap)
+        if entity_id not in snapshot.state.entities:
+            return None
+        for component in snapshot.state.entities[entity_id].components.values():
+            if component.type == STATIC_COMPONENT_TYPE:
+                value = component.component.strip().lower()
+                if value in (b'1', b'true'):
+                    return True
+                if value in (b'0', b'false'):
+                    return False
+        return None
+
+    def _is_static(self, entity_id):
+        """Read the physics entity flag; Scene's is_static field may be unset."""
+        return self._static_flag(entity_id) is True
+
+    def _create_once(self, request):
+        """Send once; an uncertain reply must be resolved by caller readback."""
+        return self._send_once('create', request)
 
     def _resolve_links(self, name):
         if name not in self._link_ids:
@@ -160,6 +319,7 @@ class GazeboBrickWorld:
         action = 'attach' if attached else 'detach'
         last_error = None
         while True:
+            self._check_operation()
             now = time.monotonic()
             sim_now = self._sim_time
             if sim_now is not None:
@@ -174,6 +334,7 @@ class GazeboBrickWorld:
                 raise GazeboCommandError(f'Gazebo clock unavailable or stopped for {stalled_wall} real seconds during {action} of {name}; last readback={last_error}')
             try:
                 entity_id, stamp = self._joint_readback(name)
+                self._check_operation()
                 if (entity_id is not None) == attached:
                     state = 'attached' if attached else 'detached'
                     self._states[name] = state
@@ -196,6 +357,11 @@ class GazeboBrickWorld:
         return self.observation(name)[0]
 
     def observation(self, name, after_sequence=None):
+        # Consolidated members are fixed, verified model geometry, not a fresh
+        # measurement of an independently simulated brick. Callers label these
+        # records separately from dynamic observations.
+        if name in self.placed:
+            return self.placed[name], self._static_generation, self._sim_time
         self._wait(lambda: name in self._poses
                    and time.monotonic() - self._pose_time[name][1] < 5.0
                    and (after_sequence is None or self._pose_sequence[name] > after_sequence),
@@ -203,27 +369,241 @@ class GazeboBrickWorld:
         with self._condition:
             return self._poses[name], self._pose_sequence[name], self._pose_time[name][0]
 
+    @bounded_operation()
     def spawn(self, name: str, pose: Pose) -> None:
+        if name in self.models():
+            raise GazeboCommandError(f'cannot spawn duplicate brick {name}')
+        model_sdf = str(Path(self.brick_models.get(name, self.brick_sdf)).resolve())
+        if getattr(self, 'static_supply', False):
+            pose = pickup_pose_on_platform(pose, model_sdf)
         x, y, z = pose.position
         qx, qy, qz, qw = pose.orientation_xyzw
-        request = EntityFactory(sdf_filename=self.brick_sdf, name=name, allow_renaming=False)
+        if getattr(self, 'static_supply', False):
+            root = ET.parse(model_sdf).getroot()
+            model = root.find('model')
+            static = model.find('static')
+            if static is None:
+                static = ET.SubElement(model, 'static')
+            static.text = 'true'
+            request = EntityFactory(sdf=ET.tostring(root, encoding='unicode'), name=name, allow_renaming=False)
+        else:
+            request = EntityFactory(sdf_filename=model_sdf, name=name, allow_renaming=False)
         request.pose.position.x, request.pose.position.y, request.pose.position.z = x, y, z
         request.pose.orientation.x, request.pose.orientation.y = qx, qy
         request.pose.orientation.z, request.pose.orientation.w = qz, qw
-        self._request("create", request)
-        self.pose(name)
+        self._create_once(request)
+        self._confirm(lambda: self._supply_readback(name, pose, bool(getattr(self, 'static_supply', False))),
+                      f'new supply body {name}')
 
+    def _supply_readback(self, name, pose, static, old_id=None):
+        scene = self._request('scene/info', Empty(), Scene)
+        model = next((m for m in scene.model if m.name == name and m.id != old_id), None)
+        if model is None or len(model.link) == 0 or self._pose_ids.get(name) != model.id:
+            return False
+        self._verify_supply(model, name, pose, static)
+        return model.id
+
+    @bounded_operation()
+    def activate(self, name: str) -> None:
+        """Replace one fixed supply box with its dynamic full/half model."""
+        if not self.static_supply:
+            return
+        if name in self.placed or self._states.get(name) == 'attached':
+            raise GazeboCommandError(f'cannot activate placed or attached brick {name}')
+        old_id = self.models().get(name)
+        if old_id is None:
+            raise GazeboCommandError(f'cannot activate missing supply brick {name}')
+        pose = self.pose(name)
+        self._remove_confirmed(name, old_id)
+        with self._condition:
+            for cache in (self._poses, self._pose_sequence, self._pose_time, self._pose_ids, self._link_ids):
+                cache.pop(name, None)
+        model_sdf = str(Path(self.brick_models.get(name, self.brick_sdf)).resolve())
+        request = EntityFactory(sdf_filename=model_sdf, name=name, allow_renaming=False)
+        request.pose.position.x, request.pose.position.y, request.pose.position.z = pose.position
+        (request.pose.orientation.x, request.pose.orientation.y,
+         request.pose.orientation.z, request.pose.orientation.w) = pose.orientation_xyzw
+        uncertain = self._create_once(request)
+        new_id = self._confirm(lambda: self._supply_readback(name, pose, False, old_id),
+                               f'dynamic supply replacement {name}')
+        if uncertain is not None:
+            if not hasattr(self, 'creation_checks'):
+                self.creation_checks = {}
+            self.creation_checks[name] = {'outcome': 'confirmed_after_timeout', 'entity_id': new_id,
+                                          'verification': 'new ID, dynamic collision geometry and fresh pose'}
+
+    def _verify_dynamic_supply(self, model, name, expected_pose):
+        """Confirm the actual replacement, including collision size and pose."""
+        return self._verify_supply(model, name, expected_pose, False)
+
+    def _verify_supply(self, model, name, expected_pose, static):
+        if model.id != self._pose_ids.get(name):
+            raise GazeboCommandError(f'{name} has no fresh pose for its new entity ID')
+        if len(model.link) != 1 or model.link[0].name != 'brick_link':
+            raise GazeboCommandError(f'{name} has unexpected supply links')
+        snapshot = self._request('state', Empty(), SerializedStepMap)
+        if self._static_flag(model.id, snapshot) is not static:
+            raise GazeboCommandError(f'{name} is not confirmed {"static" if static else "dynamic"}')
+        link_id = model.link[0].id
+        collisions = []
+        for entity in snapshot.state.entities.values():
+            components = {c.type: c.component for c in entity.components.values()}
+            if (COLLISION_COMPONENT_TYPE not in components or
+                    components.get(PARENT_ENTITY_COMPONENT_TYPE, b'').strip() != str(link_id).encode()):
+                continue
+            geometry = Geometry()
+            try:
+                geometry.ParseFromString(components.get(GEOMETRY_COMPONENT_TYPE, b''))
+            except Exception as exc:
+                raise GazeboCommandError(f'{name} has unreadable collision geometry') from exc
+            if not geometry.HasField('box'):
+                raise GazeboCommandError(f'{name} does not have box collision geometry')
+            collisions.append((geometry.box.size.x, geometry.box.size.y, geometry.box.size.z))
+        expected_size = self._brick_geometry(name)[2]
+        if len(collisions) != 1 or any(abs(a-b) > 1e-9 for a,b in zip(collisions[0], expected_size)):
+            raise GazeboCommandError(f'{name} collision dimensions do not match its selected full/half model')
+        actual = self.pose(name)
+        dot = abs(sum(a*b for a,b in zip(actual.orientation_xyzw, expected_pose.orientation_xyzw)))
+        if math.dist(actual.position, expected_pose.position) > 0.005 or dot < math.cos(math.radians(2)/2):
+            raise GazeboCommandError(f'{name} dynamic replacement does not match its pickup pose')
+
+    @bounded_operation()
     def set_pose(self, name: str, pose: Pose) -> None:
         """Relocate an existing model without changing its collisions or dynamics."""
-        request = GazeboPose(name=name)
+        entity_id = self.models().get(name)
+        if entity_id is None:
+            raise GazeboCommandError(f'cannot move missing model {name}')
+        before = self._pose_sequence.get(name, 0)
+        request = GazeboPose(id=entity_id, name=name)
         request.position.x, request.position.y, request.position.z = pose.position
         (request.orientation.x, request.orientation.y,
          request.orientation.z, request.orientation.w) = pose.orientation_xyzw
-        self._request("set_pose", request)
+        self._send_once("set_pose", request)
+        def positioned():
+            if self._pose_ids.get(name) != entity_id or self._pose_sequence.get(name, 0) <= before:
+                return False
+            actual = self.pose(name)
+            match = abs(sum(a*b for a,b in zip(actual.orientation_xyzw, pose.orientation_xyzw)))
+            return math.dist(actual.position, pose.position) <= .005 and match >= math.cos(math.radians(2)/2)
+        self._confirm(positioned, f'pose update of {name} entity {entity_id}')
 
+    def _brick_geometry(self, name):
+        path = Path(self.brick_models.get(name, self.brick_sdf)).resolve()
+        cache = getattr(self, '_brick_geometry_cache', {})
+        if path in cache:
+            return cache[path]
+        link = ET.parse(path).getroot().find('./model/link')
+        if link is None:
+            raise GazeboCommandError(f'brick model has no link: {path}')
+        size = link.find('./collision/geometry/box/size')
+        if size is None:
+            raise GazeboCommandError(f'brick model must have box collision geometry: {path}')
+        dimensions = tuple(float(value) for value in size.text.split())
+        cache[path] = (path, link, dimensions)
+        self._brick_geometry_cache = cache
+        return cache[path]
+
+    def static_wall_manifest(self):
+        """Export fixed assembly geometry for a separate dynamic assessment."""
+        return [dict(name=name, position=pose.position,
+                     orientation_xyzw=pose.orientation_xyzw,
+                     model_sdf=str(self._brick_geometry(name)[0]),
+                     dimensions_m=self._brick_geometry(name)[2])
+                for name, pose in self.placed.items()]
+
+    def _static_sdf(self, model_name, placements):
+        root = ET.Element('sdf', version='1.9')
+        model = ET.SubElement(root, 'model', name=model_name)
+        ET.SubElement(model, 'static').text = 'true'
+        for name, pose in placements.items():
+            _, source, _ = self._brick_geometry(name)
+            link = ET.SubElement(model, 'link', name=name)
+            x, y, z, w = pose.orientation_xyzw
+            roll = math.atan2(2*(w*x+y*z), 1-2*(x*x+y*y))
+            pitch = math.asin(max(-1., min(1., 2*(w*y-z*x))))
+            yaw = math.atan2(2*(w*z+x*y), 1-2*(y*y+z*z))
+            ET.SubElement(link, 'pose').text = ' '.join(
+                format(value, '.17g') for value in (*pose.position, roll, pitch, yaw))
+            # Keep collision materials and visual colours from the selected
+            # full/half model. Static members need no dynamic mass/inertia.
+            for element in source:
+                if element.tag in ('collision', 'visual'):
+                    link.append(copy.deepcopy(element))
+        return ET.tostring(root, encoding='unicode')
+
+    def consolidate(self, name: str, pose: Pose) -> None:
+        """Replace one released dynamic brick with fixed wall geometry."""
+        self.prefill_static([(name, pose)])
+
+    @bounded_operation(120.0)
+    def prefill_static(self, placements) -> None:
+        """Consolidate members while retaining the previous fixed support model.
+
+        Only explicitly supplied brick entities are removed. The old static
+        model remains until the replacement model is read back successfully.
+        Failure is explicit; it never records a successful placement.
+        """
+        additions = dict(placements)
+        if not additions:
+            return
+        for name in additions:
+            if not name.startswith('pickup_brick_'):
+                raise GazeboCommandError(f'cannot consolidate non-brick entity {name}')
+            if self._states.get(name) == 'attached':
+                raise GazeboCommandError(f'{name} must be detached before consolidation')
+        combined = dict(self.placed)
+        combined.update(additions)
+        # Validate all source models before removing any entity.
+        generation = self._static_generation + 1
+        candidate = f'placed_structure_{generation:04d}'
+        sdf = self._static_sdf(candidate, combined)
+        existing = self.models()
+        if candidate in existing:
+            raise GazeboCommandError(f'{candidate} already exists; use a fresh world')
+        for name in additions:
+            if name in existing:
+                self.delete(name)
+        # Full walls exceed Linux's per-argument size limit when sent as an
+        # inline --req XML string. Keep one persistent file per adapter. The
+        # previous creation has been read back before this path is reused.
+        path = getattr(self, '_static_sdf_path', None)
+        if path is None:
+            path = Path(tempfile.gettempdir()) / f'irb4600_wall_{os.getpid()}_{id(self)}.sdf'
+            self._static_sdf_path = path
+        path.write_text(sdf, encoding='utf-8')
+        self._create_once(EntityFactory(sdf_filename=str(path), name=candidate, allow_renaming=False))
+        def complete_model():
+            scene = self._request('scene/info', Empty(), Scene)
+            actual = next((model for model in scene.model if model.name == candidate), None)
+            # SceneBroadcaster can expose the model before its full link list.
+            # Creation is confirmed only after every expected member appears.
+            if actual is not None and {link.name for link in actual.link} == set(combined):
+                if not self._is_static(actual.id):
+                    raise GazeboCommandError(f'wall replacement {candidate} is not static')
+                return actual
+            return False
+        actual = self._confirm(complete_model, f'complete static wall {candidate}', timeout=60.0)
+        old = self.static_model_name
+        if old is not None:
+            self._remove_confirmed(old)
+        self.placed = combined
+        self.static_model_name = candidate
+        self._static_generation = generation
+        with self._condition:
+            for name in additions:
+                self._poses.pop(name, None)
+                self._pose_sequence.pop(name, None)
+                self._pose_time.pop(name, None)
+                self._pose_ids.pop(name, None)
+                self._link_ids.pop(name, None)
+                self._states[name] = 'consolidated'
+
+    @bounded_operation()
     def attach(self, name: str) -> None:
         topic = f"/assembly/{name}"
-        if name not in self._plugins:
+        if not hasattr(self, '_pending_plugins'):
+            self._pending_plugins = set()
+        if name not in self._plugins and name not in self._pending_plugins:
             def callback(message):
                 with self._condition:
                     self._notifications[name] = message.data
@@ -243,16 +623,23 @@ class GazeboBrickWorld:
                                f"<detach_topic>{topic}/detach</detach_topic>"
                                f"<output_topic>{topic}/state</output_topic>")
             # Loading at grasp time intentionally creates the initial attachment.
-            self._request("entity/system/add", request)
-            self._plugins.add(name)
+            self._pending_plugins.add(name)
+            try:
+                self._send_once("entity/system/add", request)
+            except GazeboCommandError:
+                self._pending_plugins.discard(name)
+                raise
         self._wait_for_joint(name, attached=True)
+        self._plugins.add(name)
+        self._pending_plugins.discard(name)
 
     def detach(self, name: str) -> None:
         if name not in self._plugins:
             raise GazeboCommandError(f"no attachment registered for {name}")
         self._wait_for_joint(name, attached=False)
 
+    @bounded_operation()
     def delete(self, name: str) -> None:
         if self._states.get(name) == "attached":
             self.detach(name)
-        self._request("remove/blocking", Entity(name=name, type=Entity.MODEL))
+        self._remove_confirmed(name)

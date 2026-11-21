@@ -24,12 +24,23 @@ from rosgraph_msgs.msg import Clock
 
 from .brick_lifecycle import BrickLifecycle, BrickPlan, BrickState, load_pickup_layout, load_placements
 from .gz_brick_world import GazeboBrickWorld
+from .brick_models import load_brick_models, pickup_pose_on_platform
 from .irb4600_kinematics import solve_base_target
 from .motion import BrickMotionTargets, MotionKind, Pose, build_pick_place_steps, rail_position
 from .target_motion import brick_frame_from_tcp, flange_target_from_tcp, quaternion_slerp, rpy_to_quaternion, tcp_target_from_brick
 
 ARM_JOINTS = ["joint_LL_ext_1", *[f"joint_LL_{i}" for i in range(1, 7)]]
 GRIPPER_JOINTS = ["LL_schunk_left_finger_joint", "LL_schunk_right_finger_joint"]
+
+
+def _positive_speed_scale(value):
+    try:
+        scale = float(value)
+    except (ValueError, TypeError) as exc:
+        raise argparse.ArgumentTypeError('speed scale must be a finite positive number') from exc
+    if not math.isfinite(scale) or scale <= 0:
+        raise argparse.ArgumentTypeError('speed scale must be a finite positive number')
+    return scale
 
 
 class TrajectoryWatchdog:
@@ -79,22 +90,31 @@ class OneBrickExecutor(Node):
                  count: int | None = 1, placement_frame: str = "MT_base",
                  preflight_only: bool = False,
                  observations: Path = Path('/ros2_ws/outputs/assembly_observations.jsonl'),
-                 start_brick: int = 1) -> None:
+                 start_brick: int = 1, speed_scale: float = 1.0) -> None:
+        self.speed_scale = _positive_speed_scale(speed_scale)
         super().__init__("execute_one_brick")
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
         self.arm = ActionClient(self, FollowJointTrajectory, "/LL_manipulator_controller/follow_joint_trajectory")
         self.gripper = ActionClient(self, FollowJointTrajectory, "/LL_gripper_controller/follow_joint_trajectory")
         self.placements = load_placements(placement_file)
+        self.placement_file = Path(placement_file)
+        self._release_observations = {}
         if not self.placements:
             raise ValueError("placement file is empty")
         self.input_count = len(self.placements)
+        model_dir = Path(get_package_share_directory('abb_irb4600_gazebo')) / 'models'
+        models = load_brick_models(placement_file, model_dir)
+        self.half_rows = tuple(i+1 for i,p in enumerate(models) if p.parent.name == 'brick_half')
         if count is not None:
             self.placements = self.placements[:count]
         if not 1 <= start_brick <= len(self.placements):
             raise ValueError("--start-brick must be within the selected placement rows")
         self.start_index = start_brick - 1
-        self.pickups = load_pickup_layout(pickup_file)
+        # The CAD export has an obsolete centre Z. Both selected full/half
+        # models are 57 mm high; match the platform/model-based spawn rule.
+        self.pickups = tuple(pickup_pose_on_platform(p, model_dir / 'brick/model.sdf')
+                             for p in load_pickup_layout(pickup_file))
         self.placement_frame = placement_frame
         self.preflight_only = preflight_only
         self.observations = observations
@@ -107,7 +127,10 @@ class OneBrickExecutor(Node):
         self.create_subscription(JointState, "/joint_states", self._on_joints, 10)
         self.sim_time = None
         self.create_subscription(Clock, "/clock", self._on_clock, 10)
-        self.world = GazeboBrickWorld("irb4600_workcell", sdf_path)
+        self.world = GazeboBrickWorld(
+            "irb4600_workcell", sdf_path,
+            brick_models={f'pickup_brick_{i:03d}': p for i,p in enumerate(models)
+                          if p.parent.name == 'brick_half'}, static_supply=True)
         tools_path = Path(get_package_share_directory("abb_irb4600_workcell_description")) / "config" / "tools.yaml"
         with tools_path.open(encoding="utf-8") as stream:
             self.tool_cfg = yaml.safe_load(stream)["tools"]["schunk_pgf_100"]
@@ -125,9 +148,16 @@ class OneBrickExecutor(Node):
     def _on_clock(self, message):
         self.sim_time = message.clock.sec + message.clock.nanosec * 1e-9
 
+    def _simulation_time(self):
+        # Gazebo callbacks run independently while blocking entity RPCs execute.
+        # The ROS executor's cached /clock can lag by an entire large prefill;
+        # using it as a new action's start would immediately expire its budget.
+        native = getattr(getattr(self, 'world', None), '_sim_time', None)
+        return native if isinstance(native, (int, float)) else self.sim_time
+
     def _on_trajectory_feedback(self, message):
         self._feedback_wall = time.monotonic()
-        self._feedback_sim = self.sim_time
+        self._feedback_sim = self._simulation_time()
 
     def _cancel_trajectory(self, handle, result_future):
         cancellation = handle.cancel_goal_async()
@@ -141,14 +171,21 @@ class OneBrickExecutor(Node):
 
     def _record_placement(self, name, target):
         # Observation is not a structural acceptance gate or a stability claim.
-        record = {'brick': name, 'state': 'PLACED', 'target_position': target.position,
+        record = {'brick': name, 'state': 'PLACED', 'mode': 'assembly_visualization',
+                  'target_position': target.position,
                   'target_orientation_xyzw': target.orientation_xyzw}
         record['release_verification'] = getattr(self.world, 'attachment_checks', {}).get(name)
+        saved = getattr(self, '_release_observations', {}).pop(name, None)
         try:
-            actual, sequence, stamp = self.world.observation(name)
+            if saved is None:
+                raise RuntimeError('no physical post-release observation captured')
+            if isinstance(saved, str):
+                raise RuntimeError(saved)
+            actual, sequence, stamp = saved
             record.update(actual_position=actual.position, actual_orientation_xyzw=actual.orientation_xyzw,
                           pose_sequence=sequence, simulation_stamp=stamp,
-                          displacement_m=math.dist(actual.position, target.position))
+                          displacement_m=math.dist(actual.position, target.position),
+                          observation_source='physical post-release, before static consolidation')
         except RuntimeError as exc:
             record['observation_error'] = str(exc)
         self.observations.parent.mkdir(parents=True, exist_ok=True)
@@ -156,24 +193,45 @@ class OneBrickExecutor(Node):
             stream.write(json.dumps(record) + '\n')
         self.get_logger().info(f"{name} PLACED (command complete); observation={record}")
 
+    def _capture_release_observation(self, name):
+        if not hasattr(self, '_release_observations'):
+            self._release_observations = {}
+        try:
+            self._release_observations[name] = self.world.observation(name)
+        except (RuntimeError, AttributeError) as exc:
+            self._release_observations[name] = str(exc)
+
+    def _export_assembly_manifest(self):
+        bricks = self.world.static_wall_manifest()
+        selected_count = len(getattr(self, 'placements', bricks))
+        manifest = {'frame': 'workcell_base', 'mode': 'assembly_visualization',
+                    'placement_file': str(getattr(self, 'placement_file', '')),
+                    'placement_frame': self.placement_frame, 'bricks': bricks,
+                    'input_bricks': getattr(self, 'input_count', selected_count),
+                    'selected_bricks': selected_count,
+                    'geometry_complete': len(bricks) == selected_count}
+        path = self.observations.with_name('assembly_manifest.json')
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
+
     def _spin_for(self, seconds):
         if seconds <= 0:
             rclpy.spin_once(self, timeout_sec=0.0)
             return
         deadline = time.monotonic() + 30.0
-        while self.sim_time is None:
+        while self._simulation_time() is None:
             if time.monotonic() > deadline:
                 raise RuntimeError('Gazebo /clock unavailable during GH WaitTime')
             rclpy.spin_once(self, timeout_sec=0.1)
-        start = self.sim_time
+        start = self._simulation_time()
         watchdog = TrajectoryWatchdog(start, time.monotonic(), seconds)
-        while self.sim_time - start < seconds:
+        while self._simulation_time() - start < seconds:
             rclpy.spin_once(self, timeout_sec=0.1)
-            watchdog.check(self.sim_time, time.monotonic())
+            watchdog.check(self._simulation_time(), time.monotonic())
 
     def send(self, client, names, values, seconds=3.0, samples=None):
         clock_deadline = time.monotonic() + 20.0
-        while self.sim_time is None:
+        while self._simulation_time() is None:
             if time.monotonic() > clock_deadline:
                 raise RuntimeError("Gazebo /clock unavailable; trajectory was not sent")
             rclpy.spin_once(self, timeout_sec=0.1)
@@ -188,7 +246,7 @@ class OneBrickExecutor(Node):
         point.time_from_start = Duration(sec=ns//1000000000, nanosec=ns%1000000000)
         goal.trajectory.points = samples or [point]
         self._feedback_wall = time.monotonic()
-        self._feedback_sim = self.sim_time
+        self._feedback_sim = self._simulation_time()
         future = client.send_goal_async(goal, feedback_callback=self._on_trajectory_feedback)
         rclpy.spin_until_future_complete(self, future, timeout_sec=20.0)
         if not future.done():
@@ -198,20 +256,20 @@ class OneBrickExecutor(Node):
         result_future = handle.get_result_async()
         duration = goal.trajectory.points[-1].time_from_start
         start_wall = last_log = time.monotonic()
-        watchdog = TrajectoryWatchdog(self.sim_time, start_wall, duration.sec + duration.nanosec * 1e-9)
+        watchdog = TrajectoryWatchdog(self._simulation_time(), start_wall, duration.sec + duration.nanosec * 1e-9)
         try:
             while rclpy.ok() and not result_future.done():
                 rclpy.spin_once(self, timeout_sec=0.1)
                 if result_future.done():
                     break
                 now = time.monotonic()
-                watchdog.check(self.sim_time, now)
+                watchdog.check(self._simulation_time(), now)
                 # Both clocks must advance enough before declaring feedback lost;
                 # very slow Gazebo alone must not trip a real-time deadline.
-                if now - self._feedback_wall > 15 and self.sim_time - self._feedback_sim > 2:
+                if now - self._feedback_wall > 15 and self._simulation_time() - self._feedback_sim > 2:
                     raise RuntimeError("controller feedback stopped while Gazebo clock continued")
                 if now - last_log >= 15:
-                    elapsed = self.sim_time - watchdog.start_sim
+                    elapsed = self._simulation_time() - watchdog.start_sim
                     self.get_logger().info(
                         f"trajectory in progress: {elapsed:.2f}/{duration.sec + duration.nanosec*1e-9:.2f} sim s; "
                         f"{now-start_wall:.0f} real s; simulation speed={elapsed/max(now-start_wall,0.001):.3f}x")
@@ -226,6 +284,14 @@ class OneBrickExecutor(Node):
             raise RuntimeError(f"trajectory failed: {result.error_string}")
 
     def run(self):
+        if hasattr(self, 'half_rows'):
+            selected = [i for i in self.half_rows if i <= len(self.placements)]
+            self.get_logger().info(
+                f'Brick sizes: {len(self.placements)-len(selected)} full, {len(selected)} half; '
+                f'half-brick source rows: {selected}')
+        self.get_logger().info(
+            f'Motion speed scale: {getattr(self, "speed_scale", 1.0):g}x; '
+            'URDF velocity limits remain active; GH waits and gripper timing are unchanged')
         deadline = time.monotonic() + 40.0
         while not (all(self.tf_buffer.can_transform(a, b, rclpy.time.Time())
                        for a, b in [("LL_base_link", "workcell_base"),
@@ -271,6 +337,7 @@ class OneBrickExecutor(Node):
         self.get_logger().info(f"GH motion preflight passed: bricks {start_index+1}..{len(placements)} in {self.placement_frame}; home, rail offset, MoveJ and MoveL included")
         if self.preflight_only:
             return
+        self._await_startup_batch()
         if start_index:
             self._prefill_placements(placements)
         plans = [BrickPlan(f"pickup_brick_{i:03d}", self.pickups[i % len(self.pickups)], p)
@@ -287,6 +354,7 @@ class OneBrickExecutor(Node):
                     self.world.spawn(f"pickup_brick_{j:03d}", self.pickups[j % len(self.pickups)])
                 self._spin_for(2.0)
             name = f"pickup_brick_{index:03d}"
+            self.world.activate(name)
             pickup = self.world.pose(name)
             slot = self.pickups[index % len(self.pickups)]
             if math.dist(pickup.position[:2], slot.position[:2]) > 0.005:
@@ -315,14 +383,33 @@ class OneBrickExecutor(Node):
                     self.get_logger().info(f"{name} ATTACHED; {getattr(self.world, 'attachment_checks', {}).get(name)}")
                 elif step.kind is MotionKind.GRIPPER_OPEN:
                     self.lifecycle.release(plan)
+                    self._capture_release_observation(name)
+                    self.world.consolidate(name, placement)
+                    self._export_assembly_manifest()
                     self.send(self.gripper, GRIPPER_JOINTS, [0.0, 0.0], 3)
-                    self.get_logger().info(f"{name} RELEASED; {getattr(self.world, 'attachment_checks', {}).get(name)}")
+                    self.get_logger().info(f"{name} RELEASED and consolidated into static wall; {getattr(self.world, 'attachment_checks', {}).get(name)}")
             # PLACED means GH's placement/release instruction completed.
             # Physics observations are recorded separately, never used to rewrite
             # the JSON or stop the task because a structure moves after release.
             self.lifecycle.mark_placed(plan)
             self._record_placement(name, placement)
         self.get_logger().info(f"ASSEMBLY COMPLETE: {len(plans)} robot-placed bricks; {start_index} PREFILLED")
+
+    def _await_startup_batch(self):
+        """Wait for asynchronous startup spawns before validating a fresh scene."""
+        count = min(len(self.pickups), getattr(self, 'input_count', len(self.placements)))
+        expected = {f'pickup_brick_{i:03d}' for i in range(count)}
+        deadline = time.monotonic() + 30.0
+        while True:
+            models = self.world.models()
+            if any(name.startswith('placed_structure_') for name in models):
+                raise RuntimeError('a completed wall already exists; use a fresh world')
+            missing = expected - set(models)
+            if not missing:
+                return
+            if time.monotonic() >= deadline:
+                raise RuntimeError(f'startup pickup batch not ready: {sorted(missing)}; use a fresh world')
+            rclpy.spin_once(self, timeout_sec=0.1)
 
     def _prefill_placements(self, placements):
         """Preplace the skipped prefix in a fresh world; retain absolute IDs/slots."""
@@ -340,22 +427,18 @@ class OneBrickExecutor(Node):
         if any(name.startswith('pickup_brick_') and name not in
                {f'pickup_brick_{i:03d}' for i in range(initial_count)} for name in models):
             raise RuntimeError('later pickup batches already exist; use a fresh world')
-        self.get_logger().warning(
+        self.get_logger().info(
             f'PREFILL: placing bricks 1..{self.start_index} directly, then executing brick {self.start_index+1}; '
-            'full-brick geometry, gravity and collisions remain enabled. Overlapping targets may move.')
-        for index, placement in enumerate(placements[:self.start_index]):
-            name = f'pickup_brick_{index:03d}'
-            if name in models:
-                self.world.set_pose(name, placement)
-            else:
-                self.world.spawn(name, placement)
+            'completed placements are static; the current brick is physically simulated.')
+        self.world.prefill_static([(f'pickup_brick_{i:03d}', pose)
+                                   for i, pose in enumerate(placements[:self.start_index])])
+        self._export_assembly_manifest()
         # A start in a later batch also needs that batch's unused pickup slots.
         batch_start = self.start_index // len(self.pickups) * len(self.pickups)
         for index in range(self.start_index, min(batch_start + len(self.pickups), len(placements))):
             name = f'pickup_brick_{index:03d}'
             if name not in models:
                 self.world.spawn(name, self.pickups[index % len(self.pickups)])
-        self._spin_for(2.0)
         self.observations.parent.mkdir(parents=True, exist_ok=True)
         with self.observations.open('a', encoding='utf-8') as stream:
             for index, placement in enumerate(placements[:self.start_index]):
@@ -363,7 +446,8 @@ class OneBrickExecutor(Node):
                 actual, sequence, stamp = self.world.observation(name)
                 displacement = math.dist(actual.position, placement.position)
                 stream.write(json.dumps({
-                    'brick': name, 'state': 'PREFILLED', 'target_position': placement.position,
+                    'brick': name, 'state': 'PREFILLED', 'mode': 'assembly_visualization',
+                    'observation_source': 'static target geometry', 'target_position': placement.position,
                     'target_orientation_xyzw': placement.orientation_xyzw,
                     'actual_position': actual.position, 'actual_orientation_xyzw': actual.orientation_xyzw,
                     'pose_sequence': sequence, 'simulation_stamp': stamp,
@@ -403,10 +487,11 @@ class OneBrickExecutor(Node):
         end_rail, end_joints = self._solve(target, seed)
         if start_rail is None:
             start_rail = self.last_rail
-        speed = self.profile['move_l_speed_m_s' if kind is MotionKind.MOVE_L else 'move_j_speed_m_s']
+        scale = getattr(self, 'speed_scale', 1.0)
+        speed = self.profile['move_l_speed_m_s' if kind is MotionKind.MOVE_L else 'move_j_speed_m_s'] * scale
         angle = 2 * math.acos(min(1.0, abs(sum(a*b for a,b in zip(start.orientation_xyzw,target.orientation_xyzw)))))
         duration = max(0.5, 1.875*math.dist(start.position,target.position)/speed,
-                       1.875*angle/self.profile['orientation_speed_rad_s'])
+                       1.875*angle/(self.profile['orientation_speed_rad_s'] * scale))
         trajectory = []
         previous = seed
         for i in range(1, 26):
@@ -442,8 +527,10 @@ class OneBrickExecutor(Node):
         """Wait for fresh measured arrival; controller success alone is insufficient."""
         expected = tcp_target_from_brick(target)
         start_wall = last_progress_wall = time.monotonic()
-        start_sim = last_sim = self.sim_time
+        start_sim = last_sim = self._simulation_time()
         inside_since = None
+        first_stamp = last_tf_stamp = last_tf_progress_sim = None
+        feedback_elapsed = 0.0
         samples = []
         last_recorded_stamp = None
         position_error = orientation_error = None
@@ -453,7 +540,7 @@ class OneBrickExecutor(Node):
             while rclpy.ok():
                 rclpy.spin_once(self, timeout_sec=0.05)
                 now = time.monotonic()
-                sim_now = self.sim_time
+                sim_now = self._simulation_time()
                 if sim_now is not None:
                     if start_sim is None:
                         start_sim = sim_now
@@ -473,14 +560,28 @@ class OneBrickExecutor(Node):
                     position_error = math.dist((t.x, t.y, t.z), expected.position)
                     match = abs(sum(a*b for a,b in zip((q.x,q.y,q.z,q.w), expected.orientation_xyzw)))
                     orientation_error = math.degrees(2 * math.acos(min(1.0, match)))
-                    fresh = stamp >= start_sim - 1e-6 and -0.1 <= sim_now - stamp <= 0.25
+                    # TF and native-clock callbacks can have different delivery
+                    # delays after a large scene update. Require new TF samples
+                    # during this wait instead of comparing their absolute ages.
+                    if first_stamp is None:
+                        first_stamp = last_tf_stamp = stamp
+                        last_tf_progress_sim = sim_now
+                    elif stamp > last_tf_stamp + 1e-9:
+                        last_tf_stamp = stamp
+                        last_tf_progress_sim = sim_now
+                        last_progress_wall = now
+                    feedback_elapsed = max(0.0, stamp - first_stamp)
+                    fresh = (stamp > first_stamp + 1e-9
+                             and stamp >= last_tf_stamp - 1e-9
+                             and sim_now - last_tf_progress_sim <= 0.25)
                     status = 'fresh TF' if fresh else 'stale TF'
                     inside = fresh and position_error <= 0.003 and orientation_error <= 2.0
                     if not inside:
                         inside_since = None
                     elif inside_since is None:
                         inside_since = stamp
-                    arrived = inside_since is not None and stamp - inside_since >= 0.1 - 1e-9
+                    arrived = (inside_since is not None
+                               and stamp - inside_since >= 0.1 - 1e-9)
                     if last_recorded_stamp is None or stamp - last_recorded_stamp >= 0.1 - 1e-9 or arrived:
                         samples.append({'elapsed_sim_s': sim_now-start_sim, 'elapsed_real_s': now-start_wall,
                                         'tf_stamp': stamp, 'position_error_m': position_error,
@@ -495,7 +596,7 @@ class OneBrickExecutor(Node):
                 except TransformException as exc:
                     status = f'TF unavailable: {exc}'
                     inside_since = None
-                if sim_now - start_sim >= timeout_sim:
+                if max(sim_now - start_sim, feedback_elapsed) >= timeout_sim:
                     raise RuntimeError(
                         f'tool arrival timed out after {timeout_sim:g} simulation seconds; '
                         f'position_error_m={position_error}, orientation_error_deg={orientation_error}; {status}')
@@ -534,6 +635,8 @@ def main(wall=False) -> None:
     parser.add_argument("--max-bricks", type=int, default=None if wall else 1)
     parser.add_argument("--start-brick", type=int, default=1,
                         help="1-based first row to execute; earlier rows are preplaced in a fresh world")
+    parser.add_argument('--speed-scale', type=_positive_speed_scale, default=1.0,
+                        help='Scale arm/rail motion speeds; actuator limits still apply (default: 1)')
     parser.add_argument('--observations',type=Path,default=Path('/ros2_ws/outputs/assembly_observations.jsonl'))
     args, _ = parser.parse_known_args()
     if args.max_bricks is not None and args.max_bricks < 1:
@@ -542,14 +645,17 @@ def main(wall=False) -> None:
         parser.error("--start-brick must be positive")
     rclpy.init(); node = OneBrickExecutor(Path(args.placement_file), Path(args.pickup_file), Path(args.sdf),
                                        args.max_bricks, args.placement_frame, args.preflight_only, args.observations,
-                                       args.start_brick)
+                                       args.start_brick, args.speed_scale)
     try: node.run()
     except Exception:
         if node.current_plan is not None and hasattr(node,'lifecycle'):
             node.lifecycle.fail(node.current_plan)
             node.get_logger().error(f'{node.current_plan.name} FAILED')
         raise
-    finally: node.destroy_node(); rclpy.shutdown()
+    finally:
+        node.world.close()
+        node.destroy_node()
+        rclpy.shutdown()
 
 
 def wall_main():

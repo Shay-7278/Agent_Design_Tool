@@ -11,6 +11,8 @@ class TrajectoryWaitTests(unittest.TestCase):
     def exercise(self, mode):
         node = OneBrickExecutor.__new__(OneBrickExecutor)
         node.sim_time = 0.0
+        if mode == 'rpc_gap':
+            node.world = SimpleNamespace(_sim_time=50.0)
         clock = {'wall': 0.0, 'done': False, 'callback': None}
         result = Mock()
         result.done.side_effect = lambda: clock['done']
@@ -40,6 +42,13 @@ class TrajectoryWaitTests(unittest.TestCase):
 
         def tick(*args, **kwargs):
             clock['wall'] += 1
+            if mode == 'rpc_gap':
+                node.world._sim_time += .1
+                node.sim_time = node.world._sim_time
+                clock['callback'](None)
+                if node.world._sim_time >= 52.0:
+                    clock['done'] = True
+                return
             if mode != 'stalled':
                 node.sim_time += .05 if mode == 'slow' else 1.0
             if mode != 'lost_feedback':
@@ -52,9 +61,10 @@ class TrajectoryWaitTests(unittest.TestCase):
              patch('abb_irb4600_gazebo.execute_one_brick.rclpy.spin_until_future_complete'), \
              patch('abb_irb4600_gazebo.execute_one_brick.rclpy.ok', return_value=True), \
              patch.object(OneBrickExecutor, 'get_logger', return_value=Mock()):
-            if mode == 'slow':
-                node.send(client, ['joint'], [1.0], seconds=15)
-                self.assertGreater(clock['wall'], 90)
+            if mode in ('slow', 'rpc_gap'):
+                node.send(client, ['joint'], [1.0], seconds=2 if mode == 'rpc_gap' else 15)
+                if mode == 'slow':
+                    self.assertGreater(clock['wall'], 90)
                 handle.cancel_goal_async.assert_not_called()
             else:
                 reason = 'clock stopped' if mode == 'stalled' else 'feedback stopped'
@@ -64,6 +74,22 @@ class TrajectoryWaitTests(unittest.TestCase):
 
     def test_slow_progressing_goal_can_finish_after_90_real_seconds(self):
         self.exercise('slow')
+
+    def test_large_prefill_clock_gap_does_not_cancel_a_new_goal(self):
+        self.exercise('rpc_gap')
+
+    def test_gh_wait_starts_from_current_clock_after_blocking_rpc(self):
+        node = OneBrickExecutor.__new__(OneBrickExecutor)
+        node.sim_time = 0.0
+        node.world = SimpleNamespace(_sim_time=50.0)
+        ticks = []
+        def tick(*args, **kwargs):
+            ticks.append(1)
+            node.world._sim_time += .1
+            node.sim_time = node.world._sim_time
+        with patch('abb_irb4600_gazebo.execute_one_brick.rclpy.spin_once', side_effect=tick):
+            node._spin_for(.5)
+        self.assertGreaterEqual(len(ticks), 5)
 
     def test_stopped_clock_cancels_and_waits_for_acknowledgment(self):
         self.exercise('stalled')

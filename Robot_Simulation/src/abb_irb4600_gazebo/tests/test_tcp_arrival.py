@@ -17,7 +17,7 @@ from abb_irb4600_gazebo.target_motion import (
 
 
 class TcpArrivalTests(unittest.TestCase):
-    def exercise(self, mode, *, timeout=10.0):
+    def exercise(self, mode, *, timeout=10.0, tf_offset=0.0):
         node = OneBrickExecutor.__new__(OneBrickExecutor)
         node.sim_time = 100.0
         clock = {'wall': 0.0, 'ticks': 0}
@@ -47,10 +47,16 @@ class TcpArrivalTests(unittest.TestCase):
                 position_error = .001
             elif mode == 'stale' and elapsed >= .5:
                 position_error = .001
+            elif mode in ('freezes_inside', 'regressed') and elapsed >= 1.0:
+                position_error = .001
             elif mode == 'outside':
                 position_error = .004
             tf = TransformStamped()
-            stamp = 100.0 if mode == 'stale' else node.sim_time
+            stamp = (100.0 if mode == 'stale' else node.sim_time) + tf_offset
+            if mode == 'freezes_inside':
+                stamp = min(node.sim_time, 101.0)
+            elif mode == 'regressed' and elapsed >= 1.0:
+                stamp = 100.2
             ns = round(stamp * 1e9)
             tf.header.stamp.sec, tf.header.stamp.nanosec = divmod(ns, 1000000000)
             t, q = tf.transform.translation, tf.transform.rotation
@@ -100,6 +106,23 @@ class TcpArrivalTests(unittest.TestCase):
         elapsed, _, error = self.exercise('stale')
         self.assertIsInstance(error, RuntimeError)
         self.assertGreaterEqual(elapsed, 10.0)
+
+    def test_advancing_feedback_survives_different_callback_delivery_delays(self):
+        for offset in (-5.0, 5.0):
+            with self.subTest(tf_timestamp_offset=offset):
+                elapsed, _, error = self.exercise('late', tf_offset=offset)
+                self.assertIsNone(error)
+                self.assertGreaterEqual(elapsed, 1.1)
+
+    def test_non_advancing_feedback_is_rejected_even_with_clock_offset(self):
+        _, _, error = self.exercise('stale', tf_offset=5.0)
+        self.assertIsInstance(error, RuntimeError)
+
+    def test_duplicate_or_backward_feedback_cannot_satisfy_arrival_hold(self):
+        for mode in ('freezes_inside', 'regressed'):
+            with self.subTest(mode=mode):
+                _, _, error = self.exercise(mode)
+                self.assertIsInstance(error, RuntimeError)
 
     def test_slow_advancing_clock_can_take_more_than_thirty_real_seconds(self):
         _, clock, error = self.exercise('slow')

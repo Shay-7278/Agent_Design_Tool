@@ -3,24 +3,19 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import time
 from pathlib import Path
 
 from .motion import Pose
 from .brick_lifecycle import load_placements
+from .brick_models import load_brick_models, pickup_pose_on_platform
+from .gz_brick_world import GazeboBrickWorld
 
 
-def _spawn(world: str, name: str, sdf: Path, pose: Pose) -> None:
-    x, y, z = pose.position
-    qx, qy, qz, qw = pose.orientation_xyzw
-    request = (f'sdf_filename: "{sdf}" name: "{name}" pose: {{position: {{x: {x} y: {y} z: {z}}} '
-               f'orientation: {{x: {qx} y: {qy} z: {qz} w: {qw}}}}}')
-    cmd = ["gz", "service", "-s", f"/world/{world}/create", "--reqtype", "gz.msgs.EntityFactory",
-           "--reptype", "gz.msgs.Boolean", "--timeout", "5000", "--req", request]
-    result = subprocess.run(cmd, text=True, capture_output=True)
-    if result.returncode or "data: true" not in result.stdout.lower():
-        raise RuntimeError(f"failed to spawn {name}: {result.stderr or result.stdout}")
+def _spawn(adapter: GazeboBrickWorld, name: str, sdf: Path, pose: Pose) -> None:
+    pose = pickup_pose_on_platform(pose, sdf)
+    adapter.brick_models[name] = sdf
+    adapter.spawn(name, pose)
 
 
 def _pose(item: dict) -> Pose:
@@ -40,10 +35,15 @@ def main() -> None:
     if len(pickup) == 0:
         raise ValueError("pickup layout contains no slots")
     model_dir = Path(args.model_dir)
+    brick_models = load_brick_models(args.placement_file, model_dir)
     count = min(len(pickup), len(load_placements(args.placement_file)))
-    for index, item in enumerate(pickup[:count]):
-        pose = _pose(item)
-        _spawn(args.world, f"pickup_brick_{index:03d}", model_dir / "brick" / "model.sdf", pose)
+    adapter = GazeboBrickWorld(args.world, model_dir / 'brick/model.sdf', static_supply=True)
+    try:
+        for index, item in enumerate(pickup[:count]):
+            pose = _pose(item)
+            _spawn(adapter, f"pickup_brick_{index:03d}", brick_models[index], pose)
+    finally:
+        adapter.close()
     print(f"spawned {count} pickup bricks")
 
 

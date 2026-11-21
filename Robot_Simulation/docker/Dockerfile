@@ -41,7 +41,11 @@ COPY src/ /ros2_ws/src/
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     rosdep install --from-paths src --ignore-src -r -y \
       --skip-keys='warehouse_ros_mongo ament_python joint_state_publisher joint_state_publisher_gui' && \
-    colcon build"
+    colcon build && \
+    cmake -S src/abb_irb4600_gazebo/native -B /tmp/abb_gz_service_client \
+      -DCMAKE_INSTALL_PREFIX=/ros2_ws/install/abb_irb4600_gazebo && \
+    cmake --build /tmp/abb_gz_service_client --parallel 2 && \
+    cmake --install /tmp/abb_gz_service_client"
 
 FROM ros_base AS runtime
 WORKDIR /ros2_ws

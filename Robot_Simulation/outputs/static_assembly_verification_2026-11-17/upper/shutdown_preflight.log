@@ -1,0 +1,3 @@
+[INFO] [1794943415.184200568] [execute_one_brick]: Brick sizes: 1 full, 0 half; half-brick source rows: []
+[INFO] [1794943415.185844446] [execute_one_brick]: Motion speed scale: 1x; URDF velocity limits remain active; GH waits and gripper timing are unchanged
+[INFO] [1794943415.347298986] [execute_one_brick]: GH motion preflight passed: bricks 1..1 in MT_base; home, rail offset, MoveJ and MoveL included

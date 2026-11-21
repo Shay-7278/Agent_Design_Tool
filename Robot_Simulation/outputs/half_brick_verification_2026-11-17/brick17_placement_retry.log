@@ -1,0 +1,35 @@
+[INFO] [1794938160.176655563] [execute_one_brick]: Brick sizes: 15 full, 2 half; half-brick source rows: [9, 17]
+[INFO] [1794938160.178267837] [execute_one_brick]: Motion speed scale: 2x; URDF velocity limits remain active; GH waits and gripper timing are unchanged
+[INFO] [1794938160.244446567] [execute_one_brick]: GH motion preflight passed: bricks 17..17 in MT_base; home, rail offset, MoveJ and MoveL included
+POSE_FEEDBACK_PASS Pose(position=(-0.43448000000000014, 1.8510299999999993, 0.07249922815964271), orientation_xyzw=(-7.03921909507348e-19, -1.573733712461934e-18, -2.574233955269653e-19, 1.0))
+STARTUP_MODEL_SIZES_PASS [9, 17, 26, 34, 43]
+[WARN] [1794938161.282556859] [execute_one_brick]: PREFILL: placing bricks 1..16 directly, then executing brick 17; confirmed full/half model selection, gravity and collisions remain enabled.
+[INFO] [1794938201.458315128] [execute_one_brick]: pickup_brick_000 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.459937250] [execute_one_brick]: pickup_brick_001 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.460901847] [execute_one_brick]: pickup_brick_002 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.468625454] [execute_one_brick]: pickup_brick_003 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.470039372] [execute_one_brick]: pickup_brick_004 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.478065892] [execute_one_brick]: pickup_brick_005 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.479996772] [execute_one_brick]: pickup_brick_006 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.481818784] [execute_one_brick]: pickup_brick_007 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.483335313] [execute_one_brick]: pickup_brick_008 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.484813531] [execute_one_brick]: pickup_brick_009 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.486049403] [execute_one_brick]: pickup_brick_010 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.487803595] [execute_one_brick]: pickup_brick_011 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.489522216] [execute_one_brick]: pickup_brick_012 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.491058652] [execute_one_brick]: pickup_brick_013 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.492660505] [execute_one_brick]: pickup_brick_014 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938201.494603886] [execute_one_brick]: pickup_brick_015 PREFILLED; measured displacement=0.000001 m
+[INFO] [1794938206.869805287] [execute_one_brick]: executing move_l: (1.088507003928848, 4.6765549461984595, 0.456954666)
+[INFO] [1794938221.906536625] [execute_one_brick]: trajectory in progress: 1.12/3.75 sim s; 15 real s; simulation speed=0.074x
+[INFO] [1794938236.911480378] [execute_one_brick]: trajectory in progress: 1.93/3.75 sim s; 30 real s; simulation speed=0.064x
+[INFO] [1794938251.918342748] [execute_one_brick]: trajectory in progress: 2.44/3.75 sim s; 45 real s; simulation speed=0.054x
+[INFO] [1794938266.937734051] [execute_one_brick]: trajectory in progress: 3.09/3.75 sim s; 60 real s; simulation speed=0.051x
+[INFO] [1794938281.946421600] [execute_one_brick]: trajectory in progress: 3.74/3.75 sim s; 75 real s; simulation speed=0.050x
+Traceback (most recent call last):
+  File "<stdin>", line 30, in <module>
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 545, in _move_target
+    self.send(self.arm, ARM_JOINTS, samples[-1].positions, duration, samples=samples)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 244, in send
+    raise RuntimeError(f"trajectory failed: {result.error_string}")
+RuntimeError: trajectory failed: Aborted due to goal_time_tolerance exceeding by 1.002000 seconds

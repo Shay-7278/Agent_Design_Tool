@@ -1,0 +1,245 @@
+[INFO] [1794942168.916925037] [execute_one_brick]: Brick sizes: 199 full, 22 half; half-brick source rows: [9, 17, 26, 34, 43, 51, 60, 68, 78, 87, 97, 107, 118, 128, 140, 151, 163, 173, 184, 193, 203, 212]
+[INFO] [1794942168.921462010] [execute_one_brick]: Motion speed scale: 2x; URDF velocity limits remain active; GH waits and gripper timing are unchanged
+[INFO] [1794942169.081434374] [execute_one_brick]: GH motion preflight passed: bricks 221..221 in MT_base; home, rail offset, MoveJ and MoveL included
+[INFO] [1794942170.559362836] [execute_one_brick]: PREFILL: placing bricks 1..220 directly, then executing brick 221; completed placements are static; the current brick is physically simulated.
+[INFO] [1794942213.687989429] [execute_one_brick]: pickup_brick_000 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942213.735075312] [execute_one_brick]: pickup_brick_001 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942213.790791410] [execute_one_brick]: pickup_brick_002 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942213.814092116] [execute_one_brick]: pickup_brick_003 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942213.858732925] [execute_one_brick]: pickup_brick_004 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942213.891605527] [execute_one_brick]: pickup_brick_005 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942213.902236759] [execute_one_brick]: pickup_brick_006 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942213.920553023] [execute_one_brick]: pickup_brick_007 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942213.923873465] [execute_one_brick]: pickup_brick_008 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942213.976656138] [execute_one_brick]: pickup_brick_009 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.016029571] [execute_one_brick]: pickup_brick_010 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.057734106] [execute_one_brick]: pickup_brick_011 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.092193308] [execute_one_brick]: pickup_brick_012 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.128594046] [execute_one_brick]: pickup_brick_013 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.147286620] [execute_one_brick]: pickup_brick_014 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.170368423] [execute_one_brick]: pickup_brick_015 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.180868257] [execute_one_brick]: pickup_brick_016 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.202146625] [execute_one_brick]: pickup_brick_017 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.209808803] [execute_one_brick]: pickup_brick_018 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.214983883] [execute_one_brick]: pickup_brick_019 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.300014391] [execute_one_brick]: pickup_brick_020 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.322650270] [execute_one_brick]: pickup_brick_021 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.340669283] [execute_one_brick]: pickup_brick_022 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.353245152] [execute_one_brick]: pickup_brick_023 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.381711510] [execute_one_brick]: pickup_brick_024 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.420894605] [execute_one_brick]: pickup_brick_025 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.423798131] [execute_one_brick]: pickup_brick_026 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.455331688] [execute_one_brick]: pickup_brick_027 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.498438144] [execute_one_brick]: pickup_brick_028 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.514801813] [execute_one_brick]: pickup_brick_029 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.552163207] [execute_one_brick]: pickup_brick_030 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.570152332] [execute_one_brick]: pickup_brick_031 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.605698434] [execute_one_brick]: pickup_brick_032 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.618178008] [execute_one_brick]: pickup_brick_033 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.629205676] [execute_one_brick]: pickup_brick_034 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.649860948] [execute_one_brick]: pickup_brick_035 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.696019333] [execute_one_brick]: pickup_brick_036 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.709288912] [execute_one_brick]: pickup_brick_037 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.740253413] [execute_one_brick]: pickup_brick_038 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.776254172] [execute_one_brick]: pickup_brick_039 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.808079236] [execute_one_brick]: pickup_brick_040 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.822886345] [execute_one_brick]: pickup_brick_041 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.825389668] [execute_one_brick]: pickup_brick_042 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.844529285] [execute_one_brick]: pickup_brick_043 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.882880059] [execute_one_brick]: pickup_brick_044 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.935004783] [execute_one_brick]: pickup_brick_045 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.964295075] [execute_one_brick]: pickup_brick_046 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942214.978051194] [execute_one_brick]: pickup_brick_047 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.009993336] [execute_one_brick]: pickup_brick_048 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.043679326] [execute_one_brick]: pickup_brick_049 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.046755080] [execute_one_brick]: pickup_brick_050 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.061782560] [execute_one_brick]: pickup_brick_051 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.074015330] [execute_one_brick]: pickup_brick_052 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.076885211] [execute_one_brick]: pickup_brick_053 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.079707769] [execute_one_brick]: pickup_brick_054 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.082571321] [execute_one_brick]: pickup_brick_055 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.084764258] [execute_one_brick]: pickup_brick_056 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.100377413] [execute_one_brick]: pickup_brick_057 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.103787751] [execute_one_brick]: pickup_brick_058 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.146930634] [execute_one_brick]: pickup_brick_059 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.185885574] [execute_one_brick]: pickup_brick_060 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.199559027] [execute_one_brick]: pickup_brick_061 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.203911491] [execute_one_brick]: pickup_brick_062 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.223993389] [execute_one_brick]: pickup_brick_063 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.254445542] [execute_one_brick]: pickup_brick_064 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.256988872] [execute_one_brick]: pickup_brick_065 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.270466898] [execute_one_brick]: pickup_brick_066 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.276788582] [execute_one_brick]: pickup_brick_067 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.290634475] [execute_one_brick]: pickup_brick_068 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.314781317] [execute_one_brick]: pickup_brick_069 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.333787071] [execute_one_brick]: pickup_brick_070 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.336504355] [execute_one_brick]: pickup_brick_071 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.380120182] [execute_one_brick]: pickup_brick_072 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.411900592] [execute_one_brick]: pickup_brick_073 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.434958288] [execute_one_brick]: pickup_brick_074 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.437755041] [execute_one_brick]: pickup_brick_075 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.452350909] [execute_one_brick]: pickup_brick_076 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.454002588] [execute_one_brick]: pickup_brick_077 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.473019610] [execute_one_brick]: pickup_brick_078 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.476993040] [execute_one_brick]: pickup_brick_079 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.480481579] [execute_one_brick]: pickup_brick_080 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.492620680] [execute_one_brick]: pickup_brick_081 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.495078590] [execute_one_brick]: pickup_brick_082 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.530623011] [execute_one_brick]: pickup_brick_083 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.570585545] [execute_one_brick]: pickup_brick_084 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.596501396] [execute_one_brick]: pickup_brick_085 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.623889590] [execute_one_brick]: pickup_brick_086 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.660819794] [execute_one_brick]: pickup_brick_087 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.693097556] [execute_one_brick]: pickup_brick_088 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.719022367] [execute_one_brick]: pickup_brick_089 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.739009023] [execute_one_brick]: pickup_brick_090 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.748655017] [execute_one_brick]: pickup_brick_091 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.757801185] [execute_one_brick]: pickup_brick_092 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.760247976] [execute_one_brick]: pickup_brick_093 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.768872512] [execute_one_brick]: pickup_brick_094 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.781215498] [execute_one_brick]: pickup_brick_095 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.791595991] [execute_one_brick]: pickup_brick_096 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.821349052] [execute_one_brick]: pickup_brick_097 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.844100463] [execute_one_brick]: pickup_brick_098 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.874875249] [execute_one_brick]: pickup_brick_099 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.877271309] [execute_one_brick]: pickup_brick_100 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.883852387] [execute_one_brick]: pickup_brick_101 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.888225624] [execute_one_brick]: pickup_brick_102 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.905480780] [execute_one_brick]: pickup_brick_103 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.958141076] [execute_one_brick]: pickup_brick_104 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.959651510] [execute_one_brick]: pickup_brick_105 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942215.992062766] [execute_one_brick]: pickup_brick_106 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.040924178] [execute_one_brick]: pickup_brick_107 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.063950565] [execute_one_brick]: pickup_brick_108 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.110845342] [execute_one_brick]: pickup_brick_109 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.113647311] [execute_one_brick]: pickup_brick_110 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.115772709] [execute_one_brick]: pickup_brick_111 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.134764360] [execute_one_brick]: pickup_brick_112 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.165437187] [execute_one_brick]: pickup_brick_113 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.167877920] [execute_one_brick]: pickup_brick_114 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.171989480] [execute_one_brick]: pickup_brick_115 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.174034641] [execute_one_brick]: pickup_brick_116 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.188278013] [execute_one_brick]: pickup_brick_117 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.190264405] [execute_one_brick]: pickup_brick_118 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.207335849] [execute_one_brick]: pickup_brick_119 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.226244647] [execute_one_brick]: pickup_brick_120 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.254995732] [execute_one_brick]: pickup_brick_121 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.275732321] [execute_one_brick]: pickup_brick_122 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.277684717] [execute_one_brick]: pickup_brick_123 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.279783555] [execute_one_brick]: pickup_brick_124 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.325466521] [execute_one_brick]: pickup_brick_125 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.377838807] [execute_one_brick]: pickup_brick_126 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.380450541] [execute_one_brick]: pickup_brick_127 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.399282049] [execute_one_brick]: pickup_brick_128 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.415192482] [execute_one_brick]: pickup_brick_129 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.421124350] [execute_one_brick]: pickup_brick_130 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.434549750] [execute_one_brick]: pickup_brick_131 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.437043580] [execute_one_brick]: pickup_brick_132 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.439175723] [execute_one_brick]: pickup_brick_133 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.452544492] [execute_one_brick]: pickup_brick_134 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.455118067] [execute_one_brick]: pickup_brick_135 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.456494817] [execute_one_brick]: pickup_brick_136 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.458900299] [execute_one_brick]: pickup_brick_137 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.478651667] [execute_one_brick]: pickup_brick_138 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.481242803] [execute_one_brick]: pickup_brick_139 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.505400625] [execute_one_brick]: pickup_brick_140 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.507633990] [execute_one_brick]: pickup_brick_141 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.509797944] [execute_one_brick]: pickup_brick_142 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.511407643] [execute_one_brick]: pickup_brick_143 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.513048404] [execute_one_brick]: pickup_brick_144 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.529422239] [execute_one_brick]: pickup_brick_145 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.531761121] [execute_one_brick]: pickup_brick_146 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.545819163] [execute_one_brick]: pickup_brick_147 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.548650218] [execute_one_brick]: pickup_brick_148 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.562228095] [execute_one_brick]: pickup_brick_149 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.563767474] [execute_one_brick]: pickup_brick_150 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.565512216] [execute_one_brick]: pickup_brick_151 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.583274428] [execute_one_brick]: pickup_brick_152 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.593902033] [execute_one_brick]: pickup_brick_153 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.600343363] [execute_one_brick]: pickup_brick_154 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.603368087] [execute_one_brick]: pickup_brick_155 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.605853699] [execute_one_brick]: pickup_brick_156 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.608110729] [execute_one_brick]: pickup_brick_157 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.610366631] [execute_one_brick]: pickup_brick_158 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.622913281] [execute_one_brick]: pickup_brick_159 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.635623238] [execute_one_brick]: pickup_brick_160 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.639718476] [execute_one_brick]: pickup_brick_161 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.655484950] [execute_one_brick]: pickup_brick_162 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.658611850] [execute_one_brick]: pickup_brick_163 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.660565874] [execute_one_brick]: pickup_brick_164 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.669102936] [execute_one_brick]: pickup_brick_165 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.677952847] [execute_one_brick]: pickup_brick_166 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.679938917] [execute_one_brick]: pickup_brick_167 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.683333338] [execute_one_brick]: pickup_brick_168 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.696319922] [execute_one_brick]: pickup_brick_169 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.698412396] [execute_one_brick]: pickup_brick_170 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.701685894] [execute_one_brick]: pickup_brick_171 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.714852894] [execute_one_brick]: pickup_brick_172 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.720405244] [execute_one_brick]: pickup_brick_173 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.747009035] [execute_one_brick]: pickup_brick_174 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.754509384] [execute_one_brick]: pickup_brick_175 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.759011549] [execute_one_brick]: pickup_brick_176 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.775437425] [execute_one_brick]: pickup_brick_177 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.792543406] [execute_one_brick]: pickup_brick_178 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.794599559] [execute_one_brick]: pickup_brick_179 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.806909693] [execute_one_brick]: pickup_brick_180 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.810004658] [execute_one_brick]: pickup_brick_181 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.812478098] [execute_one_brick]: pickup_brick_182 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.813862455] [execute_one_brick]: pickup_brick_183 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.830032553] [execute_one_brick]: pickup_brick_184 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.843308317] [execute_one_brick]: pickup_brick_185 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.846493424] [execute_one_brick]: pickup_brick_186 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.867028198] [execute_one_brick]: pickup_brick_187 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.870545671] [execute_one_brick]: pickup_brick_188 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.886504030] [execute_one_brick]: pickup_brick_189 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.888238840] [execute_one_brick]: pickup_brick_190 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.904043628] [execute_one_brick]: pickup_brick_191 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.906630469] [execute_one_brick]: pickup_brick_192 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.919894476] [execute_one_brick]: pickup_brick_193 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.923372178] [execute_one_brick]: pickup_brick_194 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.928469341] [execute_one_brick]: pickup_brick_195 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.941769304] [execute_one_brick]: pickup_brick_196 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.944034374] [execute_one_brick]: pickup_brick_197 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.946055065] [execute_one_brick]: pickup_brick_198 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.954120714] [execute_one_brick]: pickup_brick_199 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.963899412] [execute_one_brick]: pickup_brick_200 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.977743682] [execute_one_brick]: pickup_brick_201 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.981826794] [execute_one_brick]: pickup_brick_202 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.995755305] [execute_one_brick]: pickup_brick_203 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942216.999324214] [execute_one_brick]: pickup_brick_204 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.001757246] [execute_one_brick]: pickup_brick_205 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.013033868] [execute_one_brick]: pickup_brick_206 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.016265489] [execute_one_brick]: pickup_brick_207 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.034645239] [execute_one_brick]: pickup_brick_208 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.064487651] [execute_one_brick]: pickup_brick_209 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.073168483] [execute_one_brick]: pickup_brick_210 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.088745347] [execute_one_brick]: pickup_brick_211 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.090996520] [execute_one_brick]: pickup_brick_212 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.109572395] [execute_one_brick]: pickup_brick_213 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.121923247] [execute_one_brick]: pickup_brick_214 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.125262426] [execute_one_brick]: pickup_brick_215 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.127777558] [execute_one_brick]: pickup_brick_216 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.130215639] [execute_one_brick]: pickup_brick_217 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.144196645] [execute_one_brick]: pickup_brick_218 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942217.145981402] [execute_one_brick]: pickup_brick_219 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794942220.789546561] [execute_one_brick]: brick 221/221 AVAILABLE: pickup_brick_220
+[INFO] [1794942227.710268350] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794942242.755075613] [execute_one_brick]: trajectory in progress: 2.81/7.06 sim s; 15 real s; simulation speed=0.187x
+[ERROR] [1794942306.884998399] [execute_one_brick]: pickup_brick_220 FAILED
+Traceback (most recent call last):
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/abb_irb4600_gazebo/execute_wall", line 33, in <module>
+    sys.exit(load_entry_point('abb-irb4600-gazebo==0.1.0', 'console_scripts', 'execute_wall')())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 640, in wall_main
+    main(wall=True)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 630, in main
+    try: node.run()
+         ^^^^^^^^^^
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 364, in run
+    self._move_target(step.target, self.flange_tcp, step.kind)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 601, in _move_target
+    self._wait_for_tcp(target)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 581, in _wait_for_tcp
+    raise RuntimeError(
+RuntimeError: tool arrival timed out after 10 simulation seconds; position_error_m=5.975203506324528e-13, orientation_error_deg=0.0; stale TF
+[ros2run]: Segmentation fault

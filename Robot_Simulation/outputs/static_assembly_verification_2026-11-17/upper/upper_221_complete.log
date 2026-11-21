@@ -1,0 +1,21 @@
+[INFO] [1794943563.435813207] [execute_one_brick]: Brick sizes: 199 full, 22 half; half-brick source rows: [9, 17, 26, 34, 43, 51, 60, 68, 78, 87, 97, 107, 118, 128, 140, 151, 163, 173, 184, 193, 203, 212]
+[INFO] [1794943563.439434364] [execute_one_brick]: Motion speed scale: 2x; URDF velocity limits remain active; GH waits and gripper timing are unchanged
+[INFO] [1794943563.581763860] [execute_one_brick]: GH motion preflight passed: bricks 221..221 in MT_base; home, rail offset, MoveJ and MoveL included
+[INFO] [1794943566.230501745] [execute_one_brick]: PREFILL: placing bricks 1..220 directly, then executing brick 221; completed placements are static; the current brick is physically simulated.
+Traceback (most recent call last):
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/abb_irb4600_gazebo/execute_wall", line 33, in <module>
+    sys.exit(load_entry_point('abb-irb4600-gazebo==0.1.0', 'console_scripts', 'execute_wall')())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 659, in wall_main
+    main(wall=True)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 646, in main
+    try: node.run()
+         ^^^^^^^^^^
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 339, in run
+    self._prefill_placements(placements)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 430, in _prefill_placements
+    self.world.prefill_static([(f'pickup_brick_{i:03d}', pose)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/gz_brick_world.py", line 428, in prefill_static
+    raise GazeboCommandError(f'static wall replacement {candidate} was not confirmed')
+abb_irb4600_gazebo.gz_brick_world.GazeboCommandError: static wall replacement placed_structure_0001 was not confirmed
+[ros2run]: Process exited with failure 1

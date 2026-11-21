@@ -21,9 +21,13 @@ class PrefillWorld:
         self.relocated = []
         self.spawned = []
         self.released = []
+        self.static_names = set()
+        self.events = []
+        self.activated = []
 
     def models(self):
-        return {name: i + 1 for i, name in enumerate(self.poses)}
+        return {name: i + 1 for i, name in enumerate(self.poses)
+                if name not in self.static_names}
 
     def pose(self, name):
         return self.poses[name]
@@ -45,12 +49,35 @@ class PrefillWorld:
 
     def attach(self, name):
         self._states[name] = 'attached'
+        self.events.append(('attach', name))
+
+    def activate(self, name):
+        if name in self.static_names:
+            raise AssertionError(f'cannot activate a completed wall brick: {name}')
+        self.activated.append(name)
+        self.events.append(('activate', name))
 
     def detach(self, name):
         if self._states[name] != 'attached':
             raise AssertionError(f'{name} was not attached')
         self._states[name] = 'detached'
         self.released.append(name)
+        self.events.append(('detach', name))
+
+    def consolidate(self, name, pose):
+        if self._states.get(name) != 'detached':
+            raise AssertionError(f'{name} consolidated before release')
+        self.poses[name] = pose
+        self.static_names.add(name)
+        self._states[name] = 'static'
+        self.events.append(('consolidate', name))
+
+    def prefill_static(self, placements):
+        for name, pose in placements:
+            self.relocated.append(name)
+            self.poses[name] = pose
+            self.static_names.add(name)
+            self.events.append(('prefill', name))
 
 
 class PrefilledStartTests(unittest.TestCase):
@@ -82,12 +109,14 @@ class PrefilledStartTests(unittest.TestCase):
 
         def move(target, *args):
             executed.append(n.current_plan.name)
+            n.world.events.append(('move', n.current_plan.name, target))
             for name, state in n.world._states.items():
                 if state == 'attached':
                     n.world.poses[name] = target
 
         with ExitStack() as stack:
-            for method in ('get_logger', '_spin_for', 'send', '_record_placement'):
+            for method in ('get_logger', '_spin_for', 'send', '_record_placement',
+                           '_export_assembly_manifest'):
                 stack.enter_context(patch.object(OneBrickExecutor, method, return_value=Mock()))
             stack.enter_context(patch.object(OneBrickExecutor, '_solve', return_value=(0, (0,) * 6)))
             stack.enter_context(patch.object(OneBrickExecutor, '_move_target', side_effect=move))
@@ -142,9 +171,9 @@ class PrefilledStartTests(unittest.TestCase):
         self.assertEqual(set(executed), {'pickup_brick_060', 'pickup_brick_061'})
         self.assertEqual(n.world.released, ['pickup_brick_060', 'pickup_brick_061'])
         self.assertEqual(len(n.world.poses), 62)
-        self.assertEqual(len(n.world.relocated), 50)
+        self.assertEqual(len(n.world.relocated), 60)
         self.assertEqual([name for name, _ in n.world.spawned],
-                         [f'pickup_brick_{i:03d}' for i in range(50, 62)])
+                         [f'pickup_brick_{i:03d}' for i in range(60, 62)])
         self.assertEqual(n.world.poses['pickup_brick_059'], n.placements[59].pose)
         self.assertEqual(n.current_plan.pickup, n.pickups[11])
 
@@ -174,6 +203,38 @@ class PrefilledStartTests(unittest.TestCase):
         self.assertEqual(n.world.relocated, [])
         self.assertEqual(n.world.spawned, [])
         self.assertEqual(n.world.released, [])
+
+    def test_startup_readiness_waits_for_last_supply_without_mutating_world(self):
+        with tempfile.TemporaryDirectory() as directory:
+            n = self.executor(directory, start_brick=11, total=221)
+            complete = n.world.models()
+            partial = dict(complete)
+            partial.pop('pickup_brick_049')
+            before = dict(n.world.poses)
+            n.world.models = Mock(side_effect=[partial, partial, complete])
+            with patch('abb_irb4600_gazebo.execute_one_brick.rclpy.spin_once') as spin:
+                n._await_startup_batch()
+            self.assertEqual(n.world.models.call_count, 3)
+            self.assertTrue(spin.called)
+            self.assertEqual(n.world.poses, before)
+            self.assertEqual(n.world.spawned, [])
+            self.assertEqual(n.world.relocated, [])
+            self.assertEqual(n.world.activated, [])
+
+    def test_release_is_consolidated_before_retreat_and_never_carried_again(self):
+        with tempfile.TemporaryDirectory() as directory:
+            n = self.executor(directory, start_brick=1, total=2)
+            self.run_executor(n)
+        for name in ('pickup_brick_000', 'pickup_brick_001'):
+            detach = n.world.events.index(('detach', name))
+            freeze = n.world.events.index(('consolidate', name))
+            self.assertLess(detach, freeze)
+            later_moves = [i for i, event in enumerate(n.world.events)
+                           if event[0] == 'move' and event[1] == name and i > detach]
+            self.assertTrue(later_moves, 'placement has no retreat/home movement')
+            self.assertLess(freeze, min(later_moves))
+            self.assertIn(name, n.world.static_names)
+        self.assertEqual(n.world.activated, n.world.released)
 
 
 if __name__ == '__main__':

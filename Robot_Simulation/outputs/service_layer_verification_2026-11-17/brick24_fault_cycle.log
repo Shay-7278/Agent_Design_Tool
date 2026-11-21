@@ -1,0 +1,28 @@
+[INFO] [1794949579.195376228] [execute_one_brick]: Brick sizes: 22 full, 2 half; half-brick source rows: [9, 17]
+[INFO] [1794949579.197923078] [execute_one_brick]: Motion speed scale: 2x; URDF velocity limits remain active; GH waits and gripper timing are unchanged
+[INFO] [1794949579.278949290] [execute_one_brick]: GH motion preflight passed: bricks 24..24 in MT_base; home, rail offset, MoveJ and MoveL included
+VERIFIED TEST PREFIX:23 placements; discarding every successful mutation reply during physical brick24 cycle
+[INFO] [1794949580.572680367] [execute_one_brick]: brick 24/24 AVAILABLE: pickup_brick_023
+[INFO] [1794949585.477600677] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794949585.480866965] [execute_one_brick]: executing move_j: (0.4475558333333332, 2.5116577777777773, 0.2724999998556126)
+[INFO] [1794949591.411479886] [execute_one_brick]: TCP ARRIVED after 0.104 sim s: 0.032 mm, 0.000 deg
+[INFO] [1794949591.433360062] [execute_one_brick]: executing move_l: (0.4475558333333332, 2.5116577777777773, 0.07249999985561256)
+[INFO] [1794949600.297503462] [execute_one_brick]: TCP ARRIVED after 0.112 sim s: 0.001 mm, 0.000 deg
+[INFO] [1794949610.086693816] [execute_one_brick]: pickup_brick_023 ATTACHED; {'state': 'attached', 'joint_entity': 459, 'parent_link': 38, 'child_link': 456, 'simulation_stamp': 271.986, 'verification': 'Gazebo ECM readback', 'notification': 'attached'}
+[INFO] [1794949612.072745198] [execute_one_brick]: executing move_l: (0.4475558333333332, 2.5116577777777773, 0.2724999998556126)
+[INFO] [1794949620.259178849] [execute_one_brick]: TCP ARRIVED after 0.137 sim s: 0.001 mm, 0.000 deg
+[INFO] [1794949620.276245181] [execute_one_brick]: pickup_brick_023 TRANSPORTING
+[INFO] [1794949620.277883014] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794949625.561782729] [execute_one_brick]: TCP ARRIVED after 0.131 sim s: 0.009 mm, 0.000 deg
+[INFO] [1794949625.594584086] [execute_one_brick]: executing move_j: (0.8708918588389172, 4.828274336490814, 0.713954666)
+[INFO] [1794949632.119071199] [execute_one_brick]: TCP ARRIVED after 0.101 sim s: 0.035 mm, 0.000 deg
+[INFO] [1794949632.125580212] [execute_one_brick]: executing move_l: (0.8708918588389172, 4.828274336490814, 0.5139546660000001)
+[INFO] [1794949640.954136517] [execute_one_brick]: TCP ARRIVED after 0.124 sim s: 0.001 mm, 0.000 deg
+[INFO] [1794949653.965753823] [execute_one_brick]: pickup_brick_023 RELEASED and consolidated into static wall; {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 456, 'simulation_stamp': 287.06, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}
+[INFO] [1794949656.350805530] [execute_one_brick]: executing move_l: (0.8708918588389172, 4.828274336490814, 0.713954666)
+[INFO] [1794949666.458218966] [execute_one_brick]: TCP ARRIVED after 0.151 sim s: 0.000 mm, 0.000 deg
+[INFO] [1794949666.472564652] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794949674.074734540] [execute_one_brick]: TCP ARRIVED after 0.122 sim s: 0.011 mm, 0.000 deg
+[INFO] [1794949674.102239488] [execute_one_brick]: pickup_brick_023 PLACED (command complete); observation={'brick': 'pickup_brick_023', 'state': 'PLACED', 'mode': 'assembly_visualization', 'target_position': (0.8708918588389172, 4.828274336490814, 0.5139546660000001), 'target_orientation_xyzw': (0.0, 0.0, -0.15297281548089509, 0.9882303970855421), 'release_verification': {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 456, 'simulation_stamp': 287.06, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}, 'actual_position': (0.8708918588347069, 4.828274336494965, 0.513954729143922), 'actual_orientation_xyzw': (-6.735766293085595e-13, -1.2160722940624355e-14, -0.15297281548089325, 0.9882303970855423), 'pose_sequence': 3333, 'simulation_stamp': 287.062, 'displacement_m': 6.314392225680741e-08, 'observation_source': 'physical post-release, before static consolidation'}
+[INFO] [1794949674.118629050] [execute_one_brick]: ASSEMBLY COMPLETE: 1 robot-placed bricks; 23 PREFILLED
+FAULT COUNTS {'remove/blocking': 3, 'create': 2, 'entity/system/add': 1}

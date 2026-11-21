@@ -32,6 +32,8 @@ class BatchTests(unittest.TestCase):
         states = {}
         spawned = []
         released = []
+        consolidated = []
+        activated = []
 
         def spawn(name, pose):
             self.assertNotIn(name, poses)
@@ -48,16 +50,25 @@ class BatchTests(unittest.TestCase):
             states[name] = 'detached'
             released.append(name)
 
+        def consolidate(name, pose):
+            self.assertEqual(states[name], 'detached')
+            states[name] = 'static'
+            poses[name] = pose
+            consolidated.append(name)
+
         n.world = SimpleNamespace(pose=lambda name: poses[name], spawn=spawn,
+                                  models=lambda: {name: i + 1 for i, name in enumerate(poses)},
                                   attach=lambda name: states.update({name:'attached'}),
-                                  detach=detach, _states=states)
+                                  detach=detach, consolidate=consolidate,
+                                  activate=lambda name: activated.append(name), _states=states)
         with patch.object(OneBrickExecutor, 'get_logger', return_value=Mock()), \
              patch.object(OneBrickExecutor, '_solve', return_value=(0, (0,)*6)), \
              patch.object(OneBrickExecutor, '_spin_for'), \
              patch.object(OneBrickExecutor, 'send'), \
              patch.object(OneBrickExecutor, '_move_target', side_effect=move), \
              patch.object(OneBrickExecutor, '_plan_motion', return_value=([SimpleNamespace(positions=[0]*7)],.5,(0,)*6)), \
-             patch.object(OneBrickExecutor, '_record_placement'):
+             patch.object(OneBrickExecutor, '_record_placement'), \
+             patch.object(OneBrickExecutor, '_export_assembly_manifest'):
             n.gripper = None
             n.run()
         self.assertEqual(len(released), 221)
@@ -67,6 +78,8 @@ class BatchTests(unittest.TestCase):
             index = int(name.rsplit('_', 1)[1])
             self.assertEqual(released_count, index // 50 * 50)
         self.assertEqual(len(set(released)), 221)
+        self.assertEqual(consolidated, released)
+        self.assertEqual(activated, released)
 
 
 if __name__ == '__main__':

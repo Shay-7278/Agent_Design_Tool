@@ -1,0 +1,3 @@
+PASS LIVE pickup_brick_full one create; new dynamic ID, collision dimensions and fresh pose confirmed
+PASS LIVE pickup_brick_half one create; new dynamic ID, collision dimensions and fresh pose confirmed
+PASS LIVE static consolidation also confirms creation after lost reply

@@ -1,0 +1,9 @@
+{
+  "source": "User-confirmed half-brick rows for the original 221-pose demo, 2026-11-17",
+  "placement_count": 221,
+  "placement_sha256": "5deb8cddc155e6a97ae608e92f89dbfea6a0ad25737cd9acd24314a06cf9335f",
+  "half_rows": [
+    9, 17, 26, 34, 43, 51, 60, 68, 78, 87, 97,
+    107, 118, 128, 140, 151, 163, 173, 184, 193, 203, 212
+  ]
+}

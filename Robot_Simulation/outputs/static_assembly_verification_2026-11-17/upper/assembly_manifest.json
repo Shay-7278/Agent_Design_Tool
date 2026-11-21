@@ -1,0 +1,4431 @@
+{
+  "frame": "workcell_base",
+  "mode": "assembly_visualization",
+  "placement_file": "/ros2_ws/inputs/brick_frames_numeric.json",
+  "placement_frame": "MT_base",
+  "bricks": [
+    {
+      "name": "pickup_brick_000",
+      "position": [
+        -0.34466117093611004,
+        4.608863163438927,
+        0.399954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.37553458627632413,
+        0.9268083806862506
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_001",
+      "position": [
+        -0.15329965537439327,
+        4.516937159325225,
+        0.399954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.08410089543085576,
+        0.9964572441343023
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_002",
+      "position": [
+        0.0706392399064022,
+        4.532468264845528,
+        0.399954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.1400950383289241,
+        0.9901380611993548
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_003",
+      "position": [
+        0.2719745291676021,
+        4.633502477136375,
+        0.399954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.29128518325172054,
+        0.9566362642185439
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_004",
+      "position": [
+        0.4561449078132578,
+        4.7649489319757485,
+        0.399954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.2777474336329802,
+        0.9606541329272952
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_005",
+      "position": [
+        0.663735901941787,
+        4.850154336780699,
+        0.399954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.07252948967470707,
+        0.9973662682924095
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_006",
+      "position": [
+        0.8869601946901873,
+        4.828014044167417,
+        0.399954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.16195648267145019,
+        0.9867979011533681
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_007",
+      "position": [
+        1.0677666684952831,
+        4.714750966047781,
+        0.399954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4098535042339519,
+        0.9121513608317152
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_008",
+      "position": [
+        -0.3689624387645589,
+        4.644172205967361,
+        0.456954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.45242450356113,
+        0.8918027072046065
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_009",
+      "position": [
+        -0.24276996946765717,
+        4.540242844544112,
+        0.456954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.2205834195517621,
+        0.9753681125702498
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_010",
+      "position": [
+        -0.027898479363015483,
+        4.50511352600419,
+        0.456954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.03932175471360632,
+        0.9992266007299061
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_011",
+      "position": [
+        0.1815923871554872,
+        4.5678766036587835,
+        0.456954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.23753140468662154,
+        0.9713798596777681
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_012",
+      "position": [
+        0.3621966056510475,
+        4.690609625812682,
+        0.456954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.31249902969803006,
+        0.9499180788035302
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_013",
+      "position": [
+        0.5452320563438953,
+        4.809983719848533,
+        0.456954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.2120954788681558,
+        0.9772489487554784
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_014",
+      "position": [
+        0.7597509849293675,
+        4.850455445841551,
+        0.456954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.031161195304310593,
+        0.9995143720363437
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_015",
+      "position": [
+        0.9686438258741306,
+        4.787754556981497,
+        0.456954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.26400794474333644,
+        0.9645205052835317
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_016",
+      "position": [
+        1.088507003928848,
+        4.6765549461984595,
+        0.456954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4773941369876793,
+        0.878689272706677
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_017",
+      "position": [
+        -0.33266826228732416,
+        4.607139089691844,
+        0.5139546660000001
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4003037955521677,
+        0.9163824917939716
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_018",
+      "position": [
+        -0.14570620389570765,
+        4.504192745283193,
+        0.5139546660000001
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.1071199844307925,
+        0.9942461007897123
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_019",
+      "position": [
+        0.07453791971909562,
+        4.513536836864734,
+        0.5139546660000001
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.13531486139050547,
+        0.9908026485061838
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_020",
+      "position": [
+        0.2722893007997873,
+        4.614190307911603,
+        0.5139546660000001
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.2991349135358239,
+        0.9542108275972953
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_021",
+      "position": [
+        0.4502320080865905,
+        4.748164989208392,
+        0.5139546660000001
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.29501514717326593,
+        0.9554925760770391
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_022",
+      "position": [
+        0.6507791461603794,
+        4.841964286187781,
+        0.5139546660000001
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.09725549860056569,
+        0.9952594475773417
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_023",
+      "position": [
+        0.8708918588389172,
+        4.828274336490814,
+        0.5139546660000001
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.15297281548089509,
+        0.9882303970855421
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_024",
+      "position": [
+        1.0508052236683423,
+        4.715927063600935,
+        0.5139546660000001
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.416196712772747,
+        0.909274598939814
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_025",
+      "position": [
+        -0.3554321836598354,
+        4.642873295257993,
+        0.570954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.46912800374271546,
+        0.8831301807233035
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_026",
+      "position": [
+        -0.2355190250802478,
+        4.53259944072695,
+        0.570954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.2510422528072958,
+        0.9679761295122096
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_027",
+      "position": [
+        -0.024638888726757124,
+        4.485646336158532,
+        0.570954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.01962113506479813,
+        0.9998074869987567
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_028",
+      "position": [
+        0.18399446138798603,
+        4.544840069491058,
+        0.570954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.2416225027194734,
+        0.9703703242471804
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_029",
+      "position": [
+        0.36014438979216723,
+        4.670615232328616,
+        0.570954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.3285126137642641,
+        0.9444995831644245
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_030",
+      "position": [
+        0.53582542234961,
+        4.797070112301217,
+        0.570954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.24051648883064242,
+        0.9706450528388735
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_031",
+      "position": [
+        0.7460028695836192,
+        4.849174141028186,
+        0.570954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.011580266550072955,
+        0.9999329464652263
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_032",
+      "position": [
+        0.9542742792030097,
+        4.790671942828084,
+        0.570954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.2650689535765305,
+        0.9642294591277758
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_033",
+      "position": [
+        1.0725338474098696,
+        4.677446065106695,
+        0.570954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.48730585807385407,
+        0.8732313557625521
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_034",
+      "position": [
+        -0.32217082583386003,
+        4.6047324625813335,
+        0.6279546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4221410204018031,
+        0.9065301753908275
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_035",
+      "position": [
+        -0.14324737307625335,
+        4.488045938818902,
+        0.6279546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.1468263620738388,
+        0.9891622816303511
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_036",
+      "position": [
+        0.07734265322719391,
+        4.484078942004476,
+        0.6279546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.122890713674385,
+        0.9924202096353139
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_037",
+      "position": [
+        0.27410681575681406,
+        4.587226653654009,
+        0.6279546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.31645831421668863,
+        0.9486064175215828
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_038",
+      "position": [
+        0.4456639666695492,
+        4.7303712802901146,
+        0.6279546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.32510554380763573,
+        0.9456777386538934
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_039",
+      "position": [
+        0.6394358110885316,
+        4.839043776885538,
+        0.6279546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.12986726780733585,
+        0.9915313876788056
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_040",
+      "position": [
+        0.8598770000962401,
+        4.8331439470437605,
+        0.6279546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.15113007249732546,
+        0.9885138851766085
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_041",
+      "position": [
+        1.0383728666130858,
+        4.717118152066827,
+        0.6279546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4295057371908691,
+        0.9030641293508054
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_042",
+      "position": [
+        -0.34483349026483656,
+        4.641741298485449,
+        0.684954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4844684136962915,
+        0.8748087540317592
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_043",
+      "position": [
+        -0.23406101738935992,
+        4.524144560073069,
+        0.684954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.30147662677028725,
+        0.9534735672850134
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_044",
+      "position": [
+        -0.026262129282602742,
+        4.452164062551081,
+        0.684954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.025979357964527102,
+        0.9996624795198382
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_045",
+      "position": [
+        0.18757189894800885,
+        4.504664963893971,
+        0.684954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.25249981432561575,
+        0.9675969428256425
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_046",
+      "position": [
+        0.36044374018179415,
+        4.642835189442085,
+        0.684954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.36211793924296726,
+        0.9321322857183023
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_047",
+      "position": [
+        0.5282537438023298,
+        4.786957950773164,
+        0.684954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.2878226798747252,
+        0.9576837186408316
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_048",
+      "position": [
+        0.7366799697255666,
+        4.856927620190713,
+        0.684954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.006356715789858271,
+        0.9999797958780802
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_049",
+      "position": [
+        0.9477524886007209,
+        4.795593989891027,
+        0.684954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.2837603061167157,
+        0.9588952438470784
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_050",
+      "position": [
+        1.0608145792720667,
+        4.677687591563076,
+        0.684954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5017676684313699,
+        0.8650024317404819
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_051",
+      "position": [
+        -0.3151719218591279,
+        4.602504146021461,
+        0.741954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4508013161421521,
+        0.8926243181565824
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_052",
+      "position": [
+        -0.14881556069987167,
+        4.462942071070368,
+        0.741954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.22230841326749007,
+        0.9749763942734669
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_053",
+      "position": [
+        0.07683848533036253,
+        4.434357959722783,
+        0.741954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.10282596511768535,
+        0.9946993620675629
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_054",
+      "position": [
+        0.2798621364920042,
+        4.542658641854254,
+        0.741954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.3489028971258762,
+        0.9371588810746928
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_055",
+      "position": [
+        0.44323313010021126,
+        4.707928948092653,
+        0.741954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.3778662812425675,
+        0.9258601803187742
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_056",
+      "position": [
+        0.6288367941429638,
+        4.845038052418357,
+        0.741954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.18137156872531315,
+        0.9834146399449822
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_057",
+      "position": [
+        0.8563327525376057,
+        4.846151882079809,
+        0.741954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.16656436171057679,
+        0.9860305844181245
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_058",
+      "position": [
+        1.0301280755296298,
+        4.718727017895212,
+        0.741954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4510540418071674,
+        0.8924966394163163
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_059",
+      "position": [
+        -0.3370183392501789,
+        4.640596328865051,
+        0.798954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.49956210634916015,
+        0.8662780742348213
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_060",
+      "position": [
+        -0.2395359030763009,
+        4.5154696482794385,
+        0.798954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.37452787070117577,
+        0.927215656720724
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_061",
+      "position": [
+        -0.037068494285355524,
+        4.404444217589767,
+        0.798954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.06848518568930238,
+        0.99765213343184
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_062",
+      "position": [
+        0.1910987772801056,
+        4.45002925404016,
+        0.798954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.23446327956023746,
+        0.9721249768100076
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_063",
+      "position": [
+        0.3672264891565229,
+        4.604078037900698,
+        0.798954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.41651862223161934,
+        0.909127184355563
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_064",
+      "position": [
+        0.5240608798640745,
+        4.779788440101691,
+        0.798954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.35948980595508956,
+        0.9331490124381915
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_065",
+      "position": [
+        0.732268050515597,
+        4.879599056888913,
+        0.798954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.02250836562994396,
+        0.9997466546464003
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_066",
+      "position": [
+        0.9501162273419248,
+        4.802987256395093,
+        0.798954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.3292088181743417,
+        0.9442571440218248
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_067",
+      "position": [
+        1.0529455567096162,
+        4.677696009624971,
+        0.798954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5198148534019166,
+        0.8542789463534403
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_068",
+      "position": [
+        -0.31184029995957674,
+        4.599250995464991,
+        0.8559546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4851598208419255,
+        0.8744254961062324
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_069",
+      "position": [
+        -0.177722973941426,
+        4.440104562795089,
+        0.8559546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.33498617656240876,
+        0.9422230423376934
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_070",
+      "position": [
+        0.02803047391175406,
+        4.375562138040539,
+        0.8559546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.031832685075857486,
+        0.9994932116632215
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_071",
+      "position": [
+        0.2297369016037063,
+        4.441505009138935,
+        0.8559546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.2692726085067108,
+        0.9630639969950033
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_072",
+      "position": [
+        0.37933478555883804,
+        4.587269035515957,
+        0.8559546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.4458609802406637,
+        0.8951022211450682
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_073",
+      "position": [
+        0.49946272064938646,
+        4.748657987382413,
+        0.8559546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.42232726227274325,
+        0.9064434254498234
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_074",
+      "position": [
+        0.6600442510819593,
+        4.883340742117121,
+        0.8559546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.18255391690196726,
+        0.9831958438804294
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_075",
+      "position": [
+        0.873063788407576,
+        4.866220821788105,
+        0.8559546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.23001399974932232,
+        0.9731873200567909
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_076",
+      "position": [
+        1.0273303831579883,
+        4.720358182676636,
+        0.8559546659999999
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4831677582493482,
+        0.8755277936126868
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_077",
+      "position": [
+        -0.33265963842123036,
+        4.640982358361734,
+        0.912954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5169523224592393,
+        0.8560141916487125
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_078",
+      "position": [
+        -0.24877721562123012,
+        4.508170825194764,
+        0.912954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.44704198811627593,
+        0.8945129741155505
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_079",
+      "position": [
+        -0.08798771974732944,
+        4.365754527857371,
+        0.912954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.16557003377651214,
+        0.9861980348364342
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_080",
+      "position": [
+        0.128649612776089,
+        4.372123857372504,
+        0.912954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.13928970101754848,
+        0.9902516746718695
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_081",
+      "position": [
+        0.3194966626451756,
+        4.478712030224409,
+        0.912954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.3714892436500581,
+        0.9284372578975425
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_082",
+      "position": [
+        0.44598375892172526,
+        4.658247833085987,
+        0.912954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.47899931023598746,
+        0.8778152771474466
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_083",
+      "position": [
+        0.576476784554359,
+        4.836357851910334,
+        0.912954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.3796323575767982,
+        0.9251374346985869
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_084",
+      "position": [
+        0.7707568991906601,
+        4.918628136113807,
+        0.912954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.050001215536677475,
+        0.9987491569182197
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_085",
+      "position": [
+        0.9591337089151193,
+        4.811579398954316,
+        0.912954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.39561993825593994,
+        0.9184143206932077
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_086",
+      "position": [
+        1.0480708543264268,
+        4.678945404186158,
+        0.912954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5375190675430548,
+        0.8432515947376827
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_087",
+      "position": [
+        -0.3121536585234127,
+        4.598409499959559,
+        0.969954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.514884359210881,
+        0.8572596436552933
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_088",
+      "position": [
+        -0.1929484753776245,
+        4.411395452423516,
+        0.969954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4190853503987473,
+        0.9079468426516826
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_089",
+      "position": [
+        0.010286482319156187,
+        4.325091848237624,
+        0.969954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.010957910435398161,
+        0.999939960297062
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_090",
+      "position": [
+        0.23584511323053348,
+        4.3876955464589935,
+        0.969954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.24768490724719608,
+        0.9688406405193518
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_091",
+      "position": [
+        0.3999689792006078,
+        4.548988656682536,
+        0.969954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.4921944845692599,
+        0.8704852608514406
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_092",
+      "position": [
+        0.5156787054917344,
+        4.7527822059098925,
+        0.969954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.48110132084759527,
+        0.8766649982055285
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_093",
+      "position": [
+        0.6732701687734017,
+        4.925170712910256,
+        0.969954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.2140610975003982,
+        0.9768202734059757
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_094",
+      "position": [
+        0.8900215447337809,
+        4.8917273357274516,
+        0.969954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.3078949847854281,
+        0.9514203478715288
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_095",
+      "position": [
+        1.028656942356262,
+        4.71990526782801,
+        0.969954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5491462366148909,
+        0.8357262774447757
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_096",
+      "position": [
+        -0.3299381262985305,
+        4.6380283450915565,
+        1.026954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5282143131104482,
+        0.8491110878002109
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_097",
+      "position": [
+        -0.25659118022564076,
+        4.502047548960612,
+        1.026954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4951172285688436,
+        0.8688261793789984
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_098",
+      "position": [
+        -0.13780531556524744,
+        4.332893650861303,
+        1.026954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.3102535566141884,
+        0.9506538437350615
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_099",
+      "position": [
+        0.06751129208935569,
+        4.3075957450393565,
+        1.026954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.0638804389383154,
+        0.9979575589778596
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_100",
+      "position": [
+        0.26572448733626497,
+        4.376699139153344,
+        1.026954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.26149350293512913,
+        0.9652052361662341
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_101",
+      "position": [
+        0.40912024623944165,
+        4.533120715874371,
+        1.026954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.5147886273110097,
+        0.857317134548964
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_102",
+      "position": [
+        0.500676389828427,
+        4.715578469036436,
+        1.026954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.5137600578673046,
+        0.8579339152523251
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_103",
+      "position": [
+        0.6132591608988474,
+        4.892028629486436,
+        1.026954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.387312966863228,
+        0.9219482988213623
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_104",
+      "position": [
+        0.8092988722925953,
+        4.953334557649531,
+        1.026954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.16971248418513246,
+        0.985493618808215
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_105",
+      "position": [
+        0.9697524046775057,
+        4.81693321735069,
+        1.026954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4516145542718355,
+        0.8922131440243701
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_106",
+      "position": [
+        1.0476161801561712,
+        4.6788925438917905,
+        1.026954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5650645559282852,
+        0.8250466942140728
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_107",
+      "position": [
+        -0.3129581737377417,
+        4.597933973094631,
+        1.083954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5301074727477431,
+        0.8479304613805314
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_108",
+      "position": [
+        -0.2120447254715565,
+        4.408943798322401,
+        1.083954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.494873524609052,
+        0.8689650134735081
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_109",
+      "position": [
+        -0.05028567337225709,
+        4.277805535735816,
+        1.083954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.06850284966207565,
+        0.997650920707326
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_110",
+      "position": [
+        0.17115593442871058,
+        4.305121703157147,
+        1.083954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.16377179941500333,
+        0.9864982502348253
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_111",
+      "position": [
+        0.36231493828203987,
+        4.416903605702643,
+        1.083954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.41626261846730456,
+        0.9092444294394898
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_112",
+      "position": [
+        0.4612937134100501,
+        4.6159369978956475,
+        1.083954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.535487505145215,
+        0.8445431497758734
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_113",
+      "position": [
+        0.5624955381746783,
+        4.814341761776698,
+        1.083954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.48992336165949346,
+        0.8717655072898108
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_114",
+      "position": [
+        0.7130217668635059,
+        4.9692959116432185,
+        1.083954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.14863218743991305,
+        0.9888925486911238
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_115",
+      "position": [
+        0.9082021549351065,
+        4.899749119498342,
+        1.083954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.3761498554236413,
+        0.9265588412317772
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_116",
+      "position": [
+        1.0272374817901884,
+        4.723600398975308,
+        1.083954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.534490233299504,
+        0.8451746508902416
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_117",
+      "position": [
+        -0.3334944425186751,
+        4.641286029875008,
+        1.1409546659999998
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5350293537684915,
+        0.8448334691559459
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_118",
+      "position": [
+        -0.26388941594607795,
+        4.500043813214395,
+        1.1409546659999998
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5179903375320953,
+        0.8553864683424599
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_119",
+      "position": [
+        -0.15062189470669562,
+        4.302272834550156,
+        1.1409546659999998
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.37740795151386025,
+        0.9260471036260044
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_120",
+      "position": [
+        0.06094323387738054,
+        4.256468937134958,
+        1.1409546659999998
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.05434078722892359,
+        0.9985224478414799
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_121",
+      "position": [
+        0.27693426413176003,
+        4.325977067412379,
+        1.1409546659999998
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.25319329561187276,
+        0.9674157095360809
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_122",
+      "position": [
+        0.4157203905140052,
+        4.497388062462762,
+        1.1409546659999998
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.546461522586263,
+        0.8374842113930884
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_123",
+      "position": [
+        0.5090664368323641,
+        4.706120830029812,
+        1.1409546659999998
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.5342855376929813,
+        0.8453040661277584
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_124",
+      "position": [
+        0.620989791261265,
+        4.905082223133741,
+        1.1409546659999998
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.4271928298638427,
+        0.9041605422229627
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_125",
+      "position": [
+        0.8170720886353802,
+        4.978923493110894,
+        1.1409546659999998
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.171209803298122,
+        0.9852345930054519
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_126",
+      "position": [
+        0.977607612332533,
+        4.820658598882119,
+        1.1409546659999998
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.47960780069205405,
+        0.877482967079892
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_127",
+      "position": [
+        1.048348672674501,
+        4.68024615523832,
+        1.1409546659999998
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.563813453751562,
+        0.8259021669475963
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_128",
+      "position": [
+        -0.31470091168484005,
+        4.596855230342035,
+        1.197954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5321924277139871,
+        0.846623422711593
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_129",
+      "position": [
+        -0.22144397207298072,
+        4.4139819874927335,
+        1.197954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5076711902967567,
+        0.861550905369308
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_130",
+      "position": [
+        -0.10641312752230192,
+        4.241506855841644,
+        1.197954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.26270720185166296,
+        0.9648756013576412
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_131",
+      "position": [
+        0.10022856134585667,
+        4.235907533919093,
+        1.197954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.0889602148272353,
+        0.9960351801908868
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_132",
+      "position": [
+        0.2966616207773207,
+        4.307816001510629,
+        1.197954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.2929533548297981,
+        0.9561267342219683
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_133",
+      "position": [
+        0.41326612189383893,
+        4.480961849788052,
+        1.197954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.5473511175397636,
+        0.8369030733173178
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_134",
+      "position": [
+        0.4959577019830492,
+        4.6696629484436,
+        1.197954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.5410415519220844,
+        0.8409958615199854
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_135",
+      "position": [
+        0.5895061744154662,
+        4.854308208391391,
+        1.197954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.48309897969034504,
+        0.8755657461448271
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_136",
+      "position": [
+        0.7424991046175045,
+        4.991219293751291,
+        1.197954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.07744195123295071,
+        0.9969968626777285
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_137",
+      "position": [
+        0.9240255313266201,
+        4.898208685032763,
+        1.197954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4065881260741063,
+        0.9136115672076107
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_138",
+      "position": [
+        1.0333222135777003,
+        4.7228158341081805,
+        1.197954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5386976403289272,
+        0.8424991705064437
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_139",
+      "position": [
+        -0.3363444273534779,
+        4.6377417848276,
+        1.2549546660000002
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5321952018341248,
+        0.8466216788771329
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_140",
+      "position": [
+        -0.26902680674078117,
+        4.503013607357799,
+        1.2549546660000002
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5170075009442914,
+        0.8559808665895159
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_141",
+      "position": [
+        -0.16954313802439913,
+        4.3294221756029,
+        1.2549546660000002
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.482071485074712,
+        0.8761318869199213
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_142",
+      "position": [
+        -0.0079943854095601,
+        4.20151288538314,
+        1.2549546660000002
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.04398878718467516,
+        0.9990320248130294
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_143",
+      "position": [
+        0.1983062949961134,
+        4.235343638262689,
+        1.2549546660000002
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.16511598357205554,
+        0.98627415659594
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_144",
+      "position": [
+        0.3624093596840816,
+        4.374633331673076,
+        1.2549546660000002
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.5210595866026638,
+        0.8535203027517629
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_145",
+      "position": [
+        0.4451510620404624,
+        4.5562758934128915,
+        1.2549546660000002
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.5427904567334761,
+        0.8398681563668576
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_146",
+      "position": [
+        0.5291459955066309,
+        4.736942233203055,
+        1.2549546660000002
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.5234428880086658,
+        0.8520607625006256
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_147",
+      "position": [
+        0.6367730551248094,
+        4.912196269543776,
+        1.2549546660000002
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.3939525808823805,
+        0.919130765460558
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_148",
+      "position": [
+        0.8367082128483425,
+        4.964001125332156,
+        1.2549546660000002
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.20752822495660214,
+        0.9782290303637293
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_149",
+      "position": [
+        0.9844699069592695,
+        4.8154247288834355,
+        1.2549546660000002
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4751813469943947,
+        0.8798878834650428
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_150",
+      "position": [
+        1.055691214259623,
+        4.676724479369193,
+        1.2549546660000002
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5575506711278916,
+        0.830142908856564
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_151",
+      "position": [
+        -0.31914399541477956,
+        4.598621121912342,
+        1.311954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5191371403944511,
+        0.8546909555289982
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_152",
+      "position": [
+        -0.2209464866665164,
+        4.4248916268566285,
+        1.311954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4846883131465576,
+        0.8746869377663901
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_153",
+      "position": [
+        -0.10327922815096824,
+        4.260293685297325,
+        1.311954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4139442421533608,
+        0.9103022379342368
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_154",
+      "position": [
+        0.09810536898727484,
+        4.184733147820838,
+        1.311954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.08144782914365135,
+        0.9966776064143242
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_155",
+      "position": [
+        0.288764079929541,
+        4.27348591103047,
+        1.311954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.41829285117159726,
+        0.9083122209123556
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_156",
+      "position": [
+        0.38735364751813117,
+        4.452277765707456,
+        1.311954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.5244265248032347,
+        0.8514557064714537
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_157",
+      "position": [
+        0.47396276593092446,
+        4.62897145657939,
+        1.311954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.525412727808952,
+        0.8508474983546441
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_158",
+      "position": [
+        0.5695962674727408,
+        4.805235229645872,
+        1.311954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.4774822937539876,
+        0.8786413711813431
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_159",
+      "position": [
+        0.7181759481434409,
+        4.951079350814846,
+        1.311954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.156833091315929,
+        0.9876251219305276
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_160",
+      "position": [
+        0.9158024665285982,
+        4.891306494601656,
+        1.311954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.35015212493398584,
+        0.9366928468842999
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_161",
+      "position": [
+        1.0386025280514388,
+        4.72288211528642,
+        1.311954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.521477866662726,
+        0.8532648091776035
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_162",
+      "position": [
+        -0.3441689247215268,
+        4.6414063969517265,
+        1.368954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5156290008911331,
+        0.8568119592069265
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_163",
+      "position": [
+        -0.26459386769525517,
+        4.505615701644518,
+        1.368954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4778597728997449,
+        0.8784361316818681
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_164",
+      "position": [
+        -0.12905513062988272,
+        4.327171202134976,
+        1.368954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.41847002534439215,
+        0.90823060831942
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_165",
+      "position": [
+        0.04254183113258181,
+        4.200066541675565,
+        1.368954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.08947296634362305,
+        0.9959892510934407
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_166",
+      "position": [
+        0.2491150933525983,
+        4.261728374479252,
+        1.368954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.38022483547878116,
+        0.9248940882528842
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_167",
+      "position": [
+        0.3666443983780945,
+        4.452205109861187,
+        1.368954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.49736443454084417,
+        0.8675417103827725
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_168",
+      "position": [
+        0.47646556567933906,
+        4.647771713454486,
+        1.368954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.5001742708123725,
+        0.8659247651022065
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_169",
+      "position": [
+        0.6002052211890991,
+        4.834558721582921,
+        1.368954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.40491571150798633,
+        0.9143540159992634
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_170",
+      "position": [
+        0.7918953581707477,
+        4.931726133882716,
+        1.368954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.050464906477169634,
+        0.9987258348587217
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_171",
+      "position": [
+        0.9775345215753313,
+        4.813740896482743,
+        1.368954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.412706423049105,
+        0.9108640998381775
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_172",
+      "position": [
+        1.0622115606563394,
+        4.679302212873741,
+        1.368954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5417090738822197,
+        0.8405660469431704
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_173",
+      "position": [
+        -0.3222221112461098,
+        4.598477015438359,
+        1.425954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.48296684082693314,
+        0.8756386415991769
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_174",
+      "position": [
+        -0.19589963571483548,
+        4.4339916880873105,
+        1.425954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.405342145721252,
+        0.9141650534242114
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_175",
+      "position": [
+        -0.05424897281381946,
+        4.27921004041415,
+        1.425954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.3625049061555193,
+        0.9319818630280196
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_176",
+      "position": [
+        0.1533638373850159,
+        4.231169055980328,
+        1.425954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.1670590176255987,
+        0.9859468974696203
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_177",
+      "position": [
+        0.2959255543947006,
+        4.383662027083446,
+        1.425954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.4941685648628246,
+        0.8693661078633192
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_178",
+      "position": [
+        0.40702153963793375,
+        4.560993493565154,
+        1.425954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.47375284474148216,
+        0.8806578462146085
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_179",
+      "position": [
+        0.5260735689308054,
+        4.733816174240154,
+        1.425954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.43799422074374955,
+        0.8989777875982674
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_180",
+      "position": [
+        0.6822705020987421,
+        4.876938572303736,
+        1.425954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.2408833937006328,
+        0.9705540637384741
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_181",
+      "position": [
+        0.8936843126717573,
+        4.865631307850241,
+        1.425954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.2498530155158135,
+        0.9682837758826979
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_182",
+      "position": [
+        1.0465926307403841,
+        4.718233982675537,
+        1.425954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4861278946728158,
+        0.8738876758605626
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_183",
+      "position": [
+        -0.3520843413356819,
+        4.640819980255282,
+        1.482954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4858946940073739,
+        0.874017360431405
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_184",
+      "position": [
+        -0.25483933250803203,
+        4.517355735589958,
+        1.482954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.3881856603918396,
+        0.9215811917927532
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_185",
+      "position": [
+        -0.08624799464234989,
+        4.354695608491368,
+        1.482954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.40779917246235703,
+        0.9130716483053325
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_186",
+      "position": [
+        0.10229832002343686,
+        4.242668112347414,
+        1.482954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.08037092606537809,
+        0.996765024588741
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_187",
+      "position": [
+        0.2707800688422719,
+        4.39032614040464,
+        1.482954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.4940120960325576,
+        0.8694550298741845
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_188",
+      "position": [
+        0.39681497072661753,
+        4.588100615498258,
+        1.482954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.44585164985915515,
+        0.8951068686575192
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_189",
+      "position": [
+        0.5523682703257669,
+        4.763672003043388,
+        1.482954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.3581503178467204,
+        0.9336639383773442
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_190",
+      "position": [
+        0.753003128566718,
+        4.8824161824521095,
+        1.482954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.05121848930836766,
+        0.9986874718113613
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_191",
+      "position": [
+        0.9689841166171613,
+        4.800867596792493,
+        1.482954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.3114405923101557,
+        0.9502656246868553
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_192",
+      "position": [
+        1.0743760357625336,
+        4.677225783182866,
+        1.482954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.5162398322477031,
+        0.8564440644904158
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_193",
+      "position": [
+        -0.33054974182324326,
+        4.605532895754549,
+        1.539954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.42679807078759613,
+        0.9043469504410274
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_194",
+      "position": [
+        -0.16316016021028568,
+        4.468574123848871,
+        1.539954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.33599558325595824,
+        0.9418635612616556
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_195",
+      "position": [
+        -0.007791495501648482,
+        4.3003274234765145,
+        1.539954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.30720240280617556,
+        0.9516442001662766
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_196",
+      "position": [
+        0.19995403862714634,
+        4.31919204353642,
+        1.539954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.38376747150279905,
+        0.9234297633368487
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_197",
+      "position": [
+        0.31748667548727805,
+        4.516096501910828,
+        1.539954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.4811318430903837,
+        0.8766482473400893
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_198",
+      "position": [
+        0.46299804560121327,
+        4.692568739883871,
+        1.539954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.36016776440737924,
+        0.9328875502877024
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_199",
+      "position": [
+        0.6528277659187378,
+        4.819589802204201,
+        1.539954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.20708137688696462,
+        0.9783237211407065
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_200",
+      "position": [
+        0.8715446811040557,
+        4.83139410202605,
+        1.539954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.16430209356340095,
+        0.9864100678980743
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_201",
+      "position": [
+        1.0527707264404922,
+        4.7181476811376,
+        1.539954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4324917265171122,
+        0.901637902094986
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_202",
+      "position": [
+        -0.36446687037490433,
+        4.642556018793127,
+        1.596954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.450414966816086,
+        0.8928193309220316
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_203",
+      "position": [
+        -0.2418732446771873,
+        4.536151253793938,
+        1.596954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.26572802766083153,
+        0.9640480357925555
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_204",
+      "position": [
+        -0.06676081652466515,
+        4.407445757497805,
+        1.596954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4024056148677224,
+        0.9154614798684488
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_205",
+      "position": [
+        0.10381001446112936,
+        4.293329387048854,
+        1.596954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.0855865735810892,
+        0.9963307374675584
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_206",
+      "position": [
+        0.24820496739143372,
+        4.449395074662341,
+        1.596954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.4971421190271141,
+        0.8676691267350883
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_207",
+      "position": [
+        0.369064380607927,
+        4.6332974042465525,
+        1.596954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.41995494105823755,
+        0.9075449561761512
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_208",
+      "position": [
+        0.541329921809302,
+        4.770127171858384,
+        1.596954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.24498097355349205,
+        0.9695278864461729
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_209",
+      "position": [
+        0.7518849095857705,
+        4.833407809741841,
+        1.596954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.020924643051167337,
+        0.9997810556882848
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_210",
+      "position": [
+        0.9661945255047462,
+        4.787579492291208,
+        1.596954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.23977330467157557,
+        0.970828904785427
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_211",
+      "position": [
+        1.0883172323516634,
+        4.677314918091733,
+        1.596954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.4858378501865149,
+        0.8740489593416066
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick_half/model.sdf",
+      "dimensions_m": [
+        0.095,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_212",
+      "position": [
+        -0.3429021722008595,
+        4.610841928636029,
+        1.653954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.37717878117802606,
+        0.9261404683033015
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_213",
+      "position": [
+        -0.15420018500263977,
+        4.517847405024143,
+        1.653954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.2387767402190904,
+        0.9710744916484755
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_214",
+      "position": [
+        0.0034389873631610612,
+        4.365637157701764,
+        1.653954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.35037780921020706,
+        0.9366084511753329
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_215",
+      "position": [
+        0.19121940920791736,
+        4.399867361909345,
+        1.653954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.44989422425552295,
+        0.8930818478625132
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_216",
+      "position": [
+        0.30470795743998513,
+        4.5876047137618325,
+        1.653954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.464931372483985,
+        0.8853467224088866
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_217",
+      "position": [
+        0.45726749361670516,
+        4.746680464126911,
+        1.653954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.2994536305476667,
+        0.9541108547500241
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_218",
+      "position": [
+        0.6598647812555234,
+        4.83422496192527,
+        1.653954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.0896653910228342,
+        0.9959719462177248
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_219",
+      "position": [
+        0.8804940202631972,
+        4.823058267244419,
+        1.653954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.13728194221184375,
+        0.9905320127802756
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    },
+    {
+      "name": "pickup_brick_220",
+      "position": [
+        1.064535481470761,
+        4.717331880855297,
+        1.653954666
+      ],
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        -0.40183446483390867,
+        0.9157123253902648
+      ],
+      "model_sdf": "/ros2_ws/install/abb_irb4600_gazebo/share/abb_irb4600_gazebo/models/brick/model.sdf",
+      "dimensions_m": [
+        0.19,
+        0.09,
+        0.057
+      ]
+    }
+  ],
+  "input_bricks": 221,
+  "selected_bricks": 221,
+  "geometry_complete": true
+}

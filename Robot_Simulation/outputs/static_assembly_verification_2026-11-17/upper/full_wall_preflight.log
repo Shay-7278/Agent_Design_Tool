@@ -1,0 +1,11 @@
+[INFO] [1794943069.904751597] [execute_one_brick]: Brick sizes: 199 full, 22 half; half-brick source rows: [9, 17, 26, 34, 43, 51, 60, 68, 78, 87, 97, 107, 118, 128, 140, 151, 163, 173, 184, 193, 203, 212]
+[INFO] [1794943069.929412833] [execute_one_brick]: Motion speed scale: 2x; URDF velocity limits remain active; GH waits and gripper timing are unchanged
+[INFO] [1794943115.083246726] [execute_one_brick]: GH motion preflight passed: bricks 11..221 in MT_base; home, rail offset, MoveJ and MoveL included
+Fatal Python error: _PyThreadState_DeleteCurrent: the function must be called with the GIL held, after Python initialization and before Python finalization, but the GIL is released (the current Python thread state is NULL)
+Python runtime state: finalizing (tstate=0x0000000000ba6748)
+
+Thread 0x000072218f771740 (most recent call first):
+  <no Python frame>
+
+Extension modules: yaml._yaml, numpy.core._multiarray_umath, numpy.core._multiarray_tests, numpy.linalg._umath_linalg, numpy.fft._pocketfft_internal, numpy.random._common, numpy.random.bit_generator, numpy.random._bounded_integers, numpy.random._mt19937, numpy.random.mtrand, numpy.random._philox, numpy.random._pcg64, numpy.random._sfc64, numpy.random._generator, tf2_py._tf2_py, google.protobuf.pyext._message, rcl_interfaces.rcl_interfaces_s__rosidl_typesupport_c, builtin_interfaces.builtin_interfaces_s__rosidl_typesupport_c, service_msgs.service_msgs_s__rosidl_typesupport_c, type_description_interfaces.type_description_interfaces_s__rosidl_typesupport_c, tf2_msgs.tf2_msgs_s__rosidl_typesupport_c, geometry_msgs.geometry_msgs_s__rosidl_typesupport_c, std_msgs.std_msgs_s__rosidl_typesupport_c, control_msgs.control_msgs_s__rosidl_typesupport_c, action_msgs.action_msgs_s__rosidl_typesupport_c, unique_identifier_msgs.unique_identifier_msgs_s__rosidl_typesupport_c, trajectory_msgs.trajectory_msgs_s__rosidl_typesupport_c, sensor_msgs.sensor_msgs_s__rosidl_typesupport_c, rosgraph_msgs.rosgraph_msgs_s__rosidl_typesupport_c (total: 29)
+[ros2run]: Aborted

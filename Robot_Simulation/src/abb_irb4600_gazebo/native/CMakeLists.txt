@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.16)
+project(abb_gazebo_service_client LANGUAGES CXX)
+find_package(gz-transport13 REQUIRED)
+add_executable(gazebo_service_client service_client.cpp)
+target_compile_features(gazebo_service_client PRIVATE cxx_std_17)
+target_link_libraries(gazebo_service_client PRIVATE gz-transport13::core)
+install(TARGETS gazebo_service_client RUNTIME DESTINATION lib/abb_irb4600_gazebo)

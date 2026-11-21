@@ -1,0 +1,81 @@
+[INFO] [1794940617.878655725] [execute_one_brick]: Brick sizes: 16 full, 2 half; half-brick source rows: [9, 17]
+[INFO] [1794940617.881068676] [execute_one_brick]: Motion speed scale: 2x; URDF velocity limits remain active; GH waits and gripper timing are unchanged
+[INFO] [1794940618.017619157] [execute_one_brick]: GH motion preflight passed: bricks 17..18 in MT_base; home, rail offset, MoveJ and MoveL included
+[INFO] [1794940619.001021129] [execute_one_brick]: PREFILL: placing bricks 1..16 directly, then executing brick 17; completed placements are static; the current brick is physically simulated.
+[INFO] [1794940627.862248735] [execute_one_brick]: pickup_brick_000 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.863725000] [execute_one_brick]: pickup_brick_001 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.865589466] [execute_one_brick]: pickup_brick_002 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.870105039] [execute_one_brick]: pickup_brick_003 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.872414190] [execute_one_brick]: pickup_brick_004 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.874337914] [execute_one_brick]: pickup_brick_005 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.876222641] [execute_one_brick]: pickup_brick_006 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.877671955] [execute_one_brick]: pickup_brick_007 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.879152773] [execute_one_brick]: pickup_brick_008 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.880660490] [execute_one_brick]: pickup_brick_009 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.883683624] [execute_one_brick]: pickup_brick_010 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.889825799] [execute_one_brick]: pickup_brick_011 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.892412647] [execute_one_brick]: pickup_brick_012 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.894353639] [execute_one_brick]: pickup_brick_013 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.897609282] [execute_one_brick]: pickup_brick_014 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940627.900666327] [execute_one_brick]: pickup_brick_015 PREFILLED; measured displacement=0.000000 m
+[INFO] [1794940629.503441476] [execute_one_brick]: brick 17/18 AVAILABLE: pickup_brick_016
+[INFO] [1794940631.988486688] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794940641.613425702] [execute_one_brick]: TCP ARRIVED after 0.102 sim s: 0.005 mm, 0.000 deg
+[INFO] [1794940641.641120977] [execute_one_brick]: executing move_j: (0.22607500000000016, 2.0711941666666656, 0.272490061961641)
+[INFO] [1794940645.621079763] [execute_one_brick]: TCP ARRIVED after 0.128 sim s: 0.005 mm, 0.000 deg
+[INFO] [1794940645.630958192] [execute_one_brick]: executing move_l: (0.22607500000000016, 2.0711941666666656, 0.07249006196164097)
+[INFO] [1794940650.626207408] [execute_one_brick]: TCP ARRIVED after 0.104 sim s: 0.001 mm, 0.000 deg
+[INFO] [1794940657.695567616] [execute_one_brick]: pickup_brick_016 ATTACHED; {'state': 'attached', 'joint_entity': 312, 'parent_link': 38, 'child_link': 309, 'simulation_stamp': 101.069, 'verification': 'Gazebo ECM readback', 'notification': 'attached'}
+[INFO] [1794940657.731461824] [execute_one_brick]: executing move_l: (0.22607500000000016, 2.0711941666666656, 0.272490061961641)
+[INFO] [1794940662.363380873] [execute_one_brick]: TCP ARRIVED after 0.135 sim s: 0.001 mm, 0.000 deg
+[INFO] [1794940662.384475006] [execute_one_brick]: pickup_brick_016 TRANSPORTING
+[INFO] [1794940662.386585855] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794940666.146073412] [execute_one_brick]: TCP ARRIVED after 0.122 sim s: 0.005 mm, 0.000 deg
+[INFO] [1794940666.166262270] [execute_one_brick]: executing move_j: (1.088507003928848, 4.6765549461984595, 0.6569546660000001)
+[INFO] [1794940669.554777453] [execute_one_brick]: TCP ARRIVED after 0.150 sim s: 0.010 mm, 0.000 deg
+[INFO] [1794940669.574762517] [execute_one_brick]: executing move_l: (1.088507003928848, 4.6765549461984595, 0.456954666)
+[INFO] [1794940674.251973053] [execute_one_brick]: TCP ARRIVED after 0.139 sim s: 0.000 mm, 0.000 deg
+[INFO] [1794940683.512501232] [execute_one_brick]: pickup_brick_016 RELEASED and consolidated into static wall; {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 309, 'simulation_stamp': 116.884, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}
+[INFO] [1794940684.662448679] [execute_one_brick]: executing move_l: (1.088507003928848, 4.6765549461984595, 0.6569546660000001)
+[INFO] [1794940689.451632511] [execute_one_brick]: TCP ARRIVED after 0.137 sim s: 0.000 mm, 0.000 deg
+[INFO] [1794940689.472698565] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794940692.880928813] [execute_one_brick]: TCP ARRIVED after 0.126 sim s: 0.005 mm, 0.000 deg
+[INFO] [1794940692.895628681] [execute_one_brick]: pickup_brick_016 PLACED (command complete); observation={'brick': 'pickup_brick_016', 'state': 'PLACED', 'mode': 'assembly_visualization', 'target_position': (1.088507003928848, 4.6765549461984595, 0.456954666), 'target_orientation_xyzw': (0.0, 0.0, -0.4773941369876793, 0.878689272706677), 'release_verification': {'state': 'detached', 'joint_entity': None, 'parent_link': 38, 'child_link': 309, 'simulation_stamp': 116.884, 'verification': 'Gazebo ECM readback', 'notification': 'detached'}, 'actual_position': (1.088507002162726, 4.676554946523419, 0.4569528932199873), 'actual_orientation_xyzw': (9.76924932185178e-09, -2.994300280531711e-08, -0.4773941369876923, 0.8786892727066694), 'pose_sequence': 2699, 'simulation_stamp': 116.962, 'displacement_m': 1.772780922259844e-06, 'observation_source': 'physical post-release, before static consolidation'}
+[INFO] [1794940694.524320027] [execute_one_brick]: brick 18/18 AVAILABLE: pickup_brick_017
+[INFO] [1794940697.028849732] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794940697.033474260] [execute_one_brick]: executing move_j: (0.2268299999999998, 2.2914449999999995, 0.272493143000789)
+[INFO] [1794940700.554142366] [execute_one_brick]: TCP ARRIVED after 0.137 sim s: 0.006 mm, 0.000 deg
+[INFO] [1794940700.565931489] [execute_one_brick]: executing move_l: (0.2268299999999998, 2.2914449999999995, 0.07249314300078893)
+[INFO] [1794940705.429845109] [execute_one_brick]: TCP ARRIVED after 0.115 sim s: 0.001 mm, 0.000 deg
+[INFO] [1794940713.757252274] [execute_one_brick]: pickup_brick_017 ATTACHED; {'state': 'attached', 'joint_entity': 369, 'parent_link': 38, 'child_link': 366, 'simulation_stamp': 143.921, 'verification': 'Gazebo ECM readback', 'notification': 'attached'}
+[INFO] [1794940713.823959457] [execute_one_brick]: executing move_l: (0.2268299999999998, 2.2914449999999995, 0.272493143000789)
+[INFO] [1794940719.982467615] [execute_one_brick]: TCP ARRIVED after 0.126 sim s: 0.001 mm, 0.000 deg
+[INFO] [1794940720.002526108] [execute_one_brick]: pickup_brick_017 TRANSPORTING
+[INFO] [1794940720.010551109] [execute_one_brick]: executing move_j: (0.5, 3.4510300000000003, 1.0)
+[INFO] [1794940724.438014837] [execute_one_brick]: TCP ARRIVED after 0.135 sim s: 0.006 mm, 0.000 deg
+[INFO] [1794940724.467588776] [execute_one_brick]: executing move_j: (-0.33266826228732416, 4.607139089691844, 0.713954666)
+[INFO] [1794940729.195421084] [execute_one_brick]: TCP ARRIVED after 0.115 sim s: 0.017 mm, 0.001 deg
+[INFO] [1794940729.209209813] [execute_one_brick]: executing move_l: (-0.33266826228732416, 4.607139089691844, 0.5139546660000001)
+[INFO] [1794940735.252320726] [execute_one_brick]: TCP ARRIVED after 0.105 sim s: 0.002 mm, 0.000 deg
+[ERROR] [1794940750.851412058] [execute_one_brick]: pickup_brick_017 FAILED
+Traceback (most recent call last):
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/abb_irb4600_gazebo/execute_wall", line 33, in <module>
+    sys.exit(load_entry_point('abb-irb4600-gazebo==0.1.0', 'console_scripts', 'execute_wall')())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 633, in wall_main
+    main(wall=True)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 623, in main
+    try: node.run()
+         ^^^^^^^^^^
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/execute_one_brick.py", line 377, in run
+    self.world.consolidate(name, placement)
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/gz_brick_world.py", line 344, in consolidate
+    self.prefill_static([(name, pose)])
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/gz_brick_world.py", line 385, in prefill_static
+    scene = self._request('scene/info', Empty(), Scene)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/ros2_ws/install/abb_irb4600_gazebo/lib/python3.12/site-packages/abb_irb4600_gazebo/gz_brick_world.py", line 140, in _request
+    raise GazeboCommandError(f"Gazebo {service}: {result.stderr or result.stdout}")
+abb_irb4600_gazebo.gz_brick_world.GazeboCommandError: Gazebo scene/info: Service call timed out
+
+[ros2run]: Process exited with failure 1
