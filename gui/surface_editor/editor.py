@@ -12,6 +12,8 @@ Interaction
     u           undo
     b           reset all edits back to the loaded state
     s           save (overwrites the .3dm; writes <name>.3dm.orig first)
+    a           re-fit the brick wall to the current surface (runs the solver)
+    l           L1 solver for 'a': rbe (start) / cra_penalty
     r           reset camera,  q  quit
 
 Run from the gui/ folder:
@@ -35,6 +37,7 @@ from .model import NurbsModel
 from . import refit, wall_view
 
 AXIS_IDX = {"x": 0, "y": 1, "z": 2}
+L1_SOLVERS = ("rbe", "cra_penalty")  # pc/params.py SOLVERS; first = start value
 UNDO_CAP = 64
 ENGAGE_GAP = 0.6  # seconds of silence before a new drag counts as a new gesture
 
@@ -66,6 +69,9 @@ class SurfaceEditor:
         self.drag_index: int | None = None
         self.last_event = time.perf_counter()
         self._guard = False  # re-entrancy guard for SetCenter from callbacks
+        # Overrides the solver copied from a previous result: those store every
+        # resolved param, so a default change would otherwise never reach 'a'.
+        self.solver = L1_SOLVERS[0]
 
         self._build_scene(off_screen)
         self.wall_actors: list = []
@@ -165,6 +171,7 @@ class SurfaceEditor:
         p.add_key_event("s", self.save)
         p.add_key_event("v", self.toggle_wall)
         p.add_key_event("a", self.start_refit)
+        p.add_key_event("l", self.toggle_solver)
 
         p.add_text(
             "drag orange spheres = move CP\n"
@@ -172,13 +179,14 @@ class SurfaceEditor:
             "u: undo   b: reset edits\n"
             "v: toggle fitted wall\n"
             "a: re-fit bricks to current surface\n"
+            "l: L1 solver rbe / cra_penalty\n"
             "s: save .3dm   r: reset view   q: quit",
             position="upper_left",
             font_size=11,
             name="help",
         )
         self.plotter = p
-        self._status("loaded")
+        self._status(f"loaded (L1 solver: {self.solver})")
 
     # --------------------------------------------------------------- helpers
     def _flat(self, i: int, j: int) -> int:
@@ -353,6 +361,7 @@ class SurfaceEditor:
         src = self._wall_result_path or wall_view.find_latest_result(_project_root())
         # No earlier result: an empty dict makes the solver use pc/params.py DEFAULTS.
         params = wall_view.load_result(src)["params"] if src is not None else {}
+        params = {**params, "solver": self.solver}
         source = Path(src).stem if src is not None else "solver defaults"
         self._status("extracting sections from current surface...")
         try:
@@ -365,7 +374,7 @@ class SurfaceEditor:
         self._refit_done = False
         self._refit_error = None
         self._status(f"fitting bricks to current surface "
-                     f"(params from {source}, ~20-90 s)...")
+                     f"(L1 {self.solver}, params from {source})...")
 
         def worker():
             try:
@@ -378,6 +387,11 @@ class SurfaceEditor:
                 self._refit_done = True
 
         threading.Thread(target=worker, daemon=True).start()
+
+    def toggle_solver(self) -> None:
+        i = L1_SOLVERS.index(self.solver)
+        self.solver = L1_SOLVERS[(i + 1) % len(L1_SOLVERS)]
+        self._status(f"L1 solver for next 'a': {self.solver}")
 
     def _poll_refit(self, _step=None) -> None:
         """Timer callback (GUI thread): swap in the new wall when the solver ends."""
@@ -398,8 +412,17 @@ class SurfaceEditor:
     def show(self) -> None:
         self.plotter.add_axes()
         self.plotter.camera_position = "iso"
-        self.plotter.add_timer_event(max_steps=10**9, duration=500,
-                                      callback=self._poll_refit)
+        # A timer created before show() never fires on Windows (pyvista 0.49),
+        # so start the refit poll timer after the window's first render.
+        rw = self.plotter.render_window
+        obs = None
+
+        def start_poll_timer(_obj, _event):
+            rw.RemoveObserver(obs)
+            self.plotter.add_timer_event(max_steps=10**9, duration=500,
+                                          callback=self._poll_refit)
+
+        obs = rw.AddObserver("EndEvent", start_poll_timer)
         self.plotter.show()
 
 

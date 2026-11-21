@@ -386,6 +386,7 @@ The surface must be a single-face Brep. Close Rhino first if it has the file ope
 | `u` | Undo (up to 64 steps) |
 | `b` | Reset all edits back to the loaded surface |
 | `a` | Run the check on the current surface (see below) |
+| `l` | Switch the L1 solver used by `a` between `rbe` (start) and `cra_penalty` |
 | `v` | Show / hide the brick wall |
 | `s` | Save: overwrites the .3dm (a one-time backup `<name>.3dm.orig` is written first) |
 | `r` | Reset the camera |
@@ -410,9 +411,13 @@ Files are written to `<REPO>\results\`: `gui_refit_job.json` and `gui_refit_resu
 result of the wall currently shown (or the newest `*_result.json` in `results\`). With no earlier
 result, it uses the solver defaults from `physics_check/pc/params.py`. To run with other
 parameters, write a result with them first (for example by running a job with your `"params"`
-from the command line, section 3), then open the GUI with `-r` pointing at that result. `a`
-always runs L1; the L1 solver follows the `solver` parameter, which is `rbe` unless that
-result used `cra_penalty`.
+from the command line, section 3), then open the GUI with `-r` pointing at that result.
+
+**L1 solver.** `a` always runs L1. The solver is set by the `l` key, not by the copied
+parameters: it starts as `rbe` each time the GUI opens, and the status line shows which one the
+next `a` will use. Iterate with `rbe` and press `l` to switch to `cra_penalty` for a final
+check. `cra_penalty` can take minutes on a large wall; each solve stops at `cra_timeout`
+(300 s), and the result then reports L1 as not checked.
 
 **Limits compared with Grasshopper.** Sections are cut by sampling the surface, so a course end
 can be off by up to about 11 mm from Rhino's exact contour on heavily trimmed courses. Use the
