@@ -1,4 +1,4 @@
-"""Step 4, l0_method = "qp": L0 repair as a sequential quadratic program.
+"""Step 4: L0 repair as a sequential quadratic program.
 
 All bricks move together to the layout closest to their targets that passes
 L0, instead of one brick at a time.
@@ -759,8 +759,7 @@ def _close_gap(wall, k, gone):
 
 
 def l0_repair_qp(wall, log):
-    """Steps 3-4 as a sequential QP.  Returns (passed, fatal message) like
-    l0.l0_repair.
+    """Steps 3-4 as a sequential QP.  Returns (passed, fatal message).
 
     Bricks that still fail contact after the repair cannot be put anywhere
     with enough support; up to max_drop of them are dropped, lowest course

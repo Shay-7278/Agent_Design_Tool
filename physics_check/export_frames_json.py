@@ -1,37 +1,45 @@
-"""Exports brick centre frames to a JSON file for the CRA stability check.
+"""Exports brick centre frames to a JSON pose list for Gazebo.
 
-Writes the ``Frames`` from ``brick_corbel_column`` (or ``WallFrames`` from
-``brick_wall_populate``) plus the brick dimensions to a JSON file.  The file is
-read by ``cra_check.py``, which runs outside Rhino (plain CPython + compas_cra)
-and checks whether the bricks stand as a dry-stacked rigid-block assembly.
+Writes one entry per brick, in the order the frames come in (connect them in
+build order: course 0 first, then along each course):
 
-Each frame is stored as ``[origin, xaxis, yaxis]`` in mm, with X = overhang
-(brickW), Y = along the wall (brickL), Z = up, matching the other scripts.
+    [{"x": ..., "y": ..., "z": ..., "yaw": ...}, ...]
+
+* x, y, z: brick centre in metres (Gazebo / SDF units), world axes, Z up.
+  The Rhino model is assumed to be in mm.
+* yaw: rotation about Z in radians, in (-pi, pi], from world X to the brick's
+  long axis (the frame's Y axis, brickL).  A Gazebo box of size (brickL,
+  brickW, brickH) has its length along its own X, so this yaw lines it up.
+
+Same format as ``result_to_frames.py``.  Half bricks are written like full
+ones (lengths are not in this file).
 
 Rhino runs on Windows, so ``path`` is a Windows path (e.g.
 ``C:\\Users\\me\\frames.json``); from WSL the same file is
 ``/mnt/c/Users/me/frames.json``.
 
 Inputs:
-    frames:      Brick centre frames (planes) [mm]; DataTrees are flattened
-    brickL:      Brick length - runs along the wall (frame Y) [mm], default 190
-    brickW:      Brick width - overhang direction (frame X) [mm], default 90
-    brickH:      Brick height [mm], default 57
-    mortar_t:    Mortar bed joint thickness [mm], default 10
+    frames:      Brick centre frames (planes) [mm], frame Y along the brick
+                 length; DataTrees are flattened
     path:        Output file path; default ``brick_frames.json`` next to the
                  saved .3dm file
     export:      Boolean toggle - write the file when True
+    (Older canvases may still have brickL / brickW / brickH / mortar_t
+    inputs; they are ignored.)
 Outputs:
     Path:        Path of the written file (empty if nothing was written)
-    Count:       Number of frames written
+    Count:       Number of poses written
     Message:     Status / error message
 """
 
 __author__ = "aa9663"
-__version__ = "2023.09.11"
+__version__ = "2026.11.15"
 
 import json
+import math
 import os
+
+MM = 0.001  # mm -> m
 
 
 def flatten(data):
@@ -51,20 +59,16 @@ def flatten(data):
     return [data]
 
 
-def frame_to_list(plane):
-    """Rhino plane -> [[ox, oy, oz], [xx, xy, xz], [yx, yy, yz]]."""
-    o, x, y = plane.Origin, plane.XAxis, plane.YAxis
-    return [[o.X, o.Y, o.Z], [x.X, x.Y, x.Z], [y.X, y.Y, y.Z]]
+def plane_to_pose(plane):
+    """Rhino plane [mm] -> {x, y, z [m], yaw [rad]} (yaw of the plane's Y axis)."""
+    o, t = plane.Origin, plane.YAxis
+    return {"x": o.X * MM, "y": o.Y * MM, "z": o.Z * MM, "yaw": math.atan2(t.Y, t.X)}
 
 
 if __name__ == "__main__":
     import Rhino
 
     frames = globals().get("frames", [])
-    brickL = globals().get("brickL", 190.0)
-    brickW = globals().get("brickW", 90.0)
-    brickH = globals().get("brickH", 57.0)
-    mortar_t = globals().get("mortar_t", 10.0)
     path = globals().get("path", None)
     export = globals().get("export", False)
 
@@ -84,16 +88,9 @@ if __name__ == "__main__":
     elif not path:
         Message = "No path given and the .3dm is not saved yet"
     elif export:
-        data = {
-            "units": "mm",
-            "brickL": float(brickL),
-            "brickW": float(brickW),
-            "brickH": float(brickH),
-            "mortar_t": float(mortar_t),
-            "frames": [frame_to_list(p) for p in planes],
-        }
+        data = [plane_to_pose(p) for p in planes]
         with open(path, "w") as fh:
             json.dump(data, fh, indent=1)
         Path = path
         Count = len(planes)
-        Message = "Wrote {} frames to {}".format(Count, path)
+        Message = "Wrote {} brick poses to {}".format(Count, path)

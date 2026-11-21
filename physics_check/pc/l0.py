@@ -1,5 +1,6 @@
-"""Steps 3-4: L0 check and repair (smallest move that passes, head-joint
-redistribution)."""
+"""Step 2-4 helpers: head-joint redistribution and course settling (fit), and
+the smallest single-brick move that passes L0 (used by the clean-up after
+the QP repair in l0qp.py).  The L0 repair itself is l0qp.l0_repair_qp."""
 
 from __future__ import division
 
@@ -162,37 +163,3 @@ def settle_counts(wall, log):
                        "(end_support; pieces left out start/end, 0.5 = full brick -> half bat): "
                        + ", ".join("course {} {:g}/{:g}".format(k, *wall.end_cut[k])
                                    for k in sorted(wall.end_cut)))
-
-
-def l0_failures(wall):
-    return {b: f for b in wall.bricks() for f in [wall.check(b)] if f}
-
-
-def l0_repair(wall, log):
-    """Steps 3-4, repeated until clean.  Returns (passed, fatal message)."""
-    p = wall.p
-    for it in range(p["l0_max_iter"]):
-        fails = l0_failures(wall)
-        live = {b: f for b, f in fails.items() if not b.flagged}
-        if not live:
-            return not fails, None
-        log.append("L0 pass {}: {} brick(s) failing".format(it + 1, len(live)))
-        for k in range(len(wall.courses)):
-            if any("collision" in f for b, f in live.items() if b.k == k):
-                err = repair_spacing(wall, k)
-                if err:
-                    return False, err
-            for b in wall.courses[k]:
-                if b.flagged:
-                    continue
-                f = wall.check(b)
-                if not f:
-                    continue
-                dirs = DIRS_LATERAL if f <= {"overhang"} else DIRS16
-                res = smallest_move(wall, b, dirs, lambda s, u, b=b: not wall.check(b, s, u))
-                if res is None:
-                    b.flag("L0 {} unfixable within limits".format("/".join(sorted(f))))
-                else:
-                    wall.move(b, res[1], res[2])
-    fails = l0_failures(wall)
-    return not fails, None

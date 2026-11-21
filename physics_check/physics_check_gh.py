@@ -8,9 +8,9 @@ through a subprocess (by default ``uv run --project <repo>
 <repo>/physics_check/physics_check.py``, with the clone and ``uv`` found
 automatically; see the ``repo`` and ``command`` inputs), reads
 ``physics_result.json`` back and
-rebuilds the planes and boxes.  The result file also holds ``frames`` + brick
-sizes in the ``export_frames_json.py`` format, so ``cra_check.py`` can open it
-directly.
+rebuilds the planes and boxes.  The result file also holds ``frames`` (one
+[origin, xaxis, yaxis] per brick, mm) + brick sizes; ``result_to_frames.py``
+turns it into the Gazebo pose list (x, y, z, yaw) in brick_frames.json.
 
 The module-level functions are pure Python; Rhino is imported only inside
 ``gh_main``, so ``course_layout`` etc. can be imported in plain CPython.
@@ -42,7 +42,7 @@ Component inputs (GhPython):
     face_offset:     0 if the surface is the wall centreline; otherwise the
                      signed offset [mm] from the surface to the centreline
                      (+/- brickW/2), positive towards the section's +X side
-    density:         Brick density [kg/m3], default 700 (fired clay is
+    density:         Brick density [kg/m3], default 1900 (fired clay is
                      ~1800-2000; the tension demand scales with it)
     mu:              Friction coefficient, default 0.84
     f_t:             Mortar flexural tensile strength [Pa], default 0.2e6
@@ -88,13 +88,10 @@ Component inputs (GhPython):
                      much faster, but it ignores block kinematics and can
                      pass walls that the CRA penalty solve fails - use it for
                      quick iterations, cra_penalty for the final check
-    (The solver tuning keys in ``pc/params.py`` DEFAULTS - l0_method ("qp",
-    default: all bricks moved together to the closest passing layout, or
-    "greedy": one brick at a time), qp_trust, qp_max_iter, max_rotation
-    (largest brick rotation in plan from the course direction [deg], default
-    30; 0 = none), qp_smooth (weight that spreads a deviation along the
-    course, default 1), l0_max_iter,
-    move_step, max_move (largest deviation from the fit [mm]; default 0 = no
+    (The solver tuning keys in ``pc/params.py`` DEFAULTS - qp_trust,
+    qp_max_iter, max_rotation (largest brick rotation in plan from the
+    course direction [deg], default 30; 0 = none), qp_smooth (weight that
+    spreads a deviation along the course, default 1), move_step, max_move (largest deviation from the fit [mm]; default 0 = no
     limit), min_step, slide_step, nmax, tmax, amin - are passed through too
     if an input with that name is added.)
 Component outputs:
@@ -133,9 +130,9 @@ import os
 PARAM_NAMES = (
     "brickL", "brickW", "brickH", "mortar_t", "head_joint", "min_head", "max_head",
     "offset_distance", "face_offset", "density", "mu", "f_t", "SF", "max_overhang",
-    "min_contact", "min_balance", "max_iter", "l0_max_iter", "move_step", "max_move",
+    "min_contact", "min_balance", "max_iter", "move_step", "max_move",
     "min_step", "slide_step", "nmax", "tmax", "amin", "cra_timeout", "solver",
-    "l0_method", "qp_trust", "qp_max_iter", "max_rotation", "qp_smooth",
+    "qp_trust", "qp_max_iter", "max_rotation", "qp_smooth",
     "end_tol", "end_overrun", "end_support",
 )
 SOLVERS = ("cra_penalty", "rbe")   # pc/params.py SOLVERS

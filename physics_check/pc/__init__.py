@@ -7,7 +7,7 @@ Steps of the workflow and the module that implements each:
          count per course from its length
          place the bricks in running bond,  ``wall.py``
          fewer on tight curves
-    3-4  L0 geometry check + repairs        ``wall.Wall.check``, ``l0.py``
+    3-4  L0 geometry check + QP repair      ``wall.Wall.check``, ``l0qp.py``
     5    L1 compas_cra penalty solve,       ``cra.py``
          course 0 fixed
     6    sigma_t = M/Z - P/A per interface  ``cra.interface_stress``

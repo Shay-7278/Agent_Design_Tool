@@ -1,60 +1,58 @@
-"""Convert physics_result.json into a brick frames file with per-brick lengths.
+"""Convert physics_result.json into a brick pose list for Gazebo.
 
     uv run physics_check/result_to_frames.py physics_result.json [frames.json] [--fitted]
 
-Writes the ``export_frames_json.py`` format (units, brickL, brickW, brickH,
-mortar_t, frames as [origin, xaxis, yaxis] in mm; X = across the wall
-(brickW), Y = along the course (brickL), Z = up) plus:
+Writes a JSON list with one entry per brick, in build order (course 0 first,
+then along each course):
 
-* ``lengths``: each brick's own length along frame Y [mm], in the order of
-  ``frames``.  The half bricks at the ends of odd open courses are brickL / 2;
-  the shared ``brickL`` alone would export them at full length, sticking
-  past the wall ends into their neighbours.  A reader that does not know this
-  key still gets the frames with brickL.
-* ``bricks``: course, index and status of each frame, in the same order.
+    [{"x": ..., "y": ..., "z": ..., "yaw": ...}, ...]
+
+* x, y, z: brick centre in metres (Gazebo / SDF units), world axes, Z up.
+* yaw: rotation about Z in radians, in (-pi, pi], measured from world X to
+  the brick's long axis (brickL).  A Gazebo box of size (brickL, brickW,
+  brickH) has its length along its own X, so this yaw lines it up.  A brick
+  turned by pi is the same brick, so yaw is only defined up to pi.
 
 Bricks dropped by the L0 repair are not in the result's brick list and are
-not written.  ``--fitted`` writes the fitted frames (before the repair)
-instead of the final ones.  The default output is brick_frames.json next to
-the result file.  Plain Python, no Rhino or compas needed.  Exit code 0 when
-the result passed L0 and L1, 1 otherwise (the file is written either way).
+not written.  Half bricks are written like full ones (their length is not in
+this file).  ``--fitted`` writes the fitted poses (before the repair) instead
+of the final ones.  The default output is brick_frames.json next to the
+result file.  Plain Python, no Rhino or compas needed.  Exit code 0 when the
+result passed L0 and L1, 1 otherwise (the file is written either way).
 """
 
 from __future__ import print_function
 
 import json
+import math
 import os
 import sys
 
+MM = 0.001  # mm -> m
+
+
+def pose(frame):
+    """[origin, xaxis, yaxis] in mm (frame Y = brick length) -> {x, y, z, yaw}."""
+    (ox, oy, oz), _xaxis, (tx, ty, _tz) = frame
+    return {"x": ox * MM, "y": oy * MM, "z": oz * MM, "yaw": math.atan2(ty, tx)}
+
 
 def convert(result, fitted=False):
-    """Frames dict (export_frames_json format + lengths, bricks) from a result dict."""
-    bricks = result.get("bricks", [])
+    """List of {x, y, z, yaw} (m, rad), one per brick in build order."""
     key = "fitted_frame" if fitted else "frame"
-    return {
-        "units": result.get("units", "mm"),
-        "brickL": float(result["brickL"]),
-        "brickW": float(result["brickW"]),
-        "brickH": float(result["brickH"]),
-        "mortar_t": float(result["mortar_t"]),
-        "source": "fitted frames" if fitted else "frames after the checks",
-        "frames": [b[key] for b in bricks],
-        "lengths": [float(b.get("length", result["brickL"])) for b in bricks],
-        "bricks": [{"course": b["course"], "index": b["index"], "status": b["status"]}
-                   for b in bricks],
-    }
+    return [pose(b[key]) for b in result.get("bricks", [])]
 
 
 def main(argv):
     import argparse
 
-    ap = argparse.ArgumentParser(description="physics_result.json -> brick frames JSON with "
-                                             "per-brick lengths")
+    ap = argparse.ArgumentParser(description="physics_result.json -> brick poses (x, y, z, yaw) "
+                                             "for Gazebo")
     ap.add_argument("result", help="physics_result.json written by physics_check.py")
     ap.add_argument("out", nargs="?", help="output file (default: brick_frames.json next to "
                                            "the result)")
     ap.add_argument("--fitted", action="store_true",
-                    help="write the fitted frames (before the repair) instead of the final ones")
+                    help="write the fitted poses (before the repair) instead of the final ones")
     args = ap.parse_args(argv)
 
     with open(args.result) as fh:
@@ -65,8 +63,7 @@ def main(argv):
     with open(out, "w") as fh:
         json.dump(data, fh, indent=1)
 
-    half = sum(1 for ln in data["lengths"] if abs(ln - data["brickL"]) > 1e-6)
-    print("wrote {} frames ({} not brickL long) to {}".format(len(data["frames"]), half, out))
+    print("wrote {} brick poses to {}".format(len(data), out))
     dropped = result.get("dropped", [])
     if dropped:
         print("not written: {} brick(s) dropped by the L0 repair".format(len(dropped)))

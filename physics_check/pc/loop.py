@@ -7,7 +7,7 @@ import time
 
 from .cra import run_cra
 from .fit import FitError, fit_sections, surface_lean
-from .l0 import l0_repair, settle_counts
+from .l0 import settle_counts
 from .l0qp import l0_repair_qp
 from .l1 import l1_repair
 from .params import DEFAULTS, MM, resolve_params
@@ -85,7 +85,7 @@ def run_check(job, use_cra=True):
     cra = {"state": "skipped", "interfaces": []}
     it = 0
     for it in range(1, p["max_iter"] + 1):
-        l0_ok, fatal = (l0_repair_qp if p["l0_method"] == "qp" else l0_repair)(wall, log)
+        l0_ok, fatal = l0_repair_qp(wall, log)
         if fatal:
             log.append("stop: " + fatal)
             break
@@ -173,7 +173,7 @@ def run_check(job, use_cra=True):
         "l0_pass": l0_ok, "l1_state": cra["state"], "l1_pass": l1_ok,
         "bricks_per_course": counts, "head_joints": joints, "log": log, "bricks": bricks,
         "dropped": dropped, "interfaces": interfaces, "stages": stages,
-        "frames": [b["frame"] for b in bricks],     # export_frames_json / cra_check format
+        "frames": [b["frame"] for b in bricks],     # [origin, xaxis, yaxis] per brick [mm]
         "use_cra": use_cra, "solver": p["solver"], "cra_time": cra_time,
         "time": time.time() - t_start,
     })
