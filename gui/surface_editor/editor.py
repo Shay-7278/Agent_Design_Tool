@@ -351,10 +351,9 @@ class SurfaceEditor:
             self._status("fit already running...")
             return
         src = self._wall_result_path or wall_view.find_latest_result(_project_root())
-        if src is None:
-            self._status("no previous result to take parameters from")
-            return
-        params = wall_view.load_result(src)["params"]
+        # No earlier result: an empty dict makes the solver use pc/params.py DEFAULTS.
+        params = wall_view.load_result(src)["params"] if src is not None else {}
+        source = Path(src).stem if src is not None else "solver defaults"
         self._status("extracting sections from current surface...")
         try:
             job = refit.build_job(self.model, params, use_cra=True)
@@ -366,7 +365,7 @@ class SurfaceEditor:
         self._refit_done = False
         self._refit_error = None
         self._status(f"fitting bricks to current surface "
-                     f"(params from {Path(src).stem}, ~20-90 s)...")
+                     f"(params from {source}, ~20-90 s)...")
 
         def worker():
             try:
