@@ -54,7 +54,10 @@ class SurfaceEditor:
         res: int = 60,
         off_screen: bool = False,
         result_path: str | Path | None = None,
+        plotter=None,
     ) -> None:
+        self._external_plotter = plotter
+        self.on_surface_changed = None
         self.res = res
         self.model = NurbsModel.load(path)
         self.cps = self.model.control_points()  # (n, m, 3) source of truth
@@ -92,7 +95,7 @@ class SurfaceEditor:
 
     # ----------------------------------------------------------------- scene
     def _build_scene(self, off_screen: bool) -> None:
-        p = pv.Plotter(off_screen=off_screen, window_size=(1500, 950), title="NURBS Surface Editor")
+        p = self._external_plotter if self._external_plotter is not None else pv.Plotter(off_screen=off_screen, window_size=(1500, 950), title="NURBS Surface Editor")
 
         # shaded surface (StructuredGrid, points updated in place each frame)
         pts = self.model.evaluate(self.res, self.res)
@@ -218,6 +221,31 @@ class SurfaceEditor:
             finally:
                 self._guard = False
 
+        if self.on_surface_changed is not None:
+            self.on_surface_changed()
+
+    def apply_control_points(self, cps: np.ndarray) -> None:
+        """One atomic, undoable edit, shared by programmatic editing tools."""
+        cps = np.asarray(cps, dtype=float)
+        if cps.shape != self.cps.shape or not np.isfinite(cps).all():
+            raise ValueError("control points must have the existing shape and finite coordinates")
+        if np.array_equal(cps, self.cps):
+            return
+        previous = self.cps.copy()
+        self._push_undo()
+        try:
+            self.cps = cps.copy()
+            self._reset_scales()
+            self._sync_scene()
+        except Exception:
+            self.cps = previous
+            self.undo_stack.pop()
+            self._sync_scene()
+            raise
+        self.drag_index = None
+        self.last_event = 0.0
+        self.plotter.render()
+
     # -------------------------------------------------------------- dragging
     def on_drag(self, point, index, widget) -> None:
         if self._guard:
@@ -277,6 +305,8 @@ class SurfaceEditor:
             self._status("nothing to undo")
             return
         self.cps = self.undo_stack.pop()
+        self.drag_index = None
+        self.last_event = 0.0
         self._reset_scales()
         self._sync_scene()
         self._status(f"undo ({len(self.undo_stack)} left)")
@@ -284,6 +314,8 @@ class SurfaceEditor:
     def reset(self) -> None:
         self._push_undo()
         self.cps = self.initial.copy()
+        self.drag_index = None
+        self.last_event = 0.0
         self._reset_scales()
         self._sync_scene()
         self._status("reset to loaded state")
@@ -315,7 +347,6 @@ class SurfaceEditor:
         self.wall_actors = []
         result = wall_view.load_result(result_path)
         self._wall_result_path = Path(result_path)
-        result = wall_view.load_result(result_path)
         for status, mesh in wall_view.build_wall_meshes(result):
             a = self.plotter.add_mesh(
                 mesh,

@@ -4,13 +4,10 @@ Replicates the Rhino side of ``physics_check_gh.py`` (steps 1-2 of the
 workflow) in plain Python:
 
 - course count / Z scale from the surface height (``course_layout`` math);
-- one section per course at its mid-height. Because this workflow builds
-  with horizontal bed joints, the surface's z depends on the v parameter
-  only, so a horizontal contour is an exact iso-v curve: find v by
-  bisection on the nurbs, sample the iso-curve, resample by arc length.
-  (If a future surface breaks that assumption -- z varying along u, or
-  non-monotonic in v -- we refuse and point back at the Rhino pipeline
-  instead of silently producing wrong sections.)
+- one horizontal section per course at its mid-height, found by sampling
+  U columns, bracketing crossings in V, and linking the longest branch.
+  This supports ordinary edits with Z varying in both parameters. It is an
+  approximation; highly folded surfaces and multiple branches need care.
 
 The solver itself is the existing ``physics_check.py run job.json
 result.json`` called as a subprocess with this process's interpreter
@@ -25,6 +22,7 @@ import math
 import subprocess
 import sys
 import time
+import uuid
 from pathlib import Path
 
 import numpy as np
@@ -199,8 +197,9 @@ def run_solver(
     """
     workdir = Path(workdir)
     workdir.mkdir(parents=True, exist_ok=True)
-    job_path = workdir / "gui_refit_job.json"
-    result_path = workdir / "gui_refit_result.json"
+    run_id = uuid.uuid4().hex
+    job_path = workdir / f"gui_{run_id}_job.json"
+    result_path = workdir / f"gui_{run_id}_result.json"
     with open(job_path, "w", encoding="utf-8") as fh:
         json.dump(job, fh)
 
@@ -212,7 +211,11 @@ def run_solver(
     t0 = time.perf_counter()
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
     elapsed = time.perf_counter() - t0
-    if not result_path.exists():
+    if proc.returncode not in (0, 1) or not result_path.exists():
         tail = (proc.stdout or "")[-2000:] + (proc.stderr or "")[-2000:]
         raise RuntimeError(f"solver wrote no result (exit {proc.returncode}):\n{tail}")
+    with open(result_path, encoding="utf-8") as fh:
+        result = json.load(fh)
+    if not isinstance(result, dict) or "ok" not in result or "bricks" not in result:
+        raise RuntimeError("solver returned an invalid result document")
     return result_path, elapsed

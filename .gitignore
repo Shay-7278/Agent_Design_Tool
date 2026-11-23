@@ -10,3 +10,11 @@ __pycache__/
 # Solver I/O
 physics_job.json
 physics_result.json
+
+.venv/
+.env
+.env.*
+!.env.example
+results/gui_*_job.json
+results/gui_*_result.json
+results/ai_*/

@@ -78,6 +78,9 @@ def interface_markers(result: dict) -> pv.PolyData | None:
 
 def result_summary(result: dict, path: str | Path) -> str:
     n = len(result.get("bricks", []))
+    if result.get("use_cra") is False:
+        state = "GEOMETRY PASS" if result.get("l0_pass") else "GEOMETRY FAIL"
+        return f"{Path(path).stem}: {n} bricks, {state} (equilibrium not checked)"
     ok = result.get("ok")
     state = "PASS" if ok else "FAIL"
     l1 = result.get("l1_state", "?")
@@ -90,6 +93,7 @@ def find_latest_result(root: Path) -> Path | None:
     for base in (root / "results", root):
         if base.is_dir():
             candidates += [p for p in base.glob("*_result.json") if p.is_file()]
+            candidates += [p for p in base.glob("ai_*/*_result.json") if p.is_file()]
     if not candidates:
         return None
     return max(candidates, key=lambda p: p.stat().st_mtime)
