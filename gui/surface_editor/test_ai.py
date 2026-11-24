@@ -20,8 +20,8 @@ from . import wall_view
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def plane():
-    x, z = np.meshgrid(np.linspace(0, 1000, 6), np.linspace(0, 1000, 6), indexing="ij")
+def plane(n=6):
+    x, z = np.meshgrid(np.linspace(0, 1000, n), np.linspace(0, 1000, 6), indexing="ij")
     return np.stack([x, np.zeros_like(x), z], axis=-1)
 
 
@@ -72,6 +72,25 @@ class OperationsTests(unittest.TestCase):
                        {"kind": "smooth", "strength": .5, "iterations": 1})
         self.assertAlmostEqual(q[2, 2, 1], 150)
 
+    def test_wave_limit_follows_its_own_direction(self):
+        wave = {"kind": "wave", "axis": "width", "amount_mm": 100, "cycles": 3}
+        with self.assertRaisesRegex(ValueError, "too detailed"):
+            self.apply(wave)
+        fine = plane(15)
+        origin, frame = local_frame(fine)
+        q = apply_operations(fine, [wave], origin, frame)
+        self.assertGreater(np.abs(q[..., 1]).max(), 50)
+
+    def test_wave_fade_height_affects_base_only(self):
+        q = self.apply({"kind": "wave", "axis": "width", "amount_mm": 100, "cycles": 1, "fade_height": .3})
+        self.assertGreater(np.abs(q[:, 0, 1]).max(), 50)
+        np.testing.assert_allclose(q[:, 2:], self.cps[:, 2:], atol=1e-9)
+        with self.assertRaises(ValueError):
+            self.apply({"kind": "wave", "axis": "height", "amount_mm": 100, "cycles": 1, "fade_height": .3})
+        with self.assertRaisesRegex(ValueError, "keep_boundary"):
+            self.apply({"kind": "wave", "axis": "width", "amount_mm": 100, "cycles": 1, "fade_height": .3,
+                        "keep_boundary": True})
+
     def test_batch_failure_leaves_original_untouched(self):
         original = self.cps.copy()
         with self.assertRaises(ValueError):
@@ -106,9 +125,20 @@ class FakeEditor:
         self.model.set_control_points(self.cps)
         self.on_surface_changed()
 
+    def add_control_points(self, direction, per_span):
+        self.undo_stack.append(self.model.snapshot())
+        self.model.insert_knots(direction, per_span)
+        self.cps = self.model.control_points()
+        self.on_surface_changed()
+
     def undo(self):
-        self.cps = self.undo_stack.pop()
-        self.model.set_control_points(self.cps)
+        entry = self.undo_stack.pop()
+        if isinstance(entry, np.ndarray):
+            self.cps = entry
+            self.model.set_control_points(self.cps)
+        else:
+            self.model.restore(entry)
+            self.cps = self.model.control_points()
         self.on_surface_changed()
 
     def show_wall(self, path):
@@ -131,6 +161,50 @@ class SessionTests(unittest.TestCase):
         self.session.execute("undo_edit", {"expected_revision": 1})
         np.testing.assert_allclose(self.editor.cps, before)
         self.assertEqual(self.session.revision, 2)
+
+    def test_base_must_stay_level(self):
+        self.assertEqual(self.session.state()["base_edge"], "j=0")
+        before = self.editor.cps.copy()
+        with self.assertRaisesRegex(ValueError, "base .* must stay level"):
+            self.session.execute("edit_surface", {"expected_revision": 0,
+                "operations": [{"kind": "rotate", "axis": "depth", "angle_degrees": 5}]})
+        np.testing.assert_array_equal(self.editor.cps, before)
+        self.assertEqual(self.session.revision, 0)
+        self.session.execute("edit_surface", {"expected_revision": 0,
+            "operations": [{"kind": "translate", "vector": [0, 0, 100]}]})
+        self.assertEqual(self.session.revision, 1)
+
+    def test_insert_knots_keeps_shape(self):
+        model = self.editor.model
+        before = model.evaluate(80, 20)
+        model.insert_knots(0, 1)
+        self.assertEqual(model.shape, (9, 6))
+        model.insert_knots(1, 2)
+        self.assertEqual(model.shape, (9, 12))
+        self.assertLess(np.abs(model.evaluate(80, 20) - before).max(), 1e-6)
+        self.assertLess(np.ptp(model.control_points()[:, 0, 2]), 1e-9)
+        for direction, per_span in ((2, 1), (0, 0), (0, 5), (0, 1.0)):
+            with self.subTest(direction=direction, per_span=per_span), self.assertRaises(ValueError):
+                model.insert_knots(direction, per_span)
+
+    def test_add_control_points_tool_and_undo(self):
+        before = self.editor.cps.copy()
+        out = self.session.execute("add_control_points", {"expected_revision": 0, "direction": "width", "per_span": 3})
+        self.assertEqual(out["grid_shape"], [15, 6])
+        self.assertEqual(self.session.revision, 1)
+        self.assertEqual(self.session.state()["grid_shape"], [15, 6])
+        self.session.execute("edit_surface", {"expected_revision": 1, "operations": [
+            {"kind": "wave", "axis": "width", "amount_mm": 100, "cycles": 3, "fade_height": .3}]})
+        self.session.execute("undo_edit", {"expected_revision": 2})
+        self.session.execute("undo_edit", {"expected_revision": 3})
+        np.testing.assert_array_equal(self.editor.cps, before)
+        bad = [{"expected_revision": 0, "direction": "width", "per_span": 1},
+               {"expected_revision": 4, "direction": "depth", "per_span": 1},
+               {"expected_revision": 4, "direction": "width", "per_span": 9}]
+        for args in bad:
+            with self.subTest(args=args), self.assertRaises(ValueError):
+                self.session.execute("add_control_points", args)
+        self.assertEqual(self.editor.cps.shape, (6, 6, 3))
 
     def test_manual_change_rejects_stale_ai(self):
         self.editor.apply_control_points(self.editor.cps + [0, 1, 0])

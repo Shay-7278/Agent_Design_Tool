@@ -12,6 +12,9 @@ from .model import NurbsModel
 from .operations import apply_operations, local_frame
 from . import refit, wall_view
 
+BASE_LEVEL_TOL = 0.5  # mm
+EDGES = {"j=0": (slice(None), 0), "j=last": (slice(None), -1), "i=0": (0, slice(None)), "i=last": (-1, slice(None))}
+
 
 def surface_hash(model):
     s = model._srf
@@ -35,6 +38,9 @@ class DesignSession:
         self.revision = 0
         self._points = editor.cps.copy()
         self.origin, self.frame = local_frame(editor.cps)
+        # The surface's bottom boundary curve depends only on this control-point row,
+        # so the base is level exactly when these points share one height.
+        self.base_edge = min(EDGES, key=lambda k: editor.cps[EDGES[k]][:, 2].mean())
         self.result = wall_view.load_result(editor._wall_result_path) if editor._wall_result_path else None
         self.running = None
         self.last_error = None
@@ -64,7 +70,8 @@ class DesignSession:
                 "degree": list(e.model.degree), "local_origin": self.origin.tolist(),
                 "local_axes_world": {name: self.frame[:, k].tolist() for k, name in enumerate(("width", "depth", "height"))},
                 "world_bounds": [e.cps.min(axis=(0, 1)).tolist(), e.cps.max(axis=(0, 1)).tolist()],
-                "control_points_world": e.cps.tolist(), "analysis_status": self.analysis_status(),
+                "control_points_world": e.cps.tolist(), "base_edge": self.base_edge,
+                "analysis_status": self.analysis_status(),
                 "running_analysis": self.running, "undo_available": bool(e.undo_stack),
                 "limits": "Fixed control grid; edits deform the control cage, not exact target surfaces. UV follows grid indices."}
 
@@ -74,6 +81,7 @@ class DesignSession:
 
     def execute(self, name, args):
         fields = {"get_surface_state": set(), "edit_surface": {"expected_revision", "operations"},
+                  "add_control_points": {"expected_revision", "direction", "per_span"},
                   "undo_edit": {"expected_revision"}, "analyze_wall": {"mode"}, "get_analysis_summary": set()}
         if name not in fields or not isinstance(args, dict) or set(args) != fields[name]:
             raise ValueError("Unknown tool or invalid arguments")
@@ -82,6 +90,13 @@ class DesignSession:
         if name == "edit_surface":
             self.check_revision(args["expected_revision"])
             candidate = apply_operations(self.editor.cps, args["operations"], self.origin, self.frame)
+            base_z = candidate[EDGES[self.base_edge]][:, 2]
+            if np.ptp(base_z) > BASE_LEVEL_TOL:
+                raise ValueError(
+                    f"Edit rejected: the wall base (control points with {self.base_edge}) must stay level so "
+                    f"brick courses can be fitted, but this edit leaves them spanning {np.ptp(base_z):.1f} mm in "
+                    "height. Nothing was changed. Keep the base row at one height, e.g. use keep_boundary, "
+                    "or set_points to give every base point the same z.")
             check = clone_model(self.editor.model)
             check.set_control_points(candidate)
             if not check._srf.IsValid or not np.isfinite(check.evaluate(15, 15)).all():
@@ -89,6 +104,14 @@ class DesignSession:
             self.editor.apply_control_points(candidate)
             return {"revision": self.revision, "applied": True, "analysis_status": self.analysis_status(),
                     "note": "Control-cage deformation applied; structural performance has not been checked."}
+        if name == "add_control_points":
+            self.check_revision(args["expected_revision"])
+            if args["direction"] not in ("width", "height"):
+                raise ValueError("direction must be width or height")
+            self.editor.add_control_points(0 if args["direction"] == "width" else 1, args["per_span"])
+            return {"revision": self.revision, "grid_shape": list(self.editor.cps.shape[:2]),
+                    "note": "Surface shape unchanged, but control-point indices changed. "
+                            "Call get_surface_state before set_points or index-based edits."}
         if name == "undo_edit":
             self.check_revision(args["expected_revision"])
             if not self.editor.undo_stack:

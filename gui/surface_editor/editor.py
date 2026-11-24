@@ -39,6 +39,7 @@ from . import refit, wall_view
 AXIS_IDX = {"x": 0, "y": 1, "z": 2}
 L1_SOLVERS = ("rbe", "cra_penalty")  # pc/params.py SOLVERS; first = start value
 UNDO_CAP = 64
+MAX_CPS = 40  # per grid direction
 ENGAGE_GAP = 0.6  # seconds of silence before a new drag counts as a new gesture
 
 
@@ -61,11 +62,11 @@ class SurfaceEditor:
         self.res = res
         self.model = NurbsModel.load(path)
         self.cps = self.model.control_points()  # (n, m, 3) source of truth
-        self.initial = self.cps.copy()
+        self.initial_surface = self.model.snapshot()
         self.pivot = self.cps.reshape(-1, 3).mean(axis=0)
-        self.n, self.m = self.cps.shape[:2]
 
-        self.undo_stack: list[np.ndarray] = []
+        # CP arrays for point edits; surface snapshots for edits that change the grid.
+        self.undo_stack: list = []
         self.axis_lock: str | None = None
         self.soft = 0.0  # 0 = move single CP only
         self.scales = np.array([1.0, 1.0, 1.0])
@@ -75,6 +76,7 @@ class SurfaceEditor:
         # Overrides the solver copied from a previous result: those store every
         # resolved param, so a default change would otherwise never reach 'a'.
         self.solver = L1_SOLVERS[0]
+        self.handles_visible = True
 
         self._build_scene(off_screen)
         self.wall_actors: list = []
@@ -111,35 +113,17 @@ class SurfaceEditor:
             render_lines_as_tubes=False,
         )
         self.grid = grid
-
-        # control polygon
-        poly = pv.PolyData(self.cps.reshape(-1, 3))
-        segs: list[int] = []
-        for i in range(self.n):
-            for j in range(self.m):
-                if i + 1 < self.n:
-                    segs += [2, self._flat(i, j), self._flat(i + 1, j)]
-                if j + 1 < self.m:
-                    segs += [2, self._flat(i, j), self._flat(i, j + 1)]
-        poly.lines = np.array(segs)
-        p.add_mesh(poly, color="dimgray", line_width=2, render_lines_as_tubes=True)
-        self.cp_poly = poly
-
-        # draggable CP handles
+        # The base is the lowest boundary curve of the loaded surface.
+        edges = [(slice(None), 0), (slice(None), -1), (0, slice(None)), (-1, slice(None))]
+        self.base_index = min(edges, key=lambda e: pts[e][:, 2].mean())
+        self.base_line = pv.lines_from_points(pts[self.base_index])
+        p.add_mesh(self.base_line, color="crimson", line_width=5, render_lines_as_tubes=True, name="base_edge")
+        self.plotter = p
         diag = np.linalg.norm(
             self.cps.reshape(-1, 3).max(axis=0) - self.cps.reshape(-1, 3).min(axis=0)
         )
-        radius = max(diag * 0.012, 1.0)
-        p.add_sphere_widget(
-            self.on_drag,
-            center=self.cps.reshape(-1, 3),
-            radius=radius,
-            color="darkorange",
-            selected_color="magenta",
-            test_callback=False,
-            interaction_event="always",
-            pass_widget=True,
-        )
+        self.handle_radius = max(diag * 0.012, 1.0)
+        self._build_cage()
 
         # scale sliders (right edge, stacked)
         self.sliders = []
@@ -188,8 +172,37 @@ class SurfaceEditor:
             font_size=11,
             name="help",
         )
-        self.plotter = p
         self._status(f"loaded (L1 solver: {self.solver})")
+
+    def _build_cage(self) -> None:
+        """(Re)create the control polygon and one draggable handle per CP."""
+        p = self.plotter
+        self.n, self.m = self.cps.shape[:2]
+        poly = pv.PolyData(self.cps.reshape(-1, 3))
+        segs: list[int] = []
+        for i in range(self.n):
+            for j in range(self.m):
+                if i + 1 < self.n:
+                    segs += [2, self._flat(i, j), self._flat(i + 1, j)]
+                if j + 1 < self.m:
+                    segs += [2, self._flat(i, j), self._flat(i, j + 1)]
+        poly.lines = np.array(segs)
+        self.cp_actor = p.add_mesh(poly, color="dimgray", line_width=2, render_lines_as_tubes=True, name="cp_poly")
+        self.cp_poly = poly
+        p.clear_sphere_widgets()
+        if not self.handles_visible:
+            self.cp_actor.SetVisibility(False)
+            return
+        p.add_sphere_widget(
+            self.on_drag,
+            center=self.cps.reshape(-1, 3),
+            radius=self.handle_radius,
+            color="darkorange",
+            selected_color="magenta",
+            test_callback=False,
+            interaction_event="always",
+            pass_widget=True,
+        )
 
     # --------------------------------------------------------------- helpers
     def _flat(self, i: int, j: int) -> int:
@@ -212,6 +225,7 @@ class SurfaceEditor:
         self.model.set_control_points(self.cps)
         pts = self.model.evaluate(self.res, self.res)
         self.grid.points = pts.reshape(-1, 3, order=self.flat_order)
+        self.base_line.points = pts[self.base_index]
         self.cp_poly.points = self.cps.reshape(-1, 3)
         if not self._guard:
             self._guard = True
@@ -300,24 +314,65 @@ class SurfaceEditor:
         self.soft = float(value)
 
     # ------------------------------------------------------------- undo/reset
+    def _push_undo_surface(self) -> None:
+        self.undo_stack.append(self.model.snapshot())
+        if len(self.undo_stack) > UNDO_CAP:
+            self.undo_stack.pop(0)
+
+    def _restore_surface(self, snapshot) -> None:
+        self.model.restore(snapshot)
+        self.cps = self.model.control_points()
+        self._build_cage()
+
+    def toggle_handles(self) -> None:
+        self.handles_visible = not self.handles_visible
+        self._build_cage()
+        self.plotter.render()
+        self._status("handles shown" if self.handles_visible else "handles hidden (toggle again to edit by dragging)")
+
+    def add_control_points(self, direction: int, per_span: int) -> None:
+        """Insert knots along U (0) or V (1): more handles, identical surface."""
+        self._push_undo_surface()
+        try:
+            self.model.insert_knots(direction, per_span)
+            if max(self.model.shape) > MAX_CPS:
+                raise ValueError(f"that would exceed {MAX_CPS} control points in one direction")
+        except Exception:
+            self.model.restore(self.undo_stack.pop())
+            raise
+        self.cps = self.model.control_points()
+        self.drag_index = None
+        self.last_event = 0.0
+        self._reset_scales()
+        self._build_cage()
+        self._sync_scene()
+        self.plotter.render()
+        self._status(f"control grid now {self.n} x {self.m}")
+
     def undo(self) -> None:
         if not self.undo_stack:
             self._status("nothing to undo")
             return
-        self.cps = self.undo_stack.pop()
+        entry = self.undo_stack.pop()
+        if isinstance(entry, np.ndarray):
+            self.cps = entry
+        else:
+            self._restore_surface(entry)
         self.drag_index = None
         self.last_event = 0.0
         self._reset_scales()
         self._sync_scene()
+        self.plotter.render()
         self._status(f"undo ({len(self.undo_stack)} left)")
 
     def reset(self) -> None:
-        self._push_undo()
-        self.cps = self.initial.copy()
+        self._push_undo_surface()
+        self._restore_surface(self.initial_surface)
         self.drag_index = None
         self.last_event = 0.0
         self._reset_scales()
         self._sync_scene()
+        self.plotter.render()
         self._status("reset to loaded state")
 
     def _reset_scales(self) -> None:

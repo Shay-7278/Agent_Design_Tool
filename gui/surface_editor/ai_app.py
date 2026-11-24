@@ -144,7 +144,11 @@ class MainWindow(QtWidgets.QMainWindow):
         toolbar = self.addToolBar("Design")
         toolbar.setMovable(False)
         for label, callback in (("Undo", self.editor.undo), ("Reset surface", self.editor.reset),
+                                ("Add control points…", self.add_control_points),
                                 ("Toggle wall", self.editor.toggle_wall), ("Fit view", self.plotter.reset_camera),
+                                ("Top view", self.plotter.view_xy),
+                                ("View from below", lambda: self.plotter.view_xy(negative=True)),
+                                ("Toggle handles", self.editor.toggle_handles),
                                 ("Save surface as…", self.save_as), ("Analysis details", self.show_analysis)):
             action = toolbar.addAction(label)
             action.triggered.connect(lambda checked=False, fn=callback: fn())
@@ -310,6 +314,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.append("Analysis", "Run failed: " + error)
             return
         s = self.session.summary()
+        if s.get("fatal"):
+            self.append("Analysis", f"Finished in {seconds:.1f}s · {s['freshness']}\n"
+                        f"No wall was fitted. Solver error: {s['fatal']}")
+            return
         geometry = "passed" if s["geometry_check"] else "failed"
         equilibrium = s["equilibrium_state"] if s["equilibrium_pass"] is not None else "not checked"
         self.append("Analysis", f"Finished in {seconds:.1f}s · {s['freshness']}\n"
@@ -326,6 +334,22 @@ class MainWindow(QtWidgets.QMainWindow):
         text.setReadOnly(True)
         layout.addWidget(text)
         dialog.exec()
+
+    def add_control_points(self):
+        choices = ["Along the wall", "Up the height"]
+        choice, ok = QtWidgets.QInputDialog.getItem(self, "Add control points", "Direction", choices, 0, False)
+        if not ok:
+            return
+        per_span, ok = QtWidgets.QInputDialog.getInt(
+            self, "Add control points", "New control points per existing span (shape is unchanged)", 1, 1, 4)
+        if not ok:
+            return
+        try:
+            self.editor.add_control_points(choices.index(choice), per_span)
+        except Exception as exc:
+            self.append("Control points", str(exc))
+            return
+        self.append("Control points", f"Control grid is now {self.editor.n} × {self.editor.m}. Surface shape unchanged.")
 
     def save_as(self):
         initial = self.editor.model.path.with_name(self.editor.model.path.stem + "_edited.3dm")

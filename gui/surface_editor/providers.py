@@ -52,7 +52,7 @@ def post_json(url, headers, body):
     req = urllib.request.Request(url, data=json.dumps(body, allow_nan=False).encode(),
                                  headers={"Content-Type": "application/json", **headers})
     try:
-        with urllib.request.build_opener(NoRedirect).open(req, timeout=90) as response:
+        with urllib.request.build_opener(NoRedirect).open(req, timeout=300) as response:
             return json.load(response)
     except urllib.error.HTTPError as exc:
         # Do not echo server bodies or request headers: they can contain secrets.

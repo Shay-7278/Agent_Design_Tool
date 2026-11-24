@@ -103,6 +103,23 @@ class NurbsModel:
                 x, y, z = (float(v) for v in cps[i, j])
                 self._srf.Points[(i, j)] = rhino3dm.Point4d(x, y, z, float(w[i, j]))
 
+    def insert_knots(self, direction: int, per_span: int) -> None:
+        """Add control points along U (0) or V (1) without changing the shape."""
+        if direction not in (0, 1) or type(per_span) is not int or not 1 <= per_span <= 4:
+            raise ValueError("direction must be 0 or 1 and per_span an integer from 1 to 4")
+        knots =self._srf.KnotsU if direction == 0 else self._srf.KnotsV
+        values = sorted(set(knots))
+        for a, b in zip(values, values[1:]):
+            for k in range(1, per_span + 1):
+                if not knots.InsertKnot(a + (b - a) * k / (per_span + 1), 1):
+                    raise RuntimeError("knot insertion failed")
+
+    def snapshot(self) -> rhino3dm.NurbsSurface:
+        return rhino3dm.CommonObject.Decode(self._srf.Encode())
+
+    def restore(self, snapshot: rhino3dm.NurbsSurface) -> None:
+        self._srf = rhino3dm.CommonObject.Decode(snapshot.Encode())
+
     # ------------------------------------------------------------- evaluate
     def evaluate(self, res_u: int = 60, res_v: int = 60) -> np.ndarray:
         """Tessellate the current surface as an (res_u, res_v, 3) point grid.

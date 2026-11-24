@@ -65,7 +65,7 @@ smooth, flatten, wave, and explicit control-point edits. It does not match promp
 against a hard-coded list of phrases. The LLM selects and composes tools from their schemas.
 One batch is one undo step. You can continue dragging handles after an AI edit.
 **Ctrl+Enter** sends a message. **Stop AI** prevents further tool execution; a pending
-HTTP request can take up to its 90-second timeout to finish. Completed edits are retained.
+HTTP request can take up to its 300-second timeout to finish. Completed edits are retained.
 
 ## Geometry semantics and limits
 
@@ -79,9 +79,18 @@ HTTP request can take up to its 90-second timeout to finish. Completed edits are
   **soft pull** slider controls neighbor movement during manual dragging.
 - Edits change the existing control cage. Wave/bend amplitude is a cage displacement,
   not a guarantee of exact amplitude on the evaluated NURBS surface.
-- Topology, degree, knot vectors and weights stay unchanged. The current reference
-  has a 6 × 6 grid. No knot insertion, arbitrary topology creation, trimming, holes,
-  or NURBS weight editing is implemented. Use flatten(depth) for a planar wall.
+- The current reference has a 6 × 6 grid, too coarse for fine detail such as several
+  waves along the wall. **Add control points…** (toolbar), or the AI's `add_control_points`
+  tool, inserts knots along the wall or up its height. The surface shape stays exactly the
+  same, the edit is undoable, and **Reset surface** returns to the loaded grid. Aim for about
+  4 control points per wave cycle. Degree and weights stay unchanged. No arbitrary topology
+  creation, trimming, holes, or NURBS weight editing is implemented. Use flatten(depth)
+  for a planar wall.
+- Wave along the width accepts an optional `fade_height` (fraction of wall height): full
+  strength at the base, fading to zero at that height, for base-only undulation.
+- AI edits must keep the wall base level (one shared height for the base row of control
+  points), so brick courses stay horizontal. Edits that tilt the base are rejected;
+  manual dragging is not restricted.
 - Edits are additive to the current state; this is not a persistent parametric modifier
   stack. Undo or explicit corrective changes support iteration.
 - Numeric, index, shape and basic validity checks run before commit. They do not prove

@@ -46,7 +46,7 @@ FIELDS = {
     "pull": {"center_uv", "radius_uv", "vector"},
     "smooth": {"strength", "iterations"},
     "flatten": {"axis", "strength"},
-    "wave": {"axis", "amount_mm", "cycles", "phase_degrees"},
+    "wave": {"axis", "amount_mm", "cycles", "phase_degrees", "fade_height"},
     "set_points": {"points"},
 }
 
@@ -114,10 +114,22 @@ All operations can preserve the outside rows/columns with keep_boundary.
                 else:
                     cycles = number(op.get("cycles", 1), "cycles", .01, 20)
                     # A coarse cage cannot resolve arbitrary frequencies.
-                    if cycles > (min(out.shape[:2]) - 1) / 2:
-                        raise ValueError("wave too detailed for this control grid; use fewer cycles")
+                    count = out.shape[0] if a == 0 else out.shape[1]
+                    if cycles > (count - 1) / 2:
+                        raise ValueError(f"wave too detailed for {count} control points along {axis}; "
+                                         "use fewer cycles or add_control_points first")
                     phase = np.deg2rad(number(op.get("phase_degrees", 0), "phase_degrees", -360, 360))
-                    q[..., 1] += amount * np.sin(2 * np.pi * cycles * t + phase)
+                    weight = 1.0
+                    if "fade_height" in op:
+                        if a != 0:
+                            raise ValueError("fade_height applies only to width waves")
+                        if keep:
+                            raise ValueError("fade_height moves the base row, which keep_boundary would pin; "
+                                             "drop keep_boundary (depth moves keep the base level)")
+                        fade = number(op["fade_height"], "fade_height", .01, 1)
+                        h = (q[..., 2] - q[..., 2].min()) / max(np.ptp(q[..., 2]), 1e-8)
+                        weight = np.clip(1 - h / fade, 0, 1)
+                    q[..., 1] += weight * amount * np.sin(2 * np.pi * cycles * t + phase)
         elif kind == "pull":
             center = vector(op["center_uv"], 2, "center_uv", 0, 1)
             radius = number(op["radius_uv"], "radius_uv", .01, 2)

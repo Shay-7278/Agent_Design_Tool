@@ -64,6 +64,14 @@ def main():
         assert window.session.revision == 1
         assert not np.allclose(before, window.editor.cps)
         assert "Applied a local bulge" in window.chat.toPlainText()
+        ed = window.editor
+        np.testing.assert_allclose(ed.base_line.points, ed.model.evaluate(ed.res, ed.res)[ed.base_index])
+        assert np.ptp(ed.base_line.points[:, 2]) < 1e-6  # base edge found, not a side edge
+        window.plotter.view_xy()
+        ed.toggle_handles()
+        assert len(window.plotter.widgets.sphere_widgets) == 0 and not ed.cp_actor.GetVisibility()
+        ed.toggle_handles()
+        assert len(window.plotter.widgets.sphere_widgets) == ed.n * ed.m and ed.cp_actor.GetVisibility()
         print("PASS chat worker -> tools on GUI thread -> scene update", flush=True)
         window.editor.undo()
         np.testing.assert_allclose(window.editor.cps, before)
@@ -74,6 +82,20 @@ def main():
         window.editor.undo()
         np.testing.assert_allclose(window.editor.cps, before)
         print("PASS shared manual/AI undo and revisions", flush=True)
+        surface_before = window.editor.model.evaluate(40, 40)
+        window.editor.add_control_points(0, 3)
+        assert window.editor.cps.shape == (15, 6, 3)
+        assert len(window.plotter.widgets.sphere_widgets) == 15 * 6
+        assert np.abs(window.editor.model.evaluate(40, 40) - surface_before).max() < 1e-6
+        moved = window.editor.cps.reshape(-1, 3)[20] + [0, 10, 0]
+        window.editor.on_drag(moved, 20, window.plotter.widgets.sphere_widgets[20])
+        np.testing.assert_allclose(window.editor.cps[divmod(20, 6)], moved)
+        window.editor.undo()
+        window.editor.undo()
+        assert window.editor.cps.shape == (6, 6, 3)
+        assert len(window.plotter.widgets.sphere_widgets) == 36
+        np.testing.assert_allclose(window.editor.cps, before)
+        print("PASS add control points: handles rebuilt, shape kept, drag and undo", flush=True)
         with tempfile.TemporaryDirectory() as tmp:
             saved = window.editor.model.save(Path(tmp) / "edited.3dm", backup=False)
             np.testing.assert_allclose(NurbsModel.load(saved).control_points(), before)
