@@ -133,7 +133,9 @@ class Wall(object):
         by itself (min_contact, min_balance): where the course below stops
         short of the edge, the fill is cut back (a full brick becomes a half
         bat, or pieces are left out) so the end steps back over the open gap
-        instead of hanging over it.  Pieces left out: self.end_cut[k].
+        instead of hanging over it.  A piece whose outer end runs past the
+        end of its contact below by more than end_max_cantilever is cut back
+        the same way.  Pieces left out: self.end_cut[k].
 
         Records self.end_dev[k] = (start, end): signed distance of each
         course end from the surface edge [mm] (+ = open gap short of the
@@ -190,16 +192,22 @@ class Wall(object):
                 cur += sign * ln
             return out
 
-        def bears(s, ln):
+        def bears(s, ln, sign):
             """End piece at s rests on course k - 1 by itself: contact and
-            balance as the L0 check (min_contact, min_balance)."""
+            balance as the L0 check (min_contact, min_balance), and its outer
+            end (sign +1 = towards s = length) runs past the end of its
+            contact by at most end_max_cantilever."""
             b = Brick(k, -1, s, ln)
             sup = self.supports(b)
             tot = sum(a for _c, a, _cen in sup)
             if tot < p["min_contact"] * ln * self.W:
                 return False
-            bal = self.balance(b)
-            return bal is not None and bal >= p["min_balance"] - 1e-6
+            ends = self.balance_ends(b)
+            if ends is None or min(ends.values()) < p["min_balance"] - 1e-6:
+                return False
+            cap = p["end_max_cantilever"]
+            cant = 0.5 * ln - ends["t+" if sign > 0 else "t-"]
+            return cap <= 0 or cant <= cap + 1e-6
 
         def end(start, sign, gap):
             """(pieces, leftover, pieces left out) for one end.  With
@@ -220,7 +228,7 @@ class Wall(object):
             for c in cands:
                 g, dev = spacing(gap, c)
                 pcs = lay(start, sign, c, g)
-                if not p["end_support"] or all(bears(s, ln) for s, ln in pcs):
+                if not p["end_support"] or all(bears(s, ln, sign) for s, ln in pcs):
                     return pcs, dev, len(lens) - len(c) + 0.5 * sum(
                         1 for a, b in zip(lens, c) if a != b)
             return [], gap, len(lens)

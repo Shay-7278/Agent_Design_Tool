@@ -51,6 +51,9 @@ DEFAULTS = {
     "end_support": True,       # bond layout: an end-fill piece must bear on the course below by
                                # itself (min_contact, min_balance), else the fill is cut back from
                                # the edge (full -> half bat, or left out); False = old fill
+    "end_max_cantilever": None,  # bond layout (end_support): how far an end-fill piece may run past
+                               # the end of its contact with the course below, along the course
+                               # [mm]; None -> brickL / 4; <= 0 = no limit
     "max_drop": 10,            # QP L0 repair: most bricks dropped per call where no position
                                # with enough contact exists (l0qp.py); 0 = never drop
     "stage_check": True,       # construction stages (stages.py): after L1, solve the wall after
@@ -100,7 +103,9 @@ def resolve_params(given):
         p["max_overhang"] = 0.5 * p["brickW"]
     if p["max_move"] is None or p["max_move"] < 0:
         p["max_move"] = 0.0
-    for k in ("offset_distance", "max_overhang", "max_move"):
+    if p["end_max_cantilever"] is None:
+        p["end_max_cantilever"] = 0.25 * p["brickL"]
+    for k in ("offset_distance", "max_overhang", "max_move", "end_max_cantilever"):
         p[k] = float(p[k])
     p["solver"] = str(p["solver"]).strip().lower()
     if p["solver"] not in SOLVERS:
