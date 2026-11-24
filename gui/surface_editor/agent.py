@@ -12,8 +12,12 @@ UV coordinates refer to control-grid indices, not physical distance or surface a
 Use one edit_surface batch per design change so undo is predictable. Changes are additive
 to the current cage; do not claim a parametric modifier history. For 'half as strong', use
 the prior operation's actual displacement or inspect coordinates; do not add another wave.
-The cage remains the same topology. Smooth and wave operate on the cage: evaluated NURBS
-shape/amplitude is approximate. No automatic refinement, trimming, holes or new topology.
+Smooth and wave operate on the cage: evaluated NURBS shape/amplitude is approximate.
+Use rebuild_surface(mode='refine') to add points without changing the shape. Use mode='rebuild'
+to reduce counts or create a uniform cubic grid, respecting the user's tolerance; report
+the sampled deviation. Read state again after topology changes before editing point indices.
+Use new_flat_surface to replace the design with a vertical planar wall (undoable).
+No trimming, holes or arbitrary new topology.
 For unrepresentable requests, explain the limit and suggest a supported approximation.
 If orientation or a materially important dimension is ambiguous, ask a short question.
 Never claim stability from appearance. Analyze only when requested or needed to answer an
@@ -43,6 +47,11 @@ OP = obj({
 }, ["kind"])
 
 TOOLS = [
+    {"name": "rebuild_surface", "description": "Change U/V control-point counts (4..20 each), undoable. refine inserts knots without changing shape and can only increase counts. rebuild fits a uniform cubic grid and rejects sampled deviations above tolerance_mm. Re-inspect state afterwards. Tolerance is a sampled parametric bound, not a certified global maximum.",
+     "parameters": obj({"expected_revision": {"type": "integer"}, "count_u": {"type": "integer", "minimum": 4, "maximum": 20}, "count_v": {"type": "integer", "minimum": 4, "maximum": 20}, "mode": {"type": "string", "enum": ["refine", "rebuild"]}, "tolerance_mm": {"type": "number", "minimum": 0, "maximum": 1000}}, ["expected_revision", "count_u", "count_v", "mode", "tolerance_mm"])},
+    {"name": "new_flat_surface", "description": "Replace current design with an undoable vertical flat wall in world XZ, starting at origin. Existing wall overlay is hidden. Width and height in mm.",
+     "parameters": obj({"expected_revision": {"type": "integer"}, "width_mm": {"type": "number", "minimum": 100, "maximum": 100000}, "height_mm": {"type": "number", "minimum": 100, "maximum": 100000}, "count_u": {"type": "integer", "minimum": 4, "maximum": 20}, "count_v": {"type": "integer", "minimum": 4, "maximum": 20}}, ["expected_revision", "width_mm", "height_mm", "count_u", "count_v"])},
+    {"name": "redo_edit", "description": "Redo the latest undone surface edit, including rebuilding.", "parameters": obj({"expected_revision": {"type": "integer"}}, ["expected_revision"])},
     {"name": "get_surface_state", "description": "Current revision, local axes, world control points, bounds and analysis freshness.", "parameters": obj()},
     {"name": "edit_surface", "description": "Atomic batch on current cage. translate(vector); scale(factors); rotate(axis,angle_degrees) about centroid; twist(axis,angle_degrees) from low=0 to high=angle; bend(axis=width|height,amount_mm) adds parabolic depth bulge zero at ends; taper(axis,factor) scales transverse dimensions from low=1 to high=factor; pull(center_uv,radius_uv,vector) Gaussian displacement; smooth(strength=0..1,iterations=1..20) interior neighbor averaging; flatten(axis,strength=0..1) removes that coordinate about centroid (use depth for planar wall); wave(axis=width|height,amount_mm,cycles,phase_degrees) adds approximate depth wave; set_points(points=[{i,j,position}]) sets WORLD positions. Optional keep_boundary preserves outside rows/columns. All other vectors are LOCAL [width,depth,height]. Only use fields belonging to the chosen kind.",
      "parameters": obj({"expected_revision": {"type": "integer"}, "operations": {"type": "array", "items": OP, "minItems": 1, "maxItems": 20}}, ["expected_revision", "operations"])},
