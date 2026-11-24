@@ -17,7 +17,7 @@ Or run directly (also works if PowerShell blocks scripts):
 
 ```powershell
 cd gui
-..\.venv\Scripts\python.exe -m surface_editor --ai
+uv run --project .. python -m surface_editor --ai
 ```
 
 Optional: append a surface path and/or `-r path_to_result.json`.
