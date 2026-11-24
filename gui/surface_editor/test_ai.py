@@ -118,6 +118,7 @@ class FakeEditor:
         self.undo_stack = []
         self._wall_result_path = None
         self.solver = "rbe"
+        self.mortar_t = 10.0
 
     def apply_control_points(self, p):
         self.undo_stack.append(self.cps.copy())
@@ -223,6 +224,16 @@ class SessionTests(unittest.TestCase):
         self.editor.undo()
         self.assertEqual(self.session.analysis_status(), "current")
         self.editor.solver = "cra_penalty"
+        self.assertEqual(self.session.analysis_status(), "outdated")
+
+    def test_mortar_reaches_analysis_and_staleness(self):
+        self.editor.mortar_t = 6.0
+        snapshot, params, meta = self.session.prepare_analysis("fast")
+        self.assertEqual(params["mortar_t"], 6.0)
+        self.assertEqual(meta["mortar_t"], 6.0)
+        self.session.result = {"design_context": meta, "params": params}
+        self.assertEqual(self.session.analysis_status(), "current")
+        self.editor.mortar_t = 12.0
         self.assertEqual(self.session.analysis_status(), "outdated")
 
     def test_old_results_unknown(self):

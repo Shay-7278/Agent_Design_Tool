@@ -5,7 +5,9 @@ Interaction
 - Drag an orange sphere to move that control point. Only the degree+1
   surrounding spans change (locality of NURBS).
 - Sliders on the right scale the surface about its original centroid
-  (affine map on CPs == exact scale of the surface).
+  (affine map on CPs == exact scale of the surface).  The "mortar t"
+  slider sets the bed joint thickness [mm] the next 'a' re-fit uses
+  (0 = dry stack).
 - Keys:
     x / y / z   constrain drags to that world axis
     g           free drag (no constraint)
@@ -76,6 +78,8 @@ class SurfaceEditor:
         # Overrides the solver copied from a previous result: those store every
         # resolved param, so a default change would otherwise never reach 'a'.
         self.solver = L1_SOLVERS[0]
+        self.mortar_t = 10.0   # bed joint [mm] for the next 'a' (mortar slider)
+        self.mortar_slider = None
         self.handles_visible = True
 
         self._build_scene(off_screen)
@@ -125,21 +129,22 @@ class SurfaceEditor:
         self.handle_radius = max(diag * 0.012, 1.0)
         self._build_cage()
 
-        # scale sliders (right edge, stacked)
+        # sliders (right edge, stacked): surface scale, soft pull, bed joint
         self.sliders = []
-        for k, (label, lo, hi, cb) in enumerate(
+        for k, (label, lo, hi, init, cb) in enumerate(
             [
-                ("scale X", 0.5, 1.5, self._mk_scale_cb(0)),
-                ("scale Y", 0.5, 1.5, self._mk_scale_cb(1)),
-                ("scale Z", 0.5, 1.5, self._mk_scale_cb(2)),
-                ("soft pull", 0.0, 1.0, self._soft_cb),
+                ("scale X", 0.5, 1.5, 1.0, self._mk_scale_cb(0)),
+                ("scale Y", 0.5, 1.5, 1.0, self._mk_scale_cb(1)),
+                ("scale Z", 0.5, 1.5, 1.0, self._mk_scale_cb(2)),
+                ("soft pull", 0.0, 1.0, 0.0, self._soft_cb),
+                ("mortar t", 0.0, 30.0, self.mortar_t, self._mortar_cb),
             ]
         ):
             y = 0.92 - 0.09 * k
             w = p.add_slider_widget(
                 cb,
                 rng=[lo, hi],
-                value=1.0 if label.startswith("scale") else 0.0,
+                value=init,
                 title=label,
                 pointa=(0.84, y),
                 pointb=(0.99, y),
@@ -147,6 +152,8 @@ class SurfaceEditor:
                 style="modern",
             )
             self.sliders.append(w)
+            if label == "mortar t":
+                self.mortar_slider = w
 
         # keys
         p.add_key_event("x", lambda: self._set_lock("x"))
@@ -167,6 +174,7 @@ class SurfaceEditor:
             "v: toggle fitted wall\n"
             "a: re-fit bricks to current surface\n"
             "l: L1 solver rbe / cra_penalty\n"
+            "mortar t slider: bed joint used by 'a'\n"
             "s: save .3dm   r: reset view   q: quit",
             position="upper_left",
             font_size=11,
@@ -313,6 +321,21 @@ class SurfaceEditor:
     def _soft_cb(self, value):
         self.soft = float(value)
 
+    def _mortar_cb(self, value):
+        if self._guard:
+            return
+        self.mortar_t = float(value)
+
+    def set_mortar_t(self, t: float) -> None:
+        """Set the bed joint thickness [mm] and move the slider to it."""
+        self.mortar_t = float(t)
+        if self.mortar_slider is not None:
+            self._guard = True
+            try:
+                self.mortar_slider.GetRepresentation().SetValue(self.mortar_t)
+            finally:
+                self._guard = False
+
     # ------------------------------------------------------------- undo/reset
     def _push_undo_surface(self) -> None:
         self.undo_stack.append(self.model.snapshot())
@@ -402,6 +425,9 @@ class SurfaceEditor:
         self.wall_actors = []
         result = wall_view.load_result(result_path)
         self._wall_result_path = Path(result_path)
+        params = result.get("params") or {}
+        if "mortar_t" in params:
+            self.set_mortar_t(float(params["mortar_t"]))
         for status, mesh in wall_view.build_wall_meshes(result):
             a = self.plotter.add_mesh(
                 mesh,
@@ -444,11 +470,7 @@ class SurfaceEditor:
         if self._refit_busy:
             self._status("fit already running...")
             return
-        src = self._wall_result_path or wall_view.find_latest_result(_project_root())
-        # No earlier result: an empty dict makes the solver use pc/params.py DEFAULTS.
-        params = wall_view.load_result(src)["params"] if src is not None else {}
-        params = {**params, "solver": self.solver}
-        source = Path(src).stem if src is not None else "solver defaults"
+        params, source = self._refit_params()
         self._status("extracting sections from current surface...")
         try:
             job = refit.build_job(self.model, params, use_cra=True)
@@ -460,7 +482,7 @@ class SurfaceEditor:
         self._refit_done = False
         self._refit_error = None
         self._status(f"fitting bricks to current surface "
-                     f"(L1 {self.solver}, params from {source})...")
+                     f"(L1 {self.solver}, mortar {self.mortar_t:g} mm, params from {source})...")
 
         def worker():
             try:
@@ -473,6 +495,18 @@ class SurfaceEditor:
                 self._refit_done = True
 
         threading.Thread(target=worker, daemon=True).start()
+
+    def _refit_params(self) -> tuple[dict, str]:
+        """(params, source label) for the next 'a': the params of the wall
+        currently shown (no earlier result: an empty dict, so the solver uses
+        its pc/params.py defaults), with the GUI's own picks on top -- the
+        'l' solver and the mortar t slider.  Results store every resolved
+        param, so without these overrides a GUI change would never reach 'a'.
+        """
+        src = self._wall_result_path or wall_view.find_latest_result(_project_root())
+        params = wall_view.load_result(src)["params"] if src is not None else {}
+        source = Path(src).stem if src is not None else "solver defaults"
+        return {**params, "solver": self.solver, "mortar_t": self.mortar_t}, source
 
     def toggle_solver(self) -> None:
         i = L1_SOLVERS.index(self.solver)

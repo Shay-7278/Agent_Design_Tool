@@ -62,6 +62,8 @@ class DesignSession:
             return "unknown surface version"
         if meta.get("surface_hash") != surface_hash(self.editor.model) or meta.get("solver") != self.editor.solver:
             return "outdated"
+        if float((self.result.get("params") or {}).get("mortar_t", 10.0)) != self.editor.mortar_t:
+            return "outdated"
         return "current"
 
     def state(self):
@@ -71,6 +73,7 @@ class DesignSession:
                 "local_axes_world": {name: self.frame[:, k].tolist() for k, name in enumerate(("width", "depth", "height"))},
                 "world_bounds": [e.cps.min(axis=(0, 1)).tolist(), e.cps.max(axis=(0, 1)).tolist()],
                 "control_points_world": e.cps.tolist(), "base_edge": self.base_edge,
+                "mortar_t_mm": e.mortar_t,
                 "analysis_status": self.analysis_status(),
                 "running_analysis": self.running, "undo_available": bool(e.undo_stack),
                 "limits": "Fixed control grid; edits deform the control cage, not exact target surfaces. UV follows grid indices."}
@@ -134,8 +137,10 @@ class DesignSession:
         snapshot = clone_model(self.editor.model)
         params = dict(self.result.get("params", {})) if self.result else {}
         params["solver"] = self.editor.solver
+        params["mortar_t"] = self.editor.mortar_t
         meta = {"run_id": uuid.uuid4().hex, "revision": self.revision,
-                "surface_hash": surface_hash(snapshot), "solver": self.editor.solver, "mode": mode}
+                "surface_hash": surface_hash(snapshot), "solver": self.editor.solver,
+                "mortar_t": self.editor.mortar_t, "mode": mode}
         self.running = meta.copy()
         self.last_error = None
         self.changed()

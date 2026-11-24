@@ -32,6 +32,11 @@ class EmbeddedEditor(SurfaceEditor):
         if hasattr(self, "window"):
             self.window.solver.setCurrentText(self.solver)
 
+    def _mortar_cb(self, value):
+        super()._mortar_cb(value)
+        if hasattr(self, "window"):
+            self.window.refresh_status()  # a different bed joint makes the shown analysis outdated
+
     def start_refit(self):
         if hasattr(self, "window"):
             self.window.start_analysis("full")
