@@ -4,7 +4,8 @@ import json
 SYSTEM = """You are a conversational surface-design assistant inside a NURBS wall editor.
 Use tools for requested edits, not Python code or imagined changes. You can compose general
 deformations and explicit control-point positions; wave is only one available operation.
-Read the latest surface state before editing. Use its revision in edit_surface, add_control_points and undo_edit.
+Read the latest surface state before editing. Use its revision in edit_surface, add_control_points, rebuild_surface, new_flat_surface,
+undo_edit and redo_edit.
 Manual changes may happen while you think: on revision conflict, inspect again and reassess.
 Coordinates are mm. Local vectors are [width, depth, height], fixed when the file was loaded.
 Positive depth follows the reported depth vector; do not assume it means towards the camera.
@@ -15,11 +16,16 @@ the prior operation's actual displacement or inspect coordinates; do not add ano
 Grid index i runs along the wall (width), j up it (height). A coarse cage cannot hold fine
 detail: before detailed edits such as several waves, call add_control_points in that
 direction (aim for at least 5 control points per wave cycle). It keeps the shape exactly and is
-undoable, but changes indices, so read the state again afterwards. Smooth and wave operate
+undoable, but changes indices, so read the state again afterwards. To set exact counts, use
+rebuild_surface: mode='refine' adds points without changing the shape; mode='rebuild'
+reduces counts or creates a uniform cubic grid within the user's tolerance (report the
+sampled deviation). Read state again after any grid change before editing point indices.
+Use new_flat_surface to replace the design with a vertical planar wall (undoable).
+Smooth and wave operate
 on the cage: the evaluated surface moves less than the cage (often 60-80% on a fine grid,
 far less on a coarse one), so say so instead of reporting cage offsets as the result. For
 undulation at the base only, use wave along width with fade_height (fraction of wall height
-over which it fades to zero). No trimming, holes or new topology.
+over which it fades to zero). No trimming, holes or arbitrary new topology.
 The wall base must stay level: every control point on the base_edge reported by
 get_surface_state must keep one shared height, so brick courses stay horizontal and can be
 fitted. The rule concerns height only: moving base points in depth or width keeps it level,
@@ -55,6 +61,11 @@ OP = obj({
 }, ["kind"])
 
 TOOLS = [
+    {"name": "rebuild_surface", "description": "Change U/V control-point counts (4..20 each), undoable. refine inserts knots without changing shape and can only increase counts. rebuild fits a uniform cubic grid and rejects sampled deviations above tolerance_mm. Re-inspect state afterwards. Tolerance is a sampled parametric bound, not a certified global maximum.",
+     "parameters": obj({"expected_revision": {"type": "integer"}, "count_u": {"type": "integer", "minimum": 4, "maximum": 20}, "count_v": {"type": "integer", "minimum": 4, "maximum": 20}, "mode": {"type": "string", "enum": ["refine", "rebuild"]}, "tolerance_mm": {"type": "number", "minimum": 0, "maximum": 1000}}, ["expected_revision", "count_u", "count_v", "mode", "tolerance_mm"])},
+    {"name": "new_flat_surface", "description": "Replace current design with an undoable vertical flat wall in world XZ, starting at origin. Existing wall overlay is hidden. Width and height in mm.",
+     "parameters": obj({"expected_revision": {"type": "integer"}, "width_mm": {"type": "number", "minimum": 100, "maximum": 100000}, "height_mm": {"type": "number", "minimum": 100, "maximum": 100000}, "count_u": {"type": "integer", "minimum": 4, "maximum": 20}, "count_v": {"type": "integer", "minimum": 4, "maximum": 20}}, ["expected_revision", "width_mm", "height_mm", "count_u", "count_v"])},
+    {"name": "redo_edit", "description": "Redo the latest undone surface edit, including rebuilding.", "parameters": obj({"expected_revision": {"type": "integer"}}, ["expected_revision"])},
     {"name": "get_surface_state", "description": "Current revision, local axes, world control points, bounds and analysis freshness.", "parameters": obj()},
     {"name": "edit_surface", "description": "Atomic batch on current cage. translate(vector); scale(factors); rotate(axis,angle_degrees) about centroid; twist(axis,angle_degrees) from low=0 to high=angle; bend(axis=width|height,amount_mm) adds parabolic depth bulge zero at ends; taper(axis,factor) scales transverse dimensions from low=1 to high=factor; pull(center_uv,radius_uv,vector) Gaussian displacement; smooth(strength=0..1,iterations=1..20) interior neighbor averaging; flatten(axis,strength=0..1) removes that coordinate about centroid (use depth for planar wall); wave(axis=width|height,amount_mm,cycles,phase_degrees,optional fade_height=0.01..1 for width waves: full at base, zero above that fraction of height) adds approximate depth wave, cycles limited by control points along that axis; set_points(points=[{i,j,position}]) sets WORLD positions. Optional keep_boundary preserves all outside rows/columns, including the base row and wall ends; not allowed with fade_height. All other vectors are LOCAL [width,depth,height]. Only use fields belonging to the chosen kind.",
      "parameters": obj({"expected_revision": {"type": "integer"}, "operations": {"type": "array", "items": OP, "minItems": 1, "maxItems": 20}}, ["expected_revision", "operations"])},

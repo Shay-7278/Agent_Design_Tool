@@ -17,6 +17,7 @@ from .agent import portable_turn, run_agent
 from .editor import SurfaceEditor, default_file, _project_root
 from .providers import ENV_KEYS, URLS, Provider, ProviderConfig
 from .session import DesignSession, run_analysis
+from .navigation import UprightNavigation
 
 
 class Bridge(QtCore.QObject):
@@ -47,7 +48,7 @@ class EmbeddedEditor(SurfaceEditor):
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, path, result_path=None):
+    def __init__(self, path=None, result_path=None):
         super().__init__()
         self.setWindowTitle("Surface Studio — AI design assistant")
         self.resize(1560, 980)
@@ -142,21 +143,32 @@ class MainWindow(QtWidgets.QMainWindow):
         self.session.start_analysis = self.start_analysis
         self.plotter.add_axes()
         self.plotter.camera_position = "iso"
+        self.navigation = UprightNavigation(self.plotter)
         self.plotter.set_background("#f4f7fa")
         # The embedded window supplies its own save/analyze controls.
-        self.plotter.add_text("Drag orange handles · x/y/z: axis lock · g: free\nu: undo · b: reset · v: wall · a: analyze",
+        self.plotter.add_text("Right-drag: orbit · Shift+right-drag: pan · Wheel: zoom\nDrag handles to edit · Ctrl+Z: undo · Ctrl+Y: redo",
                               name="help", position="upper_left", font_size=10, color="#243b53")
         toolbar = self.addToolBar("Design")
         toolbar.setMovable(False)
-        for label, callback in (("Undo", self.editor.undo), ("Reset surface", self.editor.reset),
+        for label, callback in (("Undo (Ctrl+Z)", self.editor.undo), ("Redo (Ctrl+Y)", self.editor.redo),
+                                ("New flat wall…", self.new_flat_dialog),
                                 ("Add control points…", self.add_control_points),
-                                ("Toggle wall", self.editor.toggle_wall), ("Fit view", self.plotter.reset_camera),
+                                ("Rebuild grid…", self.rebuild_dialog),
+                                ("Reset surface", self.editor.reset),
+                                ("Toggle wall", self.editor.toggle_wall), ("Reset view", self.reset_view),
                                 ("Top view", self.plotter.view_xy),
                                 ("View from below", lambda: self.plotter.view_xy(negative=True)),
                                 ("Toggle handles", self.editor.toggle_handles),
                                 ("Save surface as…", self.save_as), ("Analysis details", self.show_analysis)):
             action = toolbar.addAction(label)
             action.triggered.connect(lambda checked=False, fn=callback: fn())
+        # Restrict geometry shortcuts to the viewport. Text boxes keep text undo.
+        self.geometry_shortcuts = []
+        for key, callback in (("Ctrl+Z", self.editor.undo), ("Ctrl+Y", self.editor.redo), ("Ctrl+Shift+Z", self.editor.redo)):
+            shortcut = QtGui.QShortcut(QtGui.QKeySequence(key), self.plotter.interactor)
+            shortcut.setContext(QtCore.Qt.ShortcutContext.WidgetWithChildrenShortcut)
+            shortcut.activated.connect(callback)
+            self.geometry_shortcuts.append(shortcut)
         self.solver.currentTextChanged.connect(self._solver_changed)
         self.fast.clicked.connect(lambda: self.start_analysis("fast"))
         self.full.clicked.connect(lambda: self.start_analysis("full"))
@@ -167,6 +179,77 @@ class MainWindow(QtWidgets.QMainWindow):
         shortcut.activated.connect(self.send_message)
         self.append("Assistant", "Ready. Manual editing and analysis work without an API key. For chat, choose a provider, enter its model ID and key, then describe your design. Ctrl+Enter sends.")
         self.refresh_status()
+
+    def reset_view(self):
+        self.plotter.camera_position = "iso"
+        self.plotter.camera.up = (0, 0, 1)
+        self.plotter.reset_camera()
+
+    def surface_dialog(self, rebuild=False):
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("Rebuild control grid" if rebuild else "New flat wall")
+        form = QtWidgets.QFormLayout(dialog)
+        u, v = QtWidgets.QSpinBox(), QtWidgets.QSpinBox()
+        for widget, count in ((u, self.editor.n), (v, self.editor.m)):
+            widget.setRange(4, 20)
+            widget.setValue(count)
+        form.addRow("U control points (width)", u)
+        form.addRow("V control points (height)", v)
+        if rebuild:
+            mode = QtWidgets.QComboBox()
+            mode.addItem("Refine — add points, preserve shape", "refine")
+            mode.addItem("Rebuild — fit a new uniform grid", "rebuild")
+            tolerance = QtWidgets.QDoubleSpinBox()
+            tolerance.setRange(0, 1000)
+            tolerance.setDecimals(3)
+            tolerance.setValue(5)
+            tolerance.setSuffix(" mm")
+            tolerance.setEnabled(False)
+            mode.currentIndexChanged.connect(lambda: tolerance.setEnabled(mode.currentData() == "rebuild"))
+            form.addRow("Method", mode)
+            form.addRow("Allowed sampled deviation", tolerance)
+        else:
+            width, height = QtWidgets.QDoubleSpinBox(), QtWidgets.QDoubleSpinBox()
+            for widget, value in ((width, 3000), (height, 1500)):
+                widget.setRange(100, 100000)
+                widget.setValue(value)
+                widget.setSuffix(" mm")
+            form.addRow("Width", width)
+            form.addRow("Height", height)
+        note = QtWidgets.QLabel("This change is undoable. Refinement only increases counts; rebuilding may slightly change the shape." if rebuild else "Creates a vertical flat wall in XZ. This replaces the current surface and can be undone.")
+        note.setWordWrap(True)
+        form.addRow(note)
+        error = QtWidgets.QLabel()
+        error.setWordWrap(True)
+        form.addRow(error)
+        buttons = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok | QtWidgets.QDialogButtonBox.StandardButton.Cancel)
+        form.addRow(buttons)
+        buttons.rejected.connect(dialog.reject)
+        def apply():
+            args = {"expected_revision": self.session.revision, "count_u": u.value(), "count_v": v.value()}
+            name = "rebuild_surface" if rebuild else "new_flat_surface"
+            if rebuild:
+                args.update(mode=mode.currentData(), tolerance_mm=tolerance.value())
+            else:
+                args.update(width_mm=width.value(), height_mm=height.value())
+            try:
+                report = self.session.execute(name, args)
+            except Exception as exc:
+                error.setText(str(exc))
+                return
+            self.append("Surface", f"Grid: {u.value()} × {v.value()}. " + (f"Maximum sampled deviation: {report['max_sampled_deviation_mm']:.4f} mm." if rebuild else "New flat wall created."))
+            dialog.accept()
+            if not rebuild:
+                self.reset_view()
+            self.plotter.interactor.setFocus()
+        buttons.accepted.connect(apply)
+        dialog.exec()
+
+    def new_flat_dialog(self):
+        self.surface_dialog(False)
+
+    def rebuild_dialog(self):
+        self.surface_dialog(True)
 
     def append(self, who, text):
         # Treat model/user output as plain text, never executable HTML.
@@ -190,7 +273,7 @@ class MainWindow(QtWidgets.QMainWindow):
         s = self.session
         state = s.analysis_status()
         mode = (s.result or {}).get("design_context", {}).get("mode", "")
-        text = f"Surface revision {s.revision} · Analysis: {state}"
+        text = f"Surface revision {s.revision} · Grid {self.editor.n} × {self.editor.m} · Analysis: {state}"
         if mode:
             text += f" ({mode})"
         if s.running:
@@ -269,7 +352,8 @@ class MainWindow(QtWidgets.QMainWindow):
         r = record["result"]
         if "error" in r:
             self.append("Tool · " + record["tool"], r["error"])
-        elif record["tool"] in ("edit_surface", "undo_edit"):
+        elif record["tool"] in ("edit_surface", "add_control_points", "undo_edit", "redo_edit",
+                                "rebuild_surface", "new_flat_surface"):
             self.append("Tool · " + record["tool"], f"Completed. Surface revision {r['revision']}.")
         else:
             self.statusBar().showMessage("AI used " + record["tool"])
@@ -380,7 +464,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv[:1])
     app.setStyle("Fusion")
-    window = MainWindow(Path(args.surface) if args.surface else default_file(), args.result)
+    window = MainWindow(Path(args.surface) if args.surface else None, args.result)
     window.show()
     app.exec()
 

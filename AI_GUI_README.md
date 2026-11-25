@@ -21,7 +21,35 @@ uv run --project .. python -m surface_editor --ai
 ```
 
 Optional: append a surface path and/or `-r path_to_result.json`.
-The default is `Reference Surface_1.3dm`.
+Without a surface path, the editor starts with a new **3000 × 1500 mm vertical
+flat wall**, with a **6 × 6 cubic control grid**, and no old brick overlay.
+To open the original reference, pass `"..\Reference Surface_1.3dm"` from `gui/`.
+
+## Navigation, undo and changing the grid
+
+- **Right-drag:** orbit around world Z while keeping the view upright. Horizontal
+  movement changes azimuth; vertical movement changes elevation, clamped short of
+  the poles so the view cannot turn upside down. This changes the camera, not geometry.
+- **Shift + right-drag:** pan. **Mouse wheel:** zoom. **Reset view:** restore the
+  upright isometric view. Left-drag on empty space also uses upright orbit;
+  middle-drag or Shift + left-drag pans.
+- **Left-drag a handle:** move a control point. X/Y/Z still constrain point movement.
+- **Ctrl+Z:** undo a surface edit when the viewport has focus. **Ctrl+Y** or
+  **Ctrl+Shift+Z:** redo. Toolbar buttons work regardless of focus. Text fields
+  keep their usual text undo, so editing a prompt does not undo geometry.
+- One mouse drag is one undo step, even if you pause during the drag. Undo includes
+  full geometry, knots, weights, grid dimensions and scale-slider state.
+- **New flat wall…:** set width, height and U/V point counts; replacement is undoable.
+- **Rebuild grid…:** set 4–20 points per direction. **Refine** adds knots and preserves
+  the surface exactly. **Rebuild** fits a uniform cubic grid, allowing fewer points;
+  it reports sampled deviation and refuses to exceed the tolerance you entered.
+  The deviation is measured on a 65 × 65 grid at corresponding normalized parameters,
+  not a guaranteed global/Hausdorff error bound. Rebuilding preserves the four corners;
+  the rest of the boundary is fitted and may change within the sampled tolerance.
+
+The original viewport used free trackball camera rotation, which could roll. The new
+right-drag navigation fixes the up direction to world Z. It provides familiar CAD
+orbit behavior without requiring Rhino.
 
 ## Connect an AI
 
@@ -57,6 +85,9 @@ Do not put credentials into chat or commit them to Git.
 - “Twist gradually by 15 degrees from the bottom to the top.”
 - “Smooth the interior control points without moving the perimeter.”
 - “Move control point (2, 3) to [1200, 600, 900] mm.”
+- “Give me a 10 by 8 control grid without changing the shape.”
+- “Rebuild with 5 by 5 control points; allow at most 2 mm sampled deviation.”
+- “Start a new flat wall, 2400 mm wide and 1200 mm high, with 8 by 6 points.”
 - “Run a full analysis and then help me understand the problem areas.”
 - After completion: “Which bricks moved most? What changes might reduce that?”
 
@@ -79,13 +110,17 @@ HTTP request can take up to its 300-second timeout to finish. Completed edits ar
   **soft pull** slider controls neighbor movement during manual dragging.
 - Edits change the existing control cage. Wave/bend amplitude is a cage displacement,
   not a guarantee of exact amplitude on the evaluated NURBS surface.
-- The current reference has a 6 × 6 grid, too coarse for fine detail such as several
-  waves along the wall. **Add control points…** (toolbar), or the AI's `add_control_points`
-  tool, inserts knots along the wall or up its height. The surface shape stays exactly the
-  same, the edit is undoable, and **Reset surface** returns to the loaded grid. Aim for about
-  4 control points per wave cycle. Degree and weights stay unchanged. No arbitrary topology
-  creation, trimming, holes, or NURBS weight editing is implemented. Use flatten(depth)
-  for a planar wall.
+- The default flat wall and the reference surface have a 6 × 6 grid, too coarse for fine
+  detail such as several waves along the wall. **Add control points…** (toolbar), or the
+  AI's `add_control_points` tool, inserts knots along the wall or up its height. The surface
+  shape stays exactly the same, the edit is undoable, and **Reset surface** returns to the
+  loaded grid. Aim for about 4 control points per wave cycle. Degree and weights stay
+  unchanged. Use flatten(depth) for a planar wall.
+- Ordinary editing operations retain topology, degree, knots and weights. The
+  separate `rebuild_surface` tool (**Rebuild grid…**) sets exact counts: refinement
+  preserves the original NURBS degree/shape, while rebuilding creates a non-rational cubic
+  approximation; it supports 4–20 points in each direction. Trimming, holes and manual
+  NURBS weight editing are not implemented.
 - Wave along the width accepts an optional `fade_height` (fraction of wall height): full
   strength at the base, fading to zero at that height, for base-only undulation.
 - AI edits must keep the wall base level (one shared height for the base row of control
@@ -125,6 +160,8 @@ equilibrium **not checked**, not a confirmed structural failure or pass.
 | `agent.py` | Tool schemas, system instructions, bounded conversation/tool loop |
 | `operations.py` | Deterministic geometry functions and argument validation |
 | `session.py` | Revision checks, atomic edits, snapshots, analysis summaries |
+| `topology.py` | Flat-wall creation, exact knot insertion, bounded grid fitting |
+| `navigation.py` | Upright right-drag camera orbit and pan |
 | `editor.py` | Existing viewport; accepts an injected plotter and shared edit callback |
 | `refit.py` | Existing solver integration; unique result paths and output validation |
 
@@ -139,7 +176,9 @@ From `gui/`:
 
 ```powershell
 ..\.venv\Scripts\python.exe -B -m unittest surface_editor.test_ai -v
+..\.venv\Scripts\python.exe -B -m unittest surface_editor.test_topology -v
 ..\.venv\Scripts\python.exe -B -m surface_editor.smoke_ai
+..\.venv\Scripts\python.exe -B -m surface_editor.smoke_controls
 ```
 
 The first suite is offline. The second briefly opens the real GUI, uses a scripted
@@ -147,6 +186,8 @@ provider to exercise the chat/tool bridge, checks manual editing and undo, saves
 temporary round-trip surface, runs the real geometry-only solver, and verifies
 stale-result handling. It makes no paid API calls and leaves the original surface intact.
 The older `smoke_test.py` requires historical result/GH fixtures absent from this clone.
+`smoke_controls` tests actual Qt key/mouse events, upright orbit, text-vs-geometry undo,
+and refinement/rebuilding with regenerated handles and topology-aware undo/redo.
 
 Official API references:
 - https://developers.openai.com/api/docs/guides/function-calling

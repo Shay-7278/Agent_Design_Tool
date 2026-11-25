@@ -11,6 +11,7 @@ import rhino3dm
 from .model import NurbsModel
 from .operations import apply_operations, local_frame
 from . import refit, wall_view
+from .topology import change_grid, plane
 
 BASE_LEVEL_TOL = 0.5  # mm
 EDGES = {"j=0": (slice(None), 0), "j=last": (slice(None), -1), "i=0": (0, slice(None)), "i=last": (-1, slice(None))}
@@ -37,10 +38,11 @@ class DesignSession:
         self.results_dir = Path(results_dir)
         self.revision = 0
         self._points = editor.cps.copy()
+        self._geometry_hash = surface_hash(editor.model)
         self.origin, self.frame = local_frame(editor.cps)
         # The surface's bottom boundary curve depends only on this control-point row,
         # so the base is level exactly when these points share one height.
-        self.base_edge = min(EDGES, key=lambda k: editor.cps[EDGES[k]][:, 2].mean())
+        self.base_edge = self._find_base_edge()
         self.result = wall_view.load_result(editor._wall_result_path) if editor._wall_result_path else None
         self.running = None
         self.last_error = None
@@ -48,9 +50,23 @@ class DesignSession:
         self.start_analysis = None
         editor.on_surface_changed = self.observe_change
 
+    def _find_base_edge(self):
+        # The real editor tracks the base per surface (restored by undo/redo/
+        # reset); follow it so the level check guards the edge shown in red.
+        index = getattr(self.editor, "base_index", None)
+        for key, edge in EDGES.items():
+            if index is not None and edge == index:
+                return key
+        cps = self.editor.cps
+        return min(EDGES, key=lambda k: cps[EDGES[k]][:, 2].mean())
+
     def observe_change(self):
-        if not np.array_equal(self._points, self.editor.cps):
+        if getattr(self.editor, "base_index", None) is not None:
+            self.base_edge = self._find_base_edge()
+        current_hash = surface_hash(self.editor.model)
+        if current_hash != self._geometry_hash:
             self.revision += 1
+            self._geometry_hash = current_hash
             self._points = self.editor.cps.copy()
             self.changed()
 
@@ -76,7 +92,8 @@ class DesignSession:
                 "mortar_t_mm": e.mortar_t,
                 "analysis_status": self.analysis_status(),
                 "running_analysis": self.running, "undo_available": bool(e.undo_stack),
-                "limits": "Fixed control grid; edits deform the control cage, not exact target surfaces. UV follows grid indices."}
+                "redo_available": bool(getattr(e, "redo_stack", [])),
+                "limits": "Edits deform the control cage. rebuild_surface can refine exactly or rebuild approximately to 4..20 points per direction. UV follows grid indices."}
 
     def check_revision(self, expected):
         if type(expected) is not int or expected != self.revision:
@@ -85,11 +102,32 @@ class DesignSession:
     def execute(self, name, args):
         fields = {"get_surface_state": set(), "edit_surface": {"expected_revision", "operations"},
                   "add_control_points": {"expected_revision", "direction", "per_span"},
-                  "undo_edit": {"expected_revision"}, "analyze_wall": {"mode"}, "get_analysis_summary": set()}
+                  "undo_edit": {"expected_revision"}, "redo_edit": {"expected_revision"},
+                  "rebuild_surface": {"expected_revision", "count_u", "count_v", "mode", "tolerance_mm"},
+                  "new_flat_surface": {"expected_revision", "width_mm", "height_mm", "count_u", "count_v"},
+                  "analyze_wall": {"mode"}, "get_analysis_summary": set()}
         if name not in fields or not isinstance(args, dict) or set(args) != fields[name]:
             raise ValueError("Unknown tool or invalid arguments")
         if name == "get_surface_state":
             return self.state()
+        if name == "new_flat_surface":
+            self.check_revision(args["expected_revision"])
+            candidate = plane(args["width_mm"], args["height_mm"], args["count_u"], args["count_v"])
+            self.editor.replace_surface(candidate)
+            if self.editor.wall_visible and self.editor.wall_actors:
+                self.editor.toggle_wall()
+            return {"revision": self.revision, "applied": True, "grid_shape": list(self.editor.model.shape)}
+        if name == "rebuild_surface":
+            self.check_revision(args["expected_revision"])
+            candidate, report = change_grid(self.editor.model._srf, args["count_u"], args["count_v"], args["mode"], args["tolerance_mm"])
+            self.editor.replace_surface(candidate)
+            return {"revision": self.revision, "applied": True, **report}
+        if name == "redo_edit":
+            self.check_revision(args["expected_revision"])
+            if not self.editor.redo_stack:
+                raise ValueError("Nothing to redo")
+            self.editor.redo()
+            return {"revision": self.revision, "redone": True}
         if name == "edit_surface":
             self.check_revision(args["expected_revision"])
             candidate = apply_operations(self.editor.cps, args["operations"], self.origin, self.frame)

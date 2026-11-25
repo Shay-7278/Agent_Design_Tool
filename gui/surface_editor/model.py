@@ -47,6 +47,14 @@ class NurbsModel:
 
     # ------------------------------------------------------------------ load
     @classmethod
+    def flat(cls, width=3000., height=1500., nu=6, nv=6):
+        from .topology import plane
+        file = rhino3dm.File3dm()
+        file.Settings.ModelUnitSystem = rhino3dm.UnitSystem.Millimeters
+        return cls(Path.cwd() / "Untitled.3dm", file, None, rhino3dm.ObjectAttributes(),
+                   plane(width, height, nu, nv))
+
+    @classmethod
     def load(cls, path: str | Path) -> "NurbsModel":
         path = Path(path)
         if not path.exists():
@@ -158,7 +166,7 @@ class NurbsModel:
         backup ``<name>.3dm.orig`` of the untouched original is written.
         """
         out = Path(path) if path is not None else self.path
-        if backup and out.resolve() == self.path.resolve():
+        if backup and self.path.exists() and out.resolve() == self.path.resolve():
             orig = self.path.with_suffix(".3dm.orig")
             if not orig.exists():
                 shutil.copy2(self.path, orig)
@@ -166,8 +174,9 @@ class NurbsModel:
         brep = rhino3dm.Brep.CreateFromSurface(self._srf)
         if brep is None or not brep.IsValid:
             raise RuntimeError("rebuilt Brep is invalid; refusing to save")
-        self._file.Objects.Delete(self._obj_id)
-        self._file.Objects.AddBrep(brep, self._attrs)
+        if self._obj_id is not None:
+            self._file.Objects.Delete(self._obj_id)
+        self._obj_id = self._file.Objects.AddBrep(brep, self._attrs)
         ok = self._file.Write(str(out), version=7)
         if not ok:
             raise IOError(f"could not write .3dm: {out}")

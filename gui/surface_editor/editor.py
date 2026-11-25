@@ -34,6 +34,7 @@ from pathlib import Path
 
 import numpy as np
 import pyvista as pv
+import rhino3dm
 
 from .model import NurbsModel
 from . import refit, wall_view
@@ -53,7 +54,7 @@ def _project_root() -> Path:
 class SurfaceEditor:
     def __init__(
         self,
-        path: str | Path,
+        path: str | Path | None = None,
         res: int = 60,
         off_screen: bool = False,
         result_path: str | Path | None = None,
@@ -62,19 +63,22 @@ class SurfaceEditor:
         self._external_plotter = plotter
         self.on_surface_changed = None
         self.res = res
-        self.model = NurbsModel.load(path)
+        self.model = NurbsModel.load(path) if path is not None else NurbsModel.flat()
         self.cps = self.model.control_points()  # (n, m, 3) source of truth
-        self.initial_surface = self.model.snapshot()
         self.pivot = self.cps.reshape(-1, 3).mean(axis=0)
 
-        # CP arrays for point edits; surface snapshots for edits that change the grid.
-        self.undo_stack: list = []
+        # Whole-surface snapshots (see _snapshot), so undo/redo also covers
+        # edits that change the control grid.
+        self.undo_stack: list[dict] = []
+        self.redo_stack: list[dict] = []
+        self._gesture_active = False
         self.axis_lock: str | None = None
         self.soft = 0.0  # 0 = move single CP only
         self.scales = np.array([1.0, 1.0, 1.0])
         self.drag_index: int | None = None
         self.last_event = time.perf_counter()
         self._guard = False  # re-entrancy guard for SetCenter from callbacks
+        self.initial_state = self._snapshot()
         # Overrides the solver copied from a previous result: those store every
         # resolved param, so a default change would otherwise never reach 'a'.
         self.solver = L1_SOLVERS[0]
@@ -94,7 +98,7 @@ class SurfaceEditor:
         self._refit_seconds = 0.0
         if result_path is not None:
             self.show_wall(result_path)
-        else:
+        elif path is not None:
             latest = wall_view.find_latest_result(_project_root())
             if latest is not None:
                 self.show_wall(latest)
@@ -118,15 +122,10 @@ class SurfaceEditor:
         )
         self.grid = grid
         # The base is the lowest boundary curve of the loaded surface.
-        edges = [(slice(None), 0), (slice(None), -1), (0, slice(None)), (-1, slice(None))]
-        self.base_index = min(edges, key=lambda e: pts[e][:, 2].mean())
+        self.base_index = self._find_base(pts)
         self.base_line = pv.lines_from_points(pts[self.base_index])
         p.add_mesh(self.base_line, color="crimson", line_width=5, render_lines_as_tubes=True, name="base_edge")
         self.plotter = p
-        diag = np.linalg.norm(
-            self.cps.reshape(-1, 3).max(axis=0) - self.cps.reshape(-1, 3).min(axis=0)
-        )
-        self.handle_radius = max(diag * 0.012, 1.0)
         self._build_cage()
 
         # sliders (right edge, stacked): surface scale, soft pull, bed joint
@@ -151,6 +150,9 @@ class SurfaceEditor:
                 interaction_event="always",
                 style="modern",
             )
+            if label.startswith("scale"):
+                w.AddObserver("StartInteractionEvent", self._begin_interaction)
+                w.AddObserver("EndInteractionEvent", self._end_interaction)
             self.sliders.append(w)
             if label == "mortar t":
                 self.mortar_slider = w
@@ -182,8 +184,15 @@ class SurfaceEditor:
         )
         self._status(f"loaded (L1 solver: {self.solver})")
 
+    @staticmethod
+    def _find_base(pts: np.ndarray):
+        """Index of the lowest boundary curve of the evaluated (res, res, 3) grid."""
+        edges = [(slice(None), 0), (slice(None), -1), (0, slice(None)), (-1, slice(None))]
+        return min(edges, key=lambda e: pts[e][:, 2].mean())
+
     def _build_cage(self) -> None:
-        """(Re)create the control polygon and one draggable handle per CP."""
+        """(Re)create the control polygon and one draggable handle per CP,
+        e.g. when the control grid changes."""
         p = self.plotter
         self.n, self.m = self.cps.shape[:2]
         poly = pv.PolyData(self.cps.reshape(-1, 3))
@@ -197,10 +206,15 @@ class SurfaceEditor:
         poly.lines = np.array(segs)
         self.cp_actor = p.add_mesh(poly, color="dimgray", line_width=2, render_lines_as_tubes=True, name="cp_poly")
         self.cp_poly = poly
-        p.clear_sphere_widgets()
+        p.widgets.clear_sphere_widgets()
         if not self.handles_visible:
             self.cp_actor.SetVisibility(False)
             return
+        # handle size follows the current surface (a new design can be another size)
+        diag = np.linalg.norm(
+            self.cps.reshape(-1, 3).max(axis=0) - self.cps.reshape(-1, 3).min(axis=0)
+        )
+        self.handle_radius = max(diag * 0.012, 1.0)
         p.add_sphere_widget(
             self.on_drag,
             center=self.cps.reshape(-1, 3),
@@ -211,6 +225,10 @@ class SurfaceEditor:
             interaction_event="always",
             pass_widget=True,
         )
+        # one undo step per whole drag gesture
+        for w in p.widgets.sphere_widgets:
+            w.AddObserver("StartInteractionEvent", self._begin_interaction)
+            w.AddObserver("EndInteractionEvent", self._end_interaction)
 
     # --------------------------------------------------------------- helpers
     def _flat(self, i: int, j: int) -> int:
@@ -223,10 +241,53 @@ class SurfaceEditor:
         self.axis_lock = axis
         self._status(f"drag axis: {axis or 'free'}")
 
-    def _push_undo(self) -> None:
-        self.undo_stack.append(self.cps.copy())
+    def _push_undo(self, state: dict | None = None) -> None:
+        self.undo_stack.append(self._snapshot() if state is None else state)
+        self.redo_stack.clear()
         if len(self.undo_stack) > UNDO_CAP:
             self.undo_stack.pop(0)
+
+    def _snapshot(self):
+        # The base edge belongs to the surface: undo/redo/reset restore it with
+        # the geometry.  None (snapshot taken before the scene exists) = detect
+        # it again from that surface on restore.
+        return {"surface": self.model._srf.Encode(), "pivot": self.pivot.copy(),
+                "scales": self.scales.copy(), "base_index": getattr(self, "base_index", None)}
+
+    def _restore(self, state):
+        self.model._srf = rhino3dm.CommonObject.Decode(state["surface"])
+        self.cps = self.model.control_points()
+        shape_changed = (self.n, self.m) != self.model.shape
+        self.n, self.m = self.model.shape
+        self.pivot = state["pivot"].copy()
+        self._reset_scales(state["scales"])
+        base = state.get("base_index")
+        self.base_index = base if base is not None else self._find_base(self.model.evaluate(self.res, self.res))
+        if shape_changed:
+            self._build_cage()
+        self._gesture_active = False
+        self.drag_index = None
+        self._sync_scene()
+        self.plotter.render()
+
+    def replace_surface(self, surface):
+        if not isinstance(surface, rhino3dm.NurbsSurface) or not surface.IsValid:
+            raise ValueError("Expected a valid NURBS surface")
+        self._push_undo()
+        points = [surface.Points.GetPoint(i, j) for i in range(surface.Points.CountU) for j in range(surface.Points.CountV)]
+        pivot = np.array([[p.X, p.Y, p.Z] for p in points]).mean(axis=0)
+        # base_index None: a new design can have its base on another boundary
+        self._restore({"surface": surface.Encode(), "pivot": pivot, "scales": np.ones(3), "base_index": None})
+        self._build_cage()  # handle size follows the new surface
+        self.plotter.render()
+
+    def _begin_interaction(self, *_):
+        if not self._guard and not self._gesture_active:
+            self._push_undo()
+            self._gesture_active = True
+
+    def _end_interaction(self, *_):
+        self._gesture_active = False
 
     def _sync_scene(self) -> None:
         """Push self.cps into model, surface mesh, control polygon and handles."""
@@ -273,8 +334,8 @@ class SurfaceEditor:
         if self._guard:
             return
         now = time.perf_counter()
-        if index != self.drag_index or now - self.last_event > ENGAGE_GAP:
-            self._push_undo()  # snapshot once per drag gesture
+        if not self._gesture_active:
+            self._push_undo()
         self.drag_index = index
         self.last_event = now
 
@@ -308,7 +369,7 @@ class SurfaceEditor:
             if abs(v - self.scales[axis]) < 1e-9:
                 return
             now = time.perf_counter()
-            if now - self.last_event > ENGAGE_GAP:
+            if not self._gesture_active:
                 self._push_undo()
             self.last_event = now
             ratio = v / self.scales[axis]
@@ -337,16 +398,6 @@ class SurfaceEditor:
                 self._guard = False
 
     # ------------------------------------------------------------- undo/reset
-    def _push_undo_surface(self) -> None:
-        self.undo_stack.append(self.model.snapshot())
-        if len(self.undo_stack) > UNDO_CAP:
-            self.undo_stack.pop(0)
-
-    def _restore_surface(self, snapshot) -> None:
-        self.model.restore(snapshot)
-        self.cps = self.model.control_points()
-        self._build_cage()
-
     def toggle_handles(self) -> None:
         self.handles_visible = not self.handles_visible
         self._build_cage()
@@ -355,14 +406,15 @@ class SurfaceEditor:
 
     def add_control_points(self, direction: int, per_span: int) -> None:
         """Insert knots along U (0) or V (1): more handles, identical surface."""
-        self._push_undo_surface()
+        state = self._snapshot()
         try:
             self.model.insert_knots(direction, per_span)
             if max(self.model.shape) > MAX_CPS:
                 raise ValueError(f"that would exceed {MAX_CPS} control points in one direction")
         except Exception:
-            self.model.restore(self.undo_stack.pop())
+            self.model._srf = rhino3dm.CommonObject.Decode(state["surface"])
             raise
+        self._push_undo(state)
         self.cps = self.model.control_points()
         self.drag_index = None
         self.last_event = 0.0
@@ -376,35 +428,30 @@ class SurfaceEditor:
         if not self.undo_stack:
             self._status("nothing to undo")
             return
-        entry = self.undo_stack.pop()
-        if isinstance(entry, np.ndarray):
-            self.cps = entry
-        else:
-            self._restore_surface(entry)
-        self.drag_index = None
-        self.last_event = 0.0
-        self._reset_scales()
-        self._sync_scene()
-        self.plotter.render()
+        self.redo_stack.append(self._snapshot())
+        self._restore(self.undo_stack.pop())
         self._status(f"undo ({len(self.undo_stack)} left)")
 
     def reset(self) -> None:
-        self._push_undo_surface()
-        self._restore_surface(self.initial_surface)
-        self.drag_index = None
-        self.last_event = 0.0
-        self._reset_scales()
-        self._sync_scene()
-        self.plotter.render()
+        self._push_undo()
+        self._restore(self.initial_state)
         self._status("reset to loaded state")
 
-    def _reset_scales(self) -> None:
-        self.scales[:] = 1.0
+    def redo(self):
+        if not self.redo_stack:
+            self._status("nothing to redo")
+            return
+        self.undo_stack.append(self._snapshot())
+        self._restore(self.redo_stack.pop())
+        self._status("redo")
+
+    def _reset_scales(self, values=None) -> None:
+        self.scales[:] = np.ones(3) if values is None else values
         for k, w in enumerate(self.sliders[:3]):
             rep = w.GetRepresentation()
             self._guard = True
             try:
-                rep.SetValue(1.0)
+                rep.SetValue(float(self.scales[k]))
             finally:
                 self._guard = False
 
@@ -572,7 +619,7 @@ def main(argv: list[str] | None = None) -> None:
                 raise SystemExit("--result needs a path") from None
         else:
             surface_args.append(a)
-    path = Path(surface_args[0]) if surface_args else default_file()
+    path = Path(surface_args[0]) if surface_args else None
     editor = SurfaceEditor(path, result_path=result_path)
     editor.show()
 
