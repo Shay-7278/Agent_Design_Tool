@@ -63,16 +63,17 @@ class _LP(object):
         self.centre = {}
         self.itfs = []          # (upper, lower, [(x, y)] in m)
         for b in wall.bricks():
-            vol = (wall.W * MM) * (b.length * MM) * ((wall.H + p["mortar_t"]) * MM)
+            vol = (wall.analysis_volume(b) if hasattr(wall, "analysis_volume") else wall.W*b.length*(wall.H+p["mortar_t"])) * MM**3
             self.weight[b] = p["density"] * vol * G
             self.centre[b] = tuple(c * MM for c in wall.pose(b)[:2])
             if b.k == 0:
                 continue
             fp = wall.footprint(b)
-            for c, _a, _cen in wall.supports(b):
-                poly = overlap_poly(fp, wall.footprint(c))
-                if poly:
-                    self.itfs.append((b, c, [(x * MM, y * MM) for x, y in poly]))
+            for c in dict.fromkeys(c for c, _a, _cen in wall.supports(b)):
+                polys = wall.contact_polygons(b, c) if hasattr(wall, "contact_polygons") else [overlap_poly(fp, wall.footprint(c))]
+                for poly in polys:
+                    if poly:
+                        self.itfs.append((b, c, [(x * MM, y * MM) for x, y in poly]))
 
     def solve(self, nodes, held=()):
         """{"state": "solved" | "failed", "need": [upper bricks of tensioned interfaces]}"""
@@ -104,7 +105,7 @@ class _LP(object):
                 col += 2
         nv = col
         if not free:
-            return {"state": "solved", "need": []}
+            return {"state": "solved", "need": [], "interfaces": []}
         A = coo_matrix((vals, (ri, ci)), shape=(3 * len(free), nv)).tocsr()
         rhs = np.zeros(3 * len(free))
         for b, r in row.items():
@@ -113,12 +114,21 @@ class _LP(object):
         cost[1::2] = 1.0
         res = linprog(cost, A_eq=A, b_eq=rhs, bounds=(0, None), method="highs")
         if res.status != 0:
-            return {"state": "failed", "need": [], "error": res.message}
+            return {"state": "failed", "need": [], "interfaces": [], "error": res.message}
         tol = 1e-6 * max(self.weight.values())
         fn = res.x[1::2]
         bad = set(owner[j] for j in range(len(fn)) if fn[j] > tol)
+        interfaces = []
+        for n, (up, lo, poly) in enumerate(itfs):
+            indices = [j for j, value in enumerate(owner) if value == n]
+            force = sum(res.x[2*j]-res.x[2*j+1] for j in indices)
+            z = self.wall.frame(up)[0][2]*MM
+            interfaces.append({"upper": up, "lower": lo,
+                "centroid": [sum(q[0] for q in poly)/len(poly), sum(q[1] for q in poly)/len(poly), z],
+                "P": float(force), "sigma_t": None, "ratio": None,
+                "tensioned": n in bad, "fails": n in bad})
         return {"state": "solved", "need": sorted(set(itfs[n][0] for n in bad),
-                                                  key=lambda b: (-b.k, b.i))}
+                                                  key=lambda b: (-b.k, b.i)), "interfaces": interfaces}
 
 
 class _RBE(object):

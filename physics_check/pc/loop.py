@@ -28,6 +28,9 @@ def run_check(job, use_cra=True):
     Returns the result dict written to result.json (its "report" key holds the
     text summary; "time" / "cra_time" hold the total / CRA wall-clock time [s]).
     """
+    if job.get("openings"):
+        from .openings import run_opening_check
+        return run_opening_check(job, bool(use_cra) and job.get("use_cra", True) is not False)
     t_start = time.time()
     use_cra = bool(use_cra) and job.get("use_cra", True) is not False
     cra_time = 0.0
@@ -42,31 +45,7 @@ def run_check(job, use_cra=True):
               "brickH": p["brickH"], "mortar_t": p["mortar_t"], "params": p}
     try:
         paths, counts, _joints, info = fit_sections(sections, p)
-        lean, need = surface_lean(info["surface"], p["max_overhang"])
-        log.append("surface lean per course, max sideways offset from the course below [mm, signed]: "
-                   + " ".join("{:+.0f}".format(v) for v in lean[1:]))
-        steep = [k for k in range(1, len(lean)) if abs(lean[k]) > p["max_overhang"]]
-        if steep:
-            log.append("surface leans more than max_overhang ({:.0f} mm) at course(s): {}".format(
-                p["max_overhang"], " ".join(str(k) for k in steep)))
-            k_worst = max(range(len(need)), key=lambda k: need[k])
-            capped = 0 < p["max_move"] < need[k_worst]
-            log.append("estimated deviation from the surface forced by max_overhang: up to {:.0f} mm "
-                       "at course {}{}".format(
-                           need[k_worst], k_worst,
-                           "; above max_move ({:.0f} mm), L0 cannot pass there".format(p["max_move"])
-                           if capped else ""))
-        moved = [k for k in range(len(paths)) if info["moves"][k] > 0.5 or info["trims"][k] > 0.5]
-        if moved:
-            k_worst = max(moved, key=lambda k: info["moves"][k])
-            log.append("course lines moved over the course below (the fit and the deviations "
-                       "below are measured from the moved lines): {} course(s), up to {:.0f} mm "
-                       "sideways at course {}{}".format(
-                           len(moved), info["moves"][k_worst], k_worst,
-                           "; open ends trimmed at course(s) " + " ".join(
-                               "{} ({:.0f} mm)".format(k, info["trims"][k]) for k in moved
-                               if info["trims"][k] > 0.5)
-                           if any(info["trims"][k] > 0.5 for k in moved) else ""))
+        log_fit(paths, info, p, log)
     except FitError as err:
         result.update({"ok": False, "fatal": str(err), "log": log + [str(err)], "frames": [],
                        "bricks": []})
@@ -179,6 +158,36 @@ def run_check(job, use_cra=True):
     })
     result["report"] = report(result)
     return result
+
+
+def log_fit(paths, info, p, log):
+    """Log the surface lean and how far fit_sections moved the course lines
+    (shared by run_check and openings.run_opening_check)."""
+    lean, need = surface_lean(info["surface"], p["max_overhang"])
+    log.append("surface lean per course, max sideways offset from the course below [mm, signed]: "
+               + " ".join("{:+.0f}".format(v) for v in lean[1:]))
+    steep = [k for k in range(1, len(lean)) if abs(lean[k]) > p["max_overhang"]]
+    if steep:
+        log.append("surface leans more than max_overhang ({:.0f} mm) at course(s): {}".format(
+            p["max_overhang"], " ".join(str(k) for k in steep)))
+        k_worst = max(range(len(need)), key=lambda k: need[k])
+        capped = 0 < p["max_move"] < need[k_worst]
+        log.append("estimated deviation from the surface forced by max_overhang: up to {:.0f} mm "
+                   "at course {}{}".format(
+                       need[k_worst], k_worst,
+                       "; above max_move ({:.0f} mm), L0 cannot pass there".format(p["max_move"])
+                       if capped else ""))
+    moved = [k for k in range(len(paths)) if info["moves"][k] > 0.5 or info["trims"][k] > 0.5]
+    if moved:
+        k_worst = max(moved, key=lambda k: info["moves"][k])
+        log.append("course lines moved over the course below (the fit and the deviations "
+                   "below are measured from the moved lines): {} course(s), up to {:.0f} mm "
+                   "sideways at course {}{}".format(
+                       len(moved), info["moves"][k_worst], k_worst,
+                       "; open ends trimmed at course(s) " + " ".join(
+                           "{} ({:.0f} mm)".format(k, info["trims"][k]) for k in moved
+                           if info["trims"][k] > 0.5)
+                       if any(info["trims"][k] > 0.5 for k in moved) else ""))
 
 
 def _finite(v):

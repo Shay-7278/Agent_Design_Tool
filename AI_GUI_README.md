@@ -51,6 +51,94 @@ The original viewport used free trackball camera rotation, which could roll. The
 right-drag navigation fixes the up direction to world Z. It provides familiar CAD
 orbit behavior without requiring Rhino.
 
+## Window openings
+
+Use **Window…** on the toolbar to insert/edit the first rectangular opening.
+Choose its position along the wall (0–1), width, height and sill elevation.
+The initial dialog values fit the default wall. Your example of a 900 × 1200 mm
+window with an 800 mm sill needs a taller wall: create a 2500 mm-high wall first.
+
+After insertion, four **cyan corner handles** resize the rectangle. They are
+displayed slightly in front of the wall so bricks cannot hide them; dragging is
+projected back onto the surface. Use numeric fields to move the opening precisely.
+The NURBS control points remain unchanged. Ctrl+Z/Ctrl+Y includes opening edits,
+and **Remove opening** is available in the same dialog.
+
+AI examples:
+- “Add a centered 900 × 600 mm window with its sill 500 mm above the ground.”
+- “Make the existing window 1000 mm wide.”
+- “Move the window to 40 percent of the wall length.”
+- “Remove the window.”
+
+The AI uses `set_opening` and `remove_opening`. The document stores a list of openings,
+but this first version accepts **one opening**. Openings save inside the `.3dm`
+document under `surface_studio.openings.v1`; reopen that file to restore them.
+Other Rhino readers still see the complete untrimmed surface.
+
+Width is arc length along each horizontal course, centered at the chosen fraction
+of that course. Sill is above the wall base. Sill rounds **down**, head rounds **up**
+to whole courses; the UI reports the effective dimensions explicitly. For example,
+with a 57 mm brick and 10 mm bed joint, a requested 500–1100 mm opening becomes
+469–1139 mm. This avoids cutting bricks vertically. The preview accounts for the
+existing generator's vertical course-layout scaling.
+
+The opening-aware generator splits valid placement intervals **before** creating
+bricks, fits each interval with a shared course-parity preference, and prefers full
+and half bricks. Optional custom-length pieces occur only at interval ends and
+respect the specified minimum length. Results include `custom_piece_schedule` with
+course/index and cut lengths. Passing custom pieces appear teal. Concealed lintels
+are hidden; failed masonry checks retain the failure colors.
+
+The opening preview is a translucent extrusion through the surface, fixed in the
+document depth direction. Orbiting changes only the camera; the volume and its
+handles stay fixed in world coordinates. The NURBS remains complete.
+Press **A with the viewport focused**, or use **Generate + analyze (A)**, to generate
+and run full analysis. A failed generation keeps any previous wall visible and
+explicitly marks the run as failed.
+
+On curved courses, boundary pieces may be shortened further to keep their complete
+footprints inside their placement intervals. Custom pieces respect the minimum
+length; results expose these trims in `boundary_adjustments`. The trims can widen
+adjacent joints; this version does not redistribute the course after trimming.
+
+**First-version analysis limits:**
+- Opening layouts run an iterative **L0 QP repair → L1 equilibrium → L1-guided
+  movement → recheck** search. The existing trust-region QP uses exact linearized
+  opening/contact constraints. Accepted moves cannot cross opening boundaries;
+  the lintel stays in place. Fast mode performs L0 repair only. Full mode runs L1
+  once L0 is valid; exhausted L0 repair is reported explicitly.
+- Repair retains each interval's piece count and custom lengths. Automatic brick
+  dropping and rebonding across regions are disabled. The bounded search may fail;
+  it does not guarantee a solution or search all possible bond arrangements.
+  `optimization_history` records L0/L1 states, feedback moves and iteration count.
+- An enabled lintel is a **hidden, massless, zero-thickness rigid support** beneath
+  the head-course masonry. It never replaces a brick course. Its bearing contacts
+  transfer load into both jambs; it is not grounded. Direct masonry contacts are
+  clipped around the plate footprint to avoid counting bearing area twice.
+- Concealed-lintel equilibrium uses the selected **RBE or CRA penalty solver**,
+  with explicit clipped bearing polygons and the configured friction and tensile
+  limits. The configured construction-stage solver is retained (default: no-tension
+  LP for wet mortar). Lintel self-weight, capacity, section design and deflection are
+  **not checked**. A pass is conditional on the ideal support assumption.
+  Curved lintels currently use a straight chord proxy and must pass contact checks.
+  In CRA penalty mode, the ideal plate's top contact has zero closure, so inserting
+  the plate does not double the mortar-contact closure along that load path.
+- Construction stages are checked at complete-course boundaries and assume the
+  lintel is installed before masonry above. Installation within a course is not modeled.
+- Single-branch open walls are supported. Closed-loop walls, folded/multiple-branch
+  contours, and curved layouts whose brick footprints cannot respect the region
+  boundaries are rejected rather than producing an intruding layout.
+- The continuous input surface stays visible behind the opening. The opening is
+  an exclusion in the generated brick structure, not a hole in the NURBS.
+
+Changing an opening invalidates analysis exactly like changing control points.
+Worker snapshots include the opening definition, so editing during a solve cannot
+change the job already running.
+
+Verification: `python -m unittest surface_editor.test_openings -v` and
+`python -m surface_editor.smoke_openings` from `gui/`. The smoke test uses the actual
+GUI handles and full solver; it makes no paid AI requests.
+
 ## Connect an AI
 
 Select OpenAI, Anthropic, Gemini, or OpenAI-compatible. Enter a **model ID available

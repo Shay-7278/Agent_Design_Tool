@@ -18,6 +18,20 @@ to reduce counts or create a uniform cubic grid, respecting the user's tolerance
 the sampled deviation. Read state again after topology changes before editing point indices.
 Use new_flat_surface to replace the design with a vertical planar wall (undoable).
 No trimming, holes or arbitrary new topology.
+Openings are separate exclusion rectangles: use set_opening, never move NURBS points to
+cut a window. Only one opening is currently supported. Width is arc length along each
+horizontal course, center_fraction is 0..1 along the course, sill is above wall base.
+Reuse the ID to update it. Sill rounds down/head up to course boundaries; report the
+effective dimensions returned. Check wall height first: allow head clearance and lintel.
+For a centered window use center_fraction=.5; suggest bearing_mm=190 and min_piece_mm=50
+as modeling defaults, not engineered design. Lintels are hidden, massless ideal bearing
+elements and do not replace brick courses. Opening-aware L0 QP repair and L1 feedback
+preserve exclusion boundaries. Equilibrium uses the selected CRA/RBE solver and explicit
+lintel bearing contacts, with the configured tensile allowance and friction. Region piece
+counts are retained during repair; automatic dropping/rebonding is disabled for openings.
+Metal capacity, self-weight and deflection are NOT checked. Inspect optimization_history
+and construction-stage results before explaining buildability. Use remove_opening to
+remove a window. Explain infeasible layouts honestly.
 For unrepresentable requests, explain the limit and suggest a supported approximation.
 If orientation or a materially important dimension is ambiguous, ask a short question.
 Never claim stability from appearance. Analyze only when requested or needed to answer an
@@ -47,6 +61,13 @@ OP = obj({
 }, ["kind"])
 
 TOOLS = [
+    {"name": "set_opening", "description": "Add/update the single rectangular exclusion opening without changing NURBS. Reuse ID to update. Units mm. width follows wall arc length; center_fraction is normalized position. Sill/head are expanded to course boundaries with effective dimensions returned. Rigid lintel is an assumption, not an engineered beam.",
+     "parameters": obj({"expected_revision": {"type": "integer"}, "opening": obj({
+         "id": {"type": "string"}, "center_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+         "width_mm": NUM, "height_mm": NUM, "sill_mm": NUM, "bearing_mm": NUM, "min_piece_mm": NUM,
+         "lintel": {"type": "boolean"}, "allow_custom": {"type": "boolean"}},
+         ["id", "center_fraction", "width_mm", "height_mm", "sill_mm", "bearing_mm", "min_piece_mm", "lintel", "allow_custom"])}, ["expected_revision", "opening"])},
+    {"name": "remove_opening", "description": "Remove an exclusion opening by ID (undoable).", "parameters": obj({"expected_revision": {"type": "integer"}, "opening_id": {"type": "string"}}, ["expected_revision", "opening_id"])},
     {"name": "rebuild_surface", "description": "Change U/V control-point counts (4..20 each), undoable. refine inserts knots without changing shape and can only increase counts. rebuild fits a uniform cubic grid and rejects sampled deviations above tolerance_mm. Re-inspect state afterwards. Tolerance is a sampled parametric bound, not a certified global maximum.",
      "parameters": obj({"expected_revision": {"type": "integer"}, "count_u": {"type": "integer", "minimum": 4, "maximum": 20}, "count_v": {"type": "integer", "minimum": 4, "maximum": 20}, "mode": {"type": "string", "enum": ["refine", "rebuild"]}, "tolerance_mm": {"type": "number", "minimum": 0, "maximum": 1000}}, ["expected_revision", "count_u", "count_v", "mode", "tolerance_mm"])},
     {"name": "new_flat_surface", "description": "Replace current design with an undoable vertical flat wall in world XZ, starting at origin. Existing wall overlay is hidden. Width and height in mm.",

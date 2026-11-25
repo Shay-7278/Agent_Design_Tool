@@ -150,6 +150,8 @@ def brick_violation(wall, b):
     brick below, so moving a stranded brick towards support counts as
     progress (without it the contact deficit is the same at any distance and
     the keep/undo test cannot see the brick coming back)."""
+    if hasattr(wall, "violation"):
+        return wall.violation(b)
     p = wall.p
     v = 0.0
     if b.k > 0:
@@ -326,6 +328,8 @@ def _rows(wall, geo, R):
     """Linearised constraints: [(coefs {(brick, 's'|'u'): slope}, value,
     limit, rot)], meaning value + sum(slope * move) >= limit, all in mm; rot()
     returns {brick: slope per radian of its rotation}."""
+    if hasattr(wall, "constraint_rows"):
+        return wall.constraint_rows(R)
     p = wall.p
     W = wall.W
     rows = []
@@ -529,7 +533,9 @@ def _qp_round(wall, R, pins):
     max_rot = math.radians(p["max_rotation"])
     lo_b, hi_b = [], []
     for b, ax in keys:
-        if ax == "r":
+        if hasattr(wall, "movable") and not wall.movable(b):
+            lo = hi = 0.0
+        elif ax == "r":
             rr = R / half_l
             lo, hi = max(-rr, -max_rot - b.r), min(rr, max_rot - b.r)
         elif ax == "s" and b in pins:
@@ -606,7 +612,7 @@ def _polish(wall, pins, passes=3):
         if not bad:
             break
         for b in bad:
-            if b.k == 0 or not wall.check(b):     # course 0 stays where the fit put it
+            if b.k == 0 or (hasattr(wall, "movable") and not wall.movable(b)) or not wall.check(b):
                 continue
             dirs = DIRS_LATERAL if b in pins else DIRS16
             res = smallest_move(wall, b, dirs, lambda s, u, b=b: not wall.check(b, s, u))
@@ -647,7 +653,8 @@ def _solve(wall, log, label="L0 QP"):
         # support (a brick pushed off the course below has no slope pulling
         # it back, so it would stay stranded)
         lost = size and bool(_unsupported(wall) - unsup)
-        if size and new < viol - 1e-6 and not lost:
+        boundaries_ok = not hasattr(wall, "hard_constraints_ok") or wall.hard_constraints_ok()
+        if size and new < viol - 1e-6 and not lost and boundaries_ok:
             per, viol = new_per, new
             unsup = _unsupported(wall)
             kept += 1
@@ -768,7 +775,7 @@ def l0_repair_qp(wall, log):
     p = wall.p
     viol = _solve(wall, log)
     n_drop = 0
-    while viol > 1e-9 and n_drop < p["max_drop"]:
+    while viol > 1e-9 and n_drop < p["max_drop"] and not getattr(wall, "preserve_regions", False):
         d = _drop_unsupported(wall, log, p["max_drop"] - n_drop)
         if not d:
             break

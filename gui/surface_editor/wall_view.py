@@ -26,6 +26,8 @@ import numpy as np
 import pyvista as pv
 
 STATUS_COLORS = {
+    "custom": "teal",
+    "lintel": "slateblue",
     "passed": "peru",
     "moved": "orange",
     "flagged": "red",
@@ -59,7 +61,10 @@ def build_wall_meshes(result: dict) -> list[tuple[str, pv.PolyData]]:
     """One (status, mesh) pair per brick status present in the result."""
     groups: dict[str, list[pv.PolyData]] = {}
     for brick in result.get("bricks", []):
-        groups.setdefault(brick["status"], []).append(_brick_mesh(result, brick))
+        if brick.get("hidden", False):
+            continue
+        key = brick.get("kind") if brick["status"] == "passed" and brick.get("kind") in ("custom", "lintel") else brick["status"]
+        groups.setdefault(key, []).append(_brick_mesh(result, brick))
     return [(status, pv.merge(parts)) for status, parts in groups.items()]
 
 
@@ -78,13 +83,14 @@ def interface_markers(result: dict) -> pv.PolyData | None:
 
 def result_summary(result: dict, path: str | Path) -> str:
     n = len(result.get("bricks", []))
+    qualifier = " · assumed concealed lintel" if any(o.get("lintel") for o in result.get("openings", [])) else ""
     if result.get("use_cra") is False:
         state = "GEOMETRY PASS" if result.get("l0_pass") else "GEOMETRY FAIL"
-        return f"{Path(path).stem}: {n} bricks, {state} (equilibrium not checked)"
+        return f"{Path(path).stem}: {n} elements, {state} (equilibrium not checked){qualifier}"
     ok = result.get("ok")
     state = "PASS" if ok else "FAIL"
     l1 = result.get("l1_state", "?")
-    return f"{Path(path).stem}: {n} bricks, {state} (L1 {l1})"
+    return f"{Path(path).stem}: {n} elements, {state} (L1 {l1}){qualifier}"
 
 
 def find_latest_result(root: Path) -> Path | None:

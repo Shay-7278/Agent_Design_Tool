@@ -18,6 +18,7 @@ solver costs (~20 s); section extraction adds well under a second.
 from __future__ import annotations
 
 import json
+import copy
 import math
 import subprocess
 import sys
@@ -184,7 +185,10 @@ def _resample_arclength(pts: np.ndarray, n: int) -> np.ndarray:
 def build_job(model: NurbsModel, params: dict, use_cra: bool = True) -> dict:
     """Full job dict (section extraction included). Call on the GUI thread."""
     z_base, sections = extract_sections(model, params)
-    return {"z_base": z_base, "params": params, "sections": sections, "use_cra": use_cra}
+    job = {"z_base": z_base, "params": params, "sections": sections, "use_cra": use_cra}
+    if model.openings:
+        job["openings"] = copy.deepcopy(model.openings)
+    return job
 
 
 def run_solver(

@@ -8,6 +8,9 @@ from pathlib import Path
 import queue
 import sys
 import threading
+import uuid
+import numpy as np
+import pyvista as pv
 
 os.environ.setdefault("QT_API", "pyside6")
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -18,6 +21,7 @@ from .editor import SurfaceEditor, default_file, _project_root
 from .providers import ENV_KEYS, URLS, Provider, ProviderConfig
 from .session import DesignSession, run_analysis
 from .navigation import UprightNavigation
+from .openings import geometry as opening_geometry, resized as resized_opening
 
 
 class Bridge(QtCore.QObject):
@@ -51,6 +55,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.agent_busy = False
         self.cancelled = threading.Event()
         self.closed = False
+        self.opening_widgets = []
+        self.opening_refresh = QtCore.QTimer(self)
+        self.opening_refresh.setSingleShot(True)
+        self.opening_refresh.timeout.connect(self.draw_openings)
         self.bridge = Bridge()
         self.bridge.tool.connect(self._execute_tool)
         self.bridge.audit.connect(self._audit)
@@ -100,7 +108,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.solver = QtWidgets.QComboBox()
         self.solver.addItems(["rbe", "cra_penalty"])
         self.fast = QtWidgets.QPushButton("Geometry check")
-        self.full = QtWidgets.QPushButton("Full analysis")
+        self.full = QtWidgets.QPushButton("Generate + analyze (A)")
         controls.addWidget(self.solver)
         controls.addWidget(self.fast)
         controls.addWidget(self.full)
@@ -146,6 +154,7 @@ class MainWindow(QtWidgets.QMainWindow):
         toolbar = self.addToolBar("Design")
         toolbar.setMovable(False)
         for label, callback in (("Undo (Ctrl+Z)", self.editor.undo), ("Redo (Ctrl+Y)", self.editor.redo),
+                                ("Window…", self.opening_dialog),
                                 ("New flat wall…", self.new_flat_dialog), ("Rebuild grid…", self.rebuild_dialog),
                                 ("Reset surface", self.editor.reset),
                                 ("Toggle wall", self.editor.toggle_wall), ("Reset view", self.reset_view),
@@ -169,6 +178,113 @@ class MainWindow(QtWidgets.QMainWindow):
         shortcut.activated.connect(self.send_message)
         self.append("Assistant", "Ready. Manual editing and analysis work without an API key. For chat, choose a provider, enter its model ID and key, then describe your design. Ctrl+Enter sends.")
         self.refresh_status()
+
+    def opening_dialog(self):
+        existing = self.editor.model.openings
+        data = dict(existing[0]) if existing else {"id": "window-"+uuid.uuid4().hex[:8], "center_fraction": .5,
+            "width_mm": 900, "height_mm": 600, "sill_mm": 500, "bearing_mm": 190,
+            "min_piece_mm": 50, "lintel": True, "allow_custom": True}
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("Window opening — separate from the NURBS")
+        layout = QtWidgets.QFormLayout(dialog)
+        controls = {}
+        for key, label, lo, hi in (("center_fraction", "Position along wall (0–1)", 0, 1),
+                                  ("width_mm", "Width along wall", 50, 100000),
+                                  ("height_mm", "Requested height", 50, 100000),
+                                  ("sill_mm", "Requested sill above base", 0, 100000),
+                                  ("bearing_mm", "Lintel bearing each end", 50, 2000),
+                                  ("min_piece_mm", "Minimum custom brick length", 20, 190)):
+            control = QtWidgets.QDoubleSpinBox()
+            control.setRange(lo, hi)
+            control.setDecimals(3 if key == "center_fraction" else 1)
+            control.setValue(data[key])
+            if key != "center_fraction": control.setSuffix(" mm")
+            controls[key] = control
+            layout.addRow(label, control)
+        for key, label in (("lintel", "Assume concealed lintel (keeps brick courses)"), ("allow_custom", "Allow custom jamb pieces if full/half cannot fit")):
+            control = QtWidgets.QCheckBox(label)
+            control.setChecked(data[key])
+            controls[key] = control
+            layout.addRow(control)
+        note = QtWidgets.QLabel("Sill rounds down and head rounds up to whole courses. Effective dimensions are reported after applying. Lintel capacity is not checked. Cyan corner handles resize the opening; numeric fields set its position precisely.")
+        note.setWordWrap(True)
+        layout.addRow(note)
+        error = QtWidgets.QLabel()
+        error.setWordWrap(True)
+        layout.addRow(error)
+        buttons = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok | QtWidgets.QDialogButtonBox.StandardButton.Cancel)
+        layout.addRow(buttons)
+        buttons.rejected.connect(dialog.reject)
+        def apply():
+            candidate = {"id": data["id"]}
+            for key, control in controls.items():
+                candidate[key] = control.isChecked() if isinstance(control, QtWidgets.QCheckBox) else control.value()
+            try:
+                r = self.session.execute("set_opening", {"expected_revision": self.session.revision, "opening": candidate})
+            except Exception as exc:
+                error.setText(str(exc))
+                return
+            self.report_opening(r)
+            dialog.accept()
+        buttons.accepted.connect(apply)
+        if existing:
+            delete = QtWidgets.QPushButton("Remove opening")
+            layout.addRow(delete)
+            def remove():
+                self.session.execute("remove_opening", {"expected_revision": self.session.revision, "opening_id": data["id"]})
+                dialog.accept()
+            delete.clicked.connect(remove)
+        dialog.exec()
+
+    def report_opening(self, report):
+        o = report["opening"]
+        self.append("Opening", f"{o['width_mm']:.1f} mm wide. Effective sill {o['effective_sill_mm']:.1f} mm; head {o['effective_head_mm']:.1f} mm; height {o['effective_height_mm']:.1f} mm after course alignment. NURBS unchanged.")
+
+    def draw_openings(self):
+        if self.closed: return
+        for widget in self.opening_widgets:
+            widget.Off()
+            if widget in self.plotter.widgets.sphere_widgets:
+                self.plotter.widgets.sphere_widgets.remove(widget)
+        self.opening_widgets = []
+        self.plotter.remove_actor("opening_boundary", render=False)
+        self.plotter.remove_actor("opening_volume", render=False)
+        if not self.editor.model.openings:
+            self.plotter.render()
+            return
+        o = self.editor.model.openings[0]
+        params = self.session.result.get("params", {}) if self.session.result else {}
+        try:
+            effective, corners, perimeter = opening_geometry(self.editor.model, o, params)
+        except Exception as exc:
+            self.statusBar().showMessage("Opening invalid for current surface: " + str(exc))
+            return
+        radius = max(np.linalg.norm(np.ptp(self.editor.cps, axis=(0, 1)))*.009, 8)
+        # World-fixed exclusion extrusion; orbiting never changes its geometry.
+        shift = self.session.frame[:, 1]*(float(params.get("brickW", 90)) + radius)
+        if np.allclose(perimeter[0], perimeter[-1]): perimeter = perimeter[:-1]
+        n = len(perimeter)
+        points = np.concatenate([perimeter-shift, perimeter+shift])
+        faces = []
+        for i in range(n):
+            j = (i+1) % n
+            faces.extend([4, i, j, n+j, n+i])
+        faces.extend([n, *range(n-1, -1, -1), n, *range(n, 2*n)])
+        self.plotter.add_mesh(pv.PolyData(points, np.asarray(faces)), name="opening_volume", color="deepskyblue", opacity=.12, show_edges=True, pickable=False)
+        self.plotter.add_mesh(pv.lines_from_points(perimeter, close=True), name="opening_boundary", color="deepskyblue", line_width=4, render_lines_as_tubes=True, pickable=False)
+        count = len(self.plotter.widgets.sphere_widgets)
+        def drag(point, index, widget):
+            try:
+                candidate = resized_opening(self.editor.model, o, index, np.asarray(point)-shift, params)
+                r = self.session.execute("set_opening", {"expected_revision": self.session.revision, "opening": candidate})
+                self.report_opening(r)
+            except Exception as exc:
+                self.append("Opening", "Resize rejected: " + str(exc))
+            self.opening_refresh.start(1)
+        self.plotter.add_sphere_widget(drag, center=corners+shift, radius=radius, color="deepskyblue", selected_color="white",
+                                      interaction_event="end", pass_widget=True, test_callback=False)
+        self.opening_widgets = list(self.plotter.widgets.sphere_widgets[count:])
+        self.plotter.render()
 
     def reset_view(self):
         self.plotter.camera_position = "iso"
@@ -274,6 +390,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fast.setEnabled(not s.running)
         self.full.setEnabled(not s.running)
         self.statusBar().showMessage(text.replace("\n", " | "))
+        self.opening_refresh.start(180)
 
     def _set_busy(self, busy):
         self.agent_busy = busy
@@ -342,7 +459,9 @@ class MainWindow(QtWidgets.QMainWindow):
         r = record["result"]
         if "error" in r:
             self.append("Tool · " + record["tool"], r["error"])
-        elif record["tool"] in ("edit_surface", "undo_edit", "redo_edit", "rebuild_surface", "new_flat_surface"):
+        elif record["tool"] == "set_opening":
+            self.report_opening(r)
+        elif record["tool"] in ("edit_surface", "undo_edit", "redo_edit", "rebuild_surface", "new_flat_surface", "remove_opening"):
             self.append("Tool · " + record["tool"], f"Completed. Surface revision {r['revision']}.")
         else:
             self.statusBar().showMessage("AI used " + record["tool"])
@@ -392,12 +511,20 @@ class MainWindow(QtWidgets.QMainWindow):
             self.append("Analysis", "Run failed: " + error)
             return
         s = self.session.summary()
+        if s.get("fatal"):
+            self.append("Generation failed", s["fatal"] + "\nAny previous wall remains visible; it is not the result of this run.")
+            return
         geometry = "passed" if s["geometry_check"] else "failed"
-        equilibrium = s["equilibrium_state"] if s["equilibrium_pass"] is not None else "not checked"
+        equilibrium = "not checked" if s["equilibrium_pass"] is None else "passed" if s["equilibrium_pass"] else f"not passed ({s['equilibrium_state']})"
         self.append("Analysis", f"Finished in {seconds:.1f}s · {s['freshness']}\n"
-                    f"{s['brick_count']} bricks. Geometry: {geometry}. Equilibrium: {equilibrium}.\n"
+                    f"{s['masonry_piece_count']} masonry pieces, {s['lintel_count']} lintels. Geometry: {geometry}. Equilibrium: {equilibrium}.\n"
                     f"{s['failed_interface_count']} failing interfaces, {s['dropped_count']} dropped bricks.\n"
+                    f"Optimization rounds: {s.get('iterations') or 0}. Selected solver: {s.get('solver', 'unknown')}.\n"
                     "Use Analysis details for construction-stage results, or ask the assistant to explain or compare changes.")
+        if s.get("fatal"):
+            self.append("Analysis issue", s["fatal"])
+        if s.get("opening_assumptions"):
+            self.append("Opening analysis assumptions", s["opening_assumptions"])
 
     def show_analysis(self):
         dialog = QtWidgets.QDialog(self)

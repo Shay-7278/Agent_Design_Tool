@@ -12,6 +12,8 @@ def _toward(wall, b, dir_xy, dist, label):
     """Move b by dist along the plan direction dir_xy, shrinking the step until
     L0 still passes; flag b if even min_step fails.  Returns True if moved."""
     p = wall.p
+    if hasattr(wall, "movable") and not wall.movable(b):
+        return False
     _cx, _cy, tx, ty, xx, xy = wall.pose(b)
     ln = math.hypot(*dir_xy)
     if ln < EPS:
@@ -81,6 +83,20 @@ def l1_repair(wall, cra, log):
             worst[b] = r
     for b in sorted(worst, key=lambda b: -b.k):
         r = worst[b]
+        if hasattr(wall, "movable") and not wall.movable(b):
+            # A concealed lintel stays at the opening head. Improve its
+            # bearing by moving the jamb masonry, never the opening itself.
+            c = r["lower"]
+            if wall.movable(c):
+                target = r.get("cop") or r["centroid"]
+                dx = (target[0]-r["centroid"][0])/MM
+                dy = (target[1]-r["centroid"][1])/MM
+                if math.hypot(dx, dy) < EPS:
+                    bx, by = wall.pose(b)[:2]; cx, cy = wall.pose(c)[:2]
+                    dx, dy = bx-cx, by-cy
+                if _toward(wall, c, (dx, dy), p["slide_step"], "L1 lintel bearing"):
+                    moved += 1
+            continue
         note = "L1: sigma_t/(f_t/SF) = {:.2f}".format(r["ratio"])
         b.notes.append(note)
         allow = p["f_t"] / p["SF"]

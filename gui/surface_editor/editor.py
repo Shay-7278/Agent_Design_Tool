@@ -26,6 +26,7 @@ The fitted brick wall from the latest analysis (newest *_result.json in
 from __future__ import annotations
 
 import sys
+import copy
 import threading
 import time
 from pathlib import Path
@@ -224,10 +225,12 @@ class SurfaceEditor:
             self.undo_stack.pop(0)
 
     def _snapshot(self):
-        return {"surface": self.model._srf.Encode(), "pivot": self.pivot.copy(), "scales": self.scales.copy()}
+        return {"surface": self.model._srf.Encode(), "pivot": self.pivot.copy(), "scales": self.scales.copy(),
+                "openings": copy.deepcopy(self.model.openings)}
 
     def _restore(self, state):
         self.model._srf = rhino3dm.CommonObject.Decode(state["surface"])
+        self.model.openings = copy.deepcopy(state.get("openings", []))
         self.cps = self.model.control_points()
         shape_changed = (self.n, self.m) != self.model.shape
         self.n, self.m = self.model.shape
@@ -240,13 +243,21 @@ class SurfaceEditor:
         self._sync_scene()
         self.plotter.render()
 
-    def replace_surface(self, surface):
+    def replace_surface(self, surface, openings=None):
         if not isinstance(surface, rhino3dm.NurbsSurface) or not surface.IsValid:
             raise ValueError("Expected a valid NURBS surface")
         self._push_undo()
         points = [surface.Points.GetPoint(i, j) for i in range(surface.Points.CountU) for j in range(surface.Points.CountV)]
         pivot = np.array([[p.X, p.Y, p.Z] for p in points]).mean(axis=0)
-        self._restore({"surface": surface.Encode(), "pivot": pivot, "scales": np.ones(3)})
+        self._restore({"surface": surface.Encode(), "pivot": pivot, "scales": np.ones(3),
+                       "openings": self.model.openings if openings is None else openings})
+
+    def apply_openings(self, openings):
+        self._push_undo()
+        self.model.openings = copy.deepcopy(openings)
+        if self.on_surface_changed:
+            self.on_surface_changed()
+        self.plotter.render()
 
     def _begin_interaction(self, *_):
         if not self._guard and not self._gesture_active:

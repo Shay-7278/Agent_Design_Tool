@@ -97,7 +97,7 @@ EARLY_STOP = {
 }
 
 
-def _solve(frames, dims, supports, p):
+def _solve(frames, dims, supports, p, contacts=None, massless=()):
     """Build the compas_cra assembly and run the penalty solve.
 
     Plain data in and out (lists, dicts), so it can run in a child process.
@@ -121,10 +121,24 @@ def _solve(frames, dims, supports, p):
     from compas_cra.nlp import solve_nlp
 
     assembly = CRA_Assembly()
+    class IdealSupport(Block):
+        def volume(self):
+            return 0.0
     for node, ((o, x, y), (W, L, H)) in enumerate(zip(frames, dims)):
-        assembly.add_block(Block.from_shape(Box(W, L, H, frame=Frame(o, x, y))), node=node)
+        block_type = IdealSupport if node in massless else Block
+        assembly.add_block(block_type.from_shape(Box(W, L, H, frame=Frame(o, x, y))), node=node)
     assembly.set_boundary_conditions(supports)
-    assembly_interfaces_numpy(assembly, nmax=p["nmax"], tmax=p["tmax"], amin=p["amin"])
+    if contacts is None:
+        assembly_interfaces_numpy(assembly, nmax=p["nmax"], tmax=p["tmax"], amin=p["amin"])
+    else:
+        # Explicit bearing polygons permit an ideal, zero-thickness lintel
+        # without overlapping solid blocks or fixing the masonry above it.
+        from compas.geometry import Polygon
+        for lower, upper, points in contacts:
+            poly = Polygon(points)
+            if poly.area >= p["amin"]:
+                assembly.add_to_interfaces(lower, upper, poly.area, points,
+                    Frame(points[0], [1, 0, 0], [0, 1, 0]))
 
     graph = assembly.graph
     n_itf = graph.number_of_edges()
@@ -156,6 +170,33 @@ def _solve(frames, dims, supports, p):
         opts.update(EARLY_STOP)
     with contextlib.redirect_stdout(io.StringIO()):   # compas_cra prints per block
         problem, layout = build(assembly, mu=p["mu"], density=p["density"])
+        if massless and p.get("solver") != "rbe":
+            # CRA's standard contact closure eps must not be counted twice
+            # through an ideal zero-thickness support. Its top contact has
+            # zero closure; its jamb contacts keep the ordinary mortar eps.
+            # Otherwise direct jamb->brick and jamb->plate->brick paths
+            # impose contradictory displacements in the penalty problem.
+            import numpy as np
+            vertices, offset = [], 0
+            for lower, upper in graph.edges():
+                for interface in graph.edge_attribute((lower, upper), "interfaces"):
+                    count = len(interface.points)
+                    if lower in massless:
+                        vertices.extend(range(offset, offset+count))
+                    offset += count
+            vertices = np.asarray(vertices, dtype=int)
+            ct = len(problem.g_l)-6*layout["nv"]
+            old_constraints, old_jacobian = problem.constraints, problem.jacobian
+            selected = np.isin(problem.jac_rows-ct, vertices) & (problem.jac_cols == 4*(problem.jac_rows-ct))
+            def constraints(x):
+                values = old_constraints(x)
+                values[ct+vertices] -= 1e-4*x[4*vertices]
+                return values
+            def jacobian(x):
+                values = old_jacobian(x)
+                values[selected] -= 1e-4
+                return values
+            problem.constraints, problem.jacobian = constraints, jacobian
         result = solve_nlp(problem, backend="native", options=opts)
     solver = {"status": result.status, "message": result.status_message,
               "iterations": result.iterations}
@@ -242,6 +283,11 @@ def run_cra(wall, nodes=None, held=(), allow=None):
     supports = [n for n, b in enumerate(nodes) if b.k == 0 or b in held]
     keys = ("nmax", "tmax", "amin", "mu", "density", "solver")
     args = (frames, dims, supports, {k: p[k] for k in keys})
+    if hasattr(wall, "cra_contacts"):
+        contacts = wall.cra_contacts(nodes)
+        massless = [n for n, b in enumerate(nodes) if wall.kinds[b] == "lintel"]
+        dims = [(w, l, 1e-6 if n in massless else h) for n, (w, l, h) in enumerate(dims)]
+        args = (frames, dims, supports, {k: p[k] for k in keys}, contacts, massless)
     if p["cra_timeout"] > 0:
         res = _solve_with_timeout(args, p["cra_timeout"])
     else:
@@ -261,7 +307,7 @@ def run_cra(wall, nodes=None, held=(), allow=None):
     rows = []
     for u, v, itfs in res["edges"]:
         bu, bv = nodes[u], nodes[v]
-        upper, lower = (bu, bv) if bu.k > bv.k else (bv, bu)
+        upper, lower = (bu, bv) if wall.frame(bu)[0][2] > wall.frame(bv)[0][2] else (bv, bu)
         for itf in itfs:
             st = interface_stress(itf["points"], itf["origin"], itf["xaxis"], itf["yaxis"],
                                   itf["forces"])

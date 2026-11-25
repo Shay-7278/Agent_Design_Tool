@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import uuid
+import copy
 
 import numpy as np
 import rhino3dm
@@ -12,6 +13,7 @@ from .model import NurbsModel
 from .operations import apply_operations, local_frame
 from . import refit, wall_view
 from .topology import change_grid, plane
+from .openings import geometry, validate_openings
 
 
 def surface_hash(model):
@@ -19,6 +21,8 @@ def surface_hash(model):
     data = {"points": model.control_points().tolist(), "weights": model.weights().tolist(),
             "degree": model.degree, "knots_u": list(s.KnotsU), "knots_v": list(s.KnotsV),
             "domains": [[s.Domain(k).T0, s.Domain(k).T1] for k in (0, 1)]}
+    if model.openings:
+        data["openings"] = model.openings
     return hashlib.sha256(json.dumps(data, sort_keys=True, allow_nan=False).encode()).hexdigest()
 
 
@@ -26,7 +30,9 @@ def clone_model(model):
     # This detached geometry is safe for a worker to evaluate while the live
     # document changes. No background thread touches the live model or VTK.
     surface = rhino3dm.CommonObject.Decode(model._srf.Encode())
-    return NurbsModel(model.path, rhino3dm.File3dm(), None, rhino3dm.ObjectAttributes(), surface)
+    clone = NurbsModel(model.path, rhino3dm.File3dm(), None, rhino3dm.ObjectAttributes(), surface)
+    clone.openings = copy.deepcopy(model.openings)
+    return clone
 
 
 class DesignSession:
@@ -60,6 +66,8 @@ class DesignSession:
             return "unknown surface version"
         if meta.get("surface_hash") != surface_hash(self.editor.model) or meta.get("solver") != self.editor.solver:
             return "outdated"
+        if self.result.get("fatal"):
+            return "generation failed"
         return "current"
 
     def state(self):
@@ -69,6 +77,7 @@ class DesignSession:
                 "local_axes_world": {name: self.frame[:, k].tolist() for k, name in enumerate(("width", "depth", "height"))},
                 "world_bounds": [e.cps.min(axis=(0, 1)).tolist(), e.cps.max(axis=(0, 1)).tolist()],
                 "control_points_world": e.cps.tolist(), "analysis_status": self.analysis_status(),
+                "openings": copy.deepcopy(e.model.openings),
                 "running_analysis": self.running, "undo_available": bool(e.undo_stack),
                 "redo_available": bool(getattr(e, "redo_stack", [])),
                 "limits": "Edits deform the control cage. rebuild_surface can refine exactly or rebuild approximately to 4..20 points per direction. UV follows grid indices."}
@@ -82,15 +91,33 @@ class DesignSession:
                   "undo_edit": {"expected_revision"}, "redo_edit": {"expected_revision"},
                   "rebuild_surface": {"expected_revision", "count_u", "count_v", "mode", "tolerance_mm"},
                   "new_flat_surface": {"expected_revision", "width_mm", "height_mm", "count_u", "count_v"},
+                  "set_opening": {"expected_revision", "opening"}, "remove_opening": {"expected_revision", "opening_id"},
                   "analyze_wall": {"mode"}, "get_analysis_summary": set()}
         if name not in fields or not isinstance(args, dict) or set(args) != fields[name]:
             raise ValueError("Unknown tool or invalid arguments")
         if name == "get_surface_state":
             return self.state()
+        if name == "set_opening":
+            self.check_revision(args["expected_revision"])
+            candidate = validate_openings([args["opening"]])
+            existing = self.editor.model.openings
+            if existing and existing[0]["id"] != candidate[0]["id"]:
+                raise ValueError("One opening is supported. Update its existing ID or remove it first.")
+            params = self.result.get("params", {}) if self.result else {}
+            effective, _, _ = geometry(self.editor.model, candidate[0], params)
+            self.editor.apply_openings(candidate)
+            return {"revision": self.revision, "opening": effective,
+                    "note": "Sill rounds down and head rounds up to whole courses; reported effective dimensions include this change. NURBS control points are unchanged."}
+        if name == "remove_opening":
+            self.check_revision(args["expected_revision"])
+            if not any(o["id"] == args["opening_id"] for o in self.editor.model.openings):
+                raise ValueError("Opening ID not found")
+            self.editor.apply_openings([])
+            return {"revision": self.revision, "removed": args["opening_id"]}
         if name == "new_flat_surface":
             self.check_revision(args["expected_revision"])
             candidate = plane(args["width_mm"], args["height_mm"], args["count_u"], args["count_v"])
-            self.editor.replace_surface(candidate)
+            self.editor.replace_surface(candidate, openings=[])
             if self.editor.wall_visible and self.editor.wall_actors:
                 self.editor.toggle_wall()
             return {"revision": self.revision, "applied": True, "grid_shape": list(self.editor.model.shape)}
@@ -137,6 +164,8 @@ class DesignSession:
         snapshot = clone_model(self.editor.model)
         params = dict(self.result.get("params", {})) if self.result else {}
         params["solver"] = self.editor.solver
+        for opening in snapshot.openings:
+            geometry(snapshot, opening, params)
         meta = {"run_id": uuid.uuid4().hex, "revision": self.revision,
                 "surface_hash": surface_hash(snapshot), "solver": self.editor.solver, "mode": mode}
         self.running = meta.copy()
@@ -149,7 +178,10 @@ class DesignSession:
         self.last_error = error
         if path is not None:
             self.result = wall_view.load_result(path)
-            self.editor.show_wall(path)
+            if self.result.get("bricks"):
+                self.editor.show_wall(path)
+            elif self.result.get("fatal"):
+                self.last_error = self.result["fatal"] + " Previous wall kept visible; it is not this run's result."
         self.changed()
 
     def summary(self):
@@ -161,12 +193,20 @@ class DesignSession:
         interfaces = r.get("interfaces", [])
         stages = r.get("stages")
         out.update({"context": r.get("design_context"), "solver": r.get("solver"),
+                    "equilibrium_method": r.get("equilibrium_method", r.get("solver")),
+                    "optimization_history": r.get("optimization_history", []),
+                    "iterations": r.get("iterations"),
+                    "openings": r.get("openings", []), "opening_assumptions": r.get("opening_assumptions"),
+                    "custom_piece_schedule": r.get("custom_piece_schedule", []),
+                    "boundary_adjustments": r.get("boundary_adjustments", []),
                     "parameters": r.get("params", {}),
                     "geometry_check": r.get("l0_pass"),
                     "equilibrium_state": r.get("l1_state", "not checked"),
                     "equilibrium_pass": r.get("l1_pass") if r.get("use_cra") else None,
                     "overall_solver_ok": r.get("ok"), "fatal": r.get("fatal"),
                     "brick_count": len(bricks), "brick_status_counts": dict(Counter(b.get("status", "unknown") for b in bricks)),
+                    "masonry_piece_count": sum(b.get("kind") != "lintel" for b in bricks),
+                    "lintel_count": sum(b.get("kind") == "lintel" for b in bricks),
                     "dropped_count": len(r.get("dropped", [])),
                     "largest_deviations": [{k: b.get(k) for k in ("course", "index", "deviation", "rotation", "l0_fail", "notes")}
                                            for b in sorted(bricks, key=lambda b: b.get("deviation", 0), reverse=True)[:10]],
@@ -183,6 +223,8 @@ def run_analysis(snapshot, params, meta, results_dir):
     """Worker-only; unique files plus geometry provenance accompany every result."""
     use_cra = meta["mode"] == "full"
     job = refit.build_job(snapshot, params, use_cra=use_cra)
+    if snapshot.openings:
+        job["openings"] = copy.deepcopy(snapshot.openings)
     job["design_context"] = meta
     path, seconds = refit.run_solver(job, Path(results_dir) / ("ai_" + meta["run_id"]), use_cra=use_cra)
     result = wall_view.load_result(path)

@@ -22,6 +22,7 @@ existing Grasshopper / physics_check pipeline.
 from __future__ import annotations
 
 import shutil
+import json
 from pathlib import Path
 
 import numpy as np
@@ -44,6 +45,11 @@ class NurbsModel:
         self._obj_id = obj_id
         self._attrs = attrs
         self._srf = srf  # live, editable nurbs form (detached copy of the face)
+        raw = file.Strings["surface_studio.openings.v1"]
+        self.openings = json.loads(raw) if raw else []
+        if self.openings:
+            from .openings import validate_openings
+            self.openings = validate_openings(self.openings)
 
     # ------------------------------------------------------------------ load
     @classmethod
@@ -160,6 +166,7 @@ class NurbsModel:
         if self._obj_id is not None:
             self._file.Objects.Delete(self._obj_id)
         self._obj_id = self._file.Objects.AddBrep(brep, self._attrs)
+        self._file.Strings["surface_studio.openings.v1"] = json.dumps(self.openings, allow_nan=False)
         ok = self._file.Write(str(out), version=7)
         if not ok:
             raise IOError(f"could not write .3dm: {out}")
